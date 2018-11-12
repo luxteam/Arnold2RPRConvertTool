@@ -1,0 +1,1565 @@
+
+
+/*
+
+Arnold to RadeonProRender Converter
+
+History:
+v.1.0 - first version
+
+*/
+
+
+global proc write_converted_property_log(string $rprMaterial, string $arnMaterial, string $attrRPR, string $attrARN) { 
+
+    $filePath =    `file -q -sceneName` + ".log"; 
+    $fileId = `fopen $filePath "a"`;  
+    fprint $fileId ("    property " + $arnMaterial + "." + $attrARN + " converted to " + $rprMaterial + "." + $attrRPR + "   \r\n"); 
+    fclose $fileId;   
+} 
+
+global proc write_own_property_log(string $text) { 
+
+    $filePath =    `file -q -sceneName` + ".log";;  
+    $fileId = `fopen $filePath "a"`;  
+    fprint $fileId ("    " + $text + "   \r\n"); 
+    fclose $fileId;   
+} 
+
+global proc int copyProperty(string $rprMaterial, string $arnMaterial, string $attrARN, string $attrRPR) { 
+
+    // return value
+    int $result = 0; 
+
+    // full name of attribute
+    string $tempARN = $arnMaterial + "." + $attrARN; 
+    string $tempRPR = $rprMaterial + "." + $attrRPR;
+
+    // value of attribute
+    $varARN = `getAttr $tempARN`; 
+    $varRPR = `getAttr $tempRPR`; 
+
+    string $listConnections[] = `listConnections $tempARN`;
+    string $source = `connectionInfo -sourceFromDestination $tempARN`;
+
+    if (size($listConnections)>0) {
+        string $typeConnection = `objectType $listConnections[0]`;
+        // convert utilities
+    }
+
+    if (size($listConnections)>0) {   
+        if (catch(`connectAttr -force $source ($rprMaterial + "." + $attrRPR)`)) { 
+            write_own_property_log("Connection failed. Check the connectors. ");
+        } else { 
+            write_converted_property_log($rprMaterial, $arnMaterial, $attrRPR, $source);  
+            $result = 1; 
+        }  
+    } else {
+        if (catch(`setAttr $tempRPR $varARN`)) { 
+            write_own_property_log("Copy failed. Check the values and their boundaries. ");
+        } else { 
+            write_converted_property_log($rprMaterial, $arnMaterial, $attrRPR, $attrARN);  
+            $result = 1; 
+        }   
+    }
+
+    return $result; 
+} 
+
+global proc int copyPropertyColor(string $rprMaterial, string $arnMaterial, string $attrARN, string $attrRPR) { 
+
+    // return value
+    int $result = 0; 
+
+    // full name of attribute
+    string $tempARN = $arnMaterial + "." + $attrARN; 
+    string $tempRPR = $rprMaterial + "." + $attrRPR;
+
+    // value of attribute
+    $varRPR = `getAttr $tempRPR`; 
+    $varARN_R = `getAttr ($tempARN + "R")`;
+    $varARN_G = `getAttr ($tempARN + "G")`;
+    $varARN_B = `getAttr ($tempARN + "B")`; 
+
+    string $listConnections[] = `listConnections $tempARN`;
+    string $source = `connectionInfo -sourceFromDestination $tempARN`;
+
+    if (size($listConnections)>0) {
+        string $typeConnection = `objectType $listConnections[0]`;
+        // convert utilities
+    }
+
+    if (size($listConnections)>0) {   
+        if (catch(`connectAttr -force $source ($rprMaterial + "." + $attrRPR)`)) { 
+            write_own_property_log("Connection failed. Check the connectors. ");
+        } else { 
+            write_converted_property_log($rprMaterial, $arnMaterial, $attrRPR, $source);  
+            $result = 1; 
+        }  
+    } else {
+        if (catch(`setAttr $tempRPR $varARN_R $varARN_G $varARN_B`)) { 
+            write_own_property_log("Copy failed. Check the values and their boundaries. ");
+        } else { 
+            write_converted_property_log($rprMaterial, $arnMaterial, $attrRPR, $attrARN); 
+            $result = 1; 
+        }   
+    }
+
+    return $result; 
+} 
+
+/////////////////////// 
+// aiAmbientOcclusion 
+/////////////////////// 
+
+global proc string convertaiAmbientOcclusion (string $arnMaterial) { 
+
+    // Get all properties of the material 
+    string $attrs[] = `listAttr $arnMaterial`; 
+
+    // Creating new Uber material & SG or another material if you need
+    // Change type if you need
+    string $yourType = "RPRUberMaterial"; 
+    string $rpr = `shadingNode -asShader $yourType`; 
+    string $sg = $rpr + "SG"; 
+    sets -renderable true -noSurfaceShader true -empty -name $sg; 
+    connectAttr -f ($rpr + ".outColor") ($sg + ".surfaceShader"); 
+
+    // Rename RPR material to origin name of Arnold Material  
+    rename $rpr ($arnMaterial + "_rpr"); 
+    $rpr = $arnMaterial + "_rpr"; 
+    string $mySGs[] = `listConnections -type shadingEngine $arnMaterial`; 
+    rename $sg ($mySGs[0] + "_rpr"); 
+    $sg = $mySGs[0] + "_rpr"; 
+
+    // Enable properties, which are default in Arnold. Some examples: 
+    //setAttr ($rpr + ".diffuse") 1; 
+    //setAttr ($rpr + ".reflections") 1; 
+    //setAttr ($rpr + ".refraction") 1; 
+
+    string $type = `objectType $arnMaterial`; 
+
+    // Logging in file 
+    $filePath =    `file -q -sceneName` + ".log";   
+    $fileId = `fopen $filePath "a"` ;
+    fprint $fileId ("Found Arnold material: \r\n    name: " + $arnMaterial + "\r\n"); 
+    fprint $fileId ("    type: " + $type + "\r\n"); 
+    fprint $fileId ("    shading engine: " + $mySGs[0] + "\r\n");
+    fprint $fileId ("Converting to: \r\n    name: " + $rpr + "\r\n"); 
+    fprint $fileId ("    type: " + $yourType + "\r\n"); 
+    fprint $fileId ("    shading engine: " + $sg + "\r\n"); 
+    fprint $fileId ("Conversion details: \r\n");  
+    fclose $fileId;  
+
+    for ($attr in $attrs) {  
+
+        /*  
+
+        if ($attr == "message") {   
+            // manual settings:  
+            float $pr = `getAttr ($arnMaterial + "." + $attr)`;   
+            //check if there is connection   
+            string $rpr_attr_name = "valid_rpr_attr_name"   
+            string $result[] = listConnections ($arnMaterial + "." + $attr);    
+            if ($result[0] != "") {   
+                //uncomment one of the following   
+                //connectAttr -force ($result[0] + ".outColor")  ($rpr + "." + $rpr_attr_name);   
+                //connectAttr -force ($result[0] + ".outAlpha")  ($rpr + "." + $rpr_attr_name);   
+            } else {  
+                setAttr ( $rpr + "." + rpr_attr_name, $pr);   
+            }   
+            write_converted_property_log($rpr, $rs, $attrRPR, $attrRS);   
+        }
+
+        */  
+
+        // Uncomment and change "rpr_attribute_name" to valid RPR property name. Use copyPropertyColor only if you need to copy all 3 channels (RGB), else use simple copyProperty. 
+        //if (($attr == "message") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "caching") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "frozen") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "isHistoricallyInteresting") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "nodeState") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "binMembership") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "outColor") && (copyPropertyColor($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "outColorR") && (copyPropertyColor($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "outColorG") && (copyPropertyColor($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "outColorB") && (copyPropertyColor($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "outTransparency") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "outTransparencyR") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "outTransparencyG") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "outTransparencyB") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "normalCamera") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "normalCameraX") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "normalCameraY") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "normalCameraZ") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "hardwareColor") && (copyPropertyColor($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "hardwareColorR") && (copyPropertyColor($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "hardwareColorG") && (copyPropertyColor($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "hardwareColorB") && (copyPropertyColor($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "samples") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "spread") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "nearClip") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "farClip") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "falloff") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "black") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "blackR") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "blackG") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "blackB") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "white") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "whiteR") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "whiteG") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "whiteB") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "normal") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "normalX") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "normalY") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "normalZ") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "invertNormals") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "selfOnly") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+}
+
+    $filePath =    `file -q -sceneName` + ".log";   
+    $fileId = `fopen $filePath "a"` ; 
+    fprint $fileId ("End: " + $arnMaterial);  
+    fprint $fileId ("\r\n\r\n\r\n");  
+    fclose $fileId; 
+
+    return $rpr; 
+
+}
+
+/////////////////////// 
+// aiFlat 
+/////////////////////// 
+
+global proc string convertaiFlat (string $arnMaterial) { 
+
+    // Get all properties of the material 
+    string $attrs[] = `listAttr $arnMaterial`; 
+
+    // Creating new Uber material & SG or another material if you need
+    // Change type if you need
+    string $yourType = "RPRUberMaterial"; 
+    string $rpr = `shadingNode -asShader $yourType`; 
+    string $sg = $rpr + "SG"; 
+    sets -renderable true -noSurfaceShader true -empty -name $sg; 
+    connectAttr -f ($rpr + ".outColor") ($sg + ".surfaceShader"); 
+
+    // Rename RPR material to origin name of Arnold Material  
+    rename $rpr ($arnMaterial + "_rpr"); 
+    $rpr = $arnMaterial + "_rpr"; 
+    string $mySGs[] = `listConnections -type shadingEngine $arnMaterial`; 
+    rename $sg ($mySGs[0] + "_rpr"); 
+    $sg = $mySGs[0] + "_rpr"; 
+
+    // Enable properties, which are default in Arnold. Some examples: 
+    //setAttr ($rpr + ".diffuse") 1; 
+    //setAttr ($rpr + ".reflections") 1; 
+    //setAttr ($rpr + ".refraction") 1; 
+
+    string $type = `objectType $arnMaterial`; 
+
+    // Logging in file 
+    $filePath =    `file -q -sceneName` + ".log";   
+    $fileId = `fopen $filePath "a"` ;
+    fprint $fileId ("Found Arnold material: \r\n    name: " + $arnMaterial + "\r\n"); 
+    fprint $fileId ("    type: " + $type + "\r\n"); 
+    fprint $fileId ("    shading engine: " + $mySGs[0] + "\r\n");
+    fprint $fileId ("Converting to: \r\n    name: " + $rpr + "\r\n"); 
+    fprint $fileId ("    type: " + $yourType + "\r\n"); 
+    fprint $fileId ("    shading engine: " + $sg + "\r\n"); 
+    fprint $fileId ("Conversion details: \r\n");  
+    fclose $fileId;  
+
+    for ($attr in $attrs) {  
+
+        /*  
+
+        if ($attr == "message") {   
+            // manual settings:  
+            float $pr = `getAttr ($arnMaterial + "." + $attr)`;   
+            //check if there is connection   
+            string $rpr_attr_name = "valid_rpr_attr_name"   
+            string $result[] = listConnections ($arnMaterial + "." + $attr);    
+            if ($result[0] != "") {   
+                //uncomment one of the following   
+                //connectAttr -force ($result[0] + ".outColor")  ($rpr + "." + $rpr_attr_name);   
+                //connectAttr -force ($result[0] + ".outAlpha")  ($rpr + "." + $rpr_attr_name);   
+            } else {  
+                setAttr ( $rpr + "." + rpr_attr_name, $pr);   
+            }   
+            write_converted_property_log($rpr, $rs, $attrRPR, $attrRS);   
+        }
+
+        */  
+
+        // Uncomment and change "rpr_attribute_name" to valid RPR property name. Use copyPropertyColor only if you need to copy all 3 channels (RGB), else use simple copyProperty. 
+        //if (($attr == "message") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "caching") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "frozen") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "isHistoricallyInteresting") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "nodeState") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "binMembership") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "outColor") && (copyPropertyColor($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "outColorR") && (copyPropertyColor($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "outColorG") && (copyPropertyColor($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "outColorB") && (copyPropertyColor($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "outTransparency") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "outTransparencyR") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "outTransparencyG") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "outTransparencyB") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "normalCamera") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "normalCameraX") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "normalCameraY") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "normalCameraZ") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "hardwareColor") && (copyPropertyColor($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "hardwareColorR") && (copyPropertyColor($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "hardwareColorG") && (copyPropertyColor($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "hardwareColorB") && (copyPropertyColor($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "color") && (copyPropertyColor($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "colorR") && (copyPropertyColor($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "colorG") && (copyPropertyColor($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "colorB") && (copyPropertyColor($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+}
+
+    $filePath =    `file -q -sceneName` + ".log";   
+    $fileId = `fopen $filePath "a"` ; 
+    fprint $fileId ("End: " + $arnMaterial);  
+    fprint $fileId ("\r\n\r\n\r\n");  
+    fclose $fileId; 
+
+    return $rpr; 
+
+}
+
+/////////////////////// 
+// aiMixShader 
+/////////////////////// 
+
+global proc string convertaiMixShader (string $arnMaterial) { 
+
+    // Get all properties of the material 
+    string $attrs[] = `listAttr $arnMaterial`; 
+
+    // Creating new Uber material & SG or another material if you need
+    // Change type if you need
+    string $yourType = "RPRUberMaterial"; 
+    string $rpr = `shadingNode -asShader $yourType`; 
+    string $sg = $rpr + "SG"; 
+    sets -renderable true -noSurfaceShader true -empty -name $sg; 
+    connectAttr -f ($rpr + ".outColor") ($sg + ".surfaceShader"); 
+
+    // Rename RPR material to origin name of Arnold Material  
+    rename $rpr ($arnMaterial + "_rpr"); 
+    $rpr = $arnMaterial + "_rpr"; 
+    string $mySGs[] = `listConnections -type shadingEngine $arnMaterial`; 
+    rename $sg ($mySGs[0] + "_rpr"); 
+    $sg = $mySGs[0] + "_rpr"; 
+
+    // Enable properties, which are default in Arnold. Some examples: 
+    //setAttr ($rpr + ".diffuse") 1; 
+    //setAttr ($rpr + ".reflections") 1; 
+    //setAttr ($rpr + ".refraction") 1; 
+
+    string $type = `objectType $arnMaterial`; 
+
+    // Logging in file 
+    $filePath =    `file -q -sceneName` + ".log";   
+    $fileId = `fopen $filePath "a"` ; 
+    fprint $fileId ("Found Arnold material: \r\n    name: " + $arnMaterial + "\r\n"); 
+    fprint $fileId ("    type: " + $type + "\r\n"); 
+    fprint $fileId ("    shading engine: " + $mySGs[0] + "\r\n");
+    fprint $fileId ("Converting to: \r\n    name: " + $rpr + "\r\n"); 
+    fprint $fileId ("    type: " + $yourType + "\r\n"); 
+    fprint $fileId ("    shading engine: " + $sg + "\r\n"); 
+    fprint $fileId ("Conversion details: \r\n");  
+    fclose $fileId;  
+
+    for ($attr in $attrs) {  
+
+        /*  
+
+        if ($attr == "message") {   
+            // manual settings:  
+            float $pr = `getAttr ($arnMaterial + "." + $attr)`;   
+            //check if there is connection   
+            string $rpr_attr_name = "valid_rpr_attr_name"   
+            string $result[] = listConnections ($arnMaterial + "." + $attr);    
+            if ($result[0] != "") {   
+                //uncomment one of the following   
+                //connectAttr -force ($result[0] + ".outColor")  ($rpr + "." + $rpr_attr_name);   
+                //connectAttr -force ($result[0] + ".outAlpha")  ($rpr + "." + $rpr_attr_name);   
+            } else {  
+                setAttr ( $rpr + "." + rpr_attr_name, $pr);   
+            }   
+            write_converted_property_log($rpr, $rs, $attrRPR, $attrRS);   
+        }
+
+        */  
+
+        // Uncomment and change "rpr_attribute_name" to valid RPR property name. Use copyPropertyColor only if you need to copy all 3 channels (RGB), else use simple copyProperty. 
+        //if (($attr == "message") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "caching") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "frozen") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "isHistoricallyInteresting") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "nodeState") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "binMembership") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "outColor") && (copyPropertyColor($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "outColorR") && (copyPropertyColor($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "outColorG") && (copyPropertyColor($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "outColorB") && (copyPropertyColor($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "outAlpha") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "outTransparency") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "outTransparencyR") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "outTransparencyG") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "outTransparencyB") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "normalCamera") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "normalCameraX") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "normalCameraY") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "normalCameraZ") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "hardwareColor") && (copyPropertyColor($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "hardwareColorR") && (copyPropertyColor($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "hardwareColorG") && (copyPropertyColor($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "hardwareColorB") && (copyPropertyColor($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "mode") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "mix") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "shader1A") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "shader1") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "shader1R") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "shader1G") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "shader1B") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "shader2A") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "shader2") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "shader2R") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "shader2G") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "shader2B") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+}
+
+    $filePath =    `file -q -sceneName` + ".log";   
+    $fileId = `fopen $filePath "a"` ; 
+    fprint $fileId ("End: " + $arnMaterial);  
+    fprint $fileId ("\r\n\r\n\r\n");  
+    fclose $fileId;
+
+    return $rpr; 
+
+}
+
+/////////////////////// 
+// aiRaySwitch 
+/////////////////////// 
+
+global proc string convertaiRaySwitch (string $arnMaterial) { 
+
+    // Get all properties of the material 
+    string $attrs[] = `listAttr $arnMaterial`; 
+
+    // Creating new Uber material & SG or another material if you need
+    // Change type if you need
+    string $yourType = "RPRUberMaterial"; 
+    string $rpr = `shadingNode -asShader $yourType`; 
+    string $sg = $rpr + "SG"; 
+    sets -renderable true -noSurfaceShader true -empty -name $sg; 
+    connectAttr -f ($rpr + ".outColor") ($sg + ".surfaceShader"); 
+
+    // Rename RPR material to origin name of Arnold Material  
+    rename $rpr ($arnMaterial + "_rpr"); 
+    $rpr = $arnMaterial + "_rpr"; 
+    string $mySGs[] = `listConnections -type shadingEngine $arnMaterial`; 
+    rename $sg ($mySGs[0] + "_rpr"); 
+    $sg = $mySGs[0] + "_rpr"; 
+
+    // Enable properties, which are default in Arnold. Some examples: 
+    //setAttr ($rpr + ".diffuse") 1; 
+    //setAttr ($rpr + ".reflections") 1; 
+    //setAttr ($rpr + ".refraction") 1; 
+
+    string $type = `objectType $arnMaterial`; 
+
+    // Logging in file 
+    $filePath =    `file -q -sceneName` + ".log";   
+    $fileId = `fopen $filePath "a"` ;
+    fprint $fileId ("Found Arnold material: \r\n    name: " + $arnMaterial + "\r\n"); 
+    fprint $fileId ("    type: " + $type + "\r\n"); 
+    fprint $fileId ("    shading engine: " + $mySGs[0] + "\r\n");
+    fprint $fileId ("Converting to: \r\n    name: " + $rpr + "\r\n"); 
+    fprint $fileId ("    type: " + $yourType + "\r\n"); 
+    fprint $fileId ("    shading engine: " + $sg + "\r\n"); 
+    fprint $fileId ("Conversion details: \r\n");  
+    fclose $fileId;  
+
+    for ($attr in $attrs) {  
+
+        /*  
+
+        if ($attr == "message") {   
+            // manual settings:  
+            float $pr = `getAttr ($arnMaterial + "." + $attr)`;   
+            //check if there is connection   
+            string $rpr_attr_name = "valid_rpr_attr_name"   
+            string $result[] = listConnections ($arnMaterial + "." + $attr);    
+            if ($result[0] != "") {   
+                //uncomment one of the following   
+                //connectAttr -force ($result[0] + ".outColor")  ($rpr + "." + $rpr_attr_name);   
+                //connectAttr -force ($result[0] + ".outAlpha")  ($rpr + "." + $rpr_attr_name);   
+            } else {  
+                setAttr ( $rpr + "." + rpr_attr_name, $pr);   
+            }   
+            write_converted_property_log($rpr, $rs, $attrRPR, $attrRS);   
+        }
+
+        */  
+
+        // Uncomment and change "rpr_attribute_name" to valid RPR property name. Use copyPropertyColor only if you need to copy all 3 channels (RGB), else use simple copyProperty. 
+        //if (($attr == "message") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "caching") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "frozen") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "isHistoricallyInteresting") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "nodeState") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "binMembership") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "outColor") && (copyPropertyColor($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "outColorR") && (copyPropertyColor($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "outColorG") && (copyPropertyColor($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "outColorB") && (copyPropertyColor($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "outAlpha") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "outTransparency") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "outTransparencyR") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "outTransparencyG") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "outTransparencyB") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "normalCamera") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "normalCameraX") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "normalCameraY") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "normalCameraZ") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "hardwareColor") && (copyPropertyColor($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "hardwareColorR") && (copyPropertyColor($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "hardwareColorG") && (copyPropertyColor($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "hardwareColorB") && (copyPropertyColor($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "cameraA") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "camera") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "cameraR") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "cameraG") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "cameraB") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "shadowA") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "shadow") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "shadowR") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "shadowG") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "shadowB") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "diffuseReflectionA") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "diffuseReflection") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "diffuseReflectionR") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "diffuseReflectionG") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "diffuseReflectionB") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "diffuseTransmissionA") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "diffuseTransmission") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "diffuseTransmissionR") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "diffuseTransmissionG") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "diffuseTransmissionB") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "specularReflectionA") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "specularReflection") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "specularReflectionR") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "specularReflectionG") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "specularReflectionB") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "specularTransmissionA") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "specularTransmission") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "specularTransmissionR") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "specularTransmissionG") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "specularTransmissionB") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "volumeA") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "volume") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "volumeR") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "volumeG") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "volumeB") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "aiUserOptions") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "camera") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "cameraR") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "cameraG") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "cameraB") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "cameraA") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "shadow") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "shadowR") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "shadowG") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "shadowB") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "shadowA") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "diffuseReflection") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "diffuseReflectionR") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "diffuseReflectionG") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "diffuseReflectionB") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "diffuseReflectionA") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "diffuseTransmission") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "diffuseTransmissionR") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "diffuseTransmissionG") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "diffuseTransmissionB") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "diffuseTransmissionA") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "specularReflection") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "specularReflectionR") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "specularReflectionG") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "specularReflectionB") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "specularReflectionA") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "specularTransmission") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "specularTransmissionR") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "specularTransmissionG") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "specularTransmissionB") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "specularTransmissionA") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "volume") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "volumeR") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "volumeG") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "volumeB") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "volumeA") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+}
+
+    $filePath =    `file -q -sceneName` + ".log";   
+    $fileId = `fopen $filePath "a"` ; 
+    fprint $fileId ("End: " + $arnMaterial);  
+    fprint $fileId ("\r\n\r\n\r\n");  
+    fclose $fileId;
+
+    return $rpr; 
+
+}
+
+/////////////////////// 
+// aiShadowMatte 
+/////////////////////// 
+
+global proc string convertaiShadowMatte (string $arnMaterial) { 
+
+    // Get all properties of the material 
+    string $attrs[] = `listAttr $arnMaterial`; 
+
+    // Creating new Uber material & SG or another material if you need
+    // Change type if you need
+    string $yourType = "RPRUberMaterial"; 
+    string $rpr = `shadingNode -asShader $yourType`; 
+    string $sg = $rpr + "SG"; 
+    sets -renderable true -noSurfaceShader true -empty -name $sg; 
+    connectAttr -f ($rpr + ".outColor") ($sg + ".surfaceShader"); 
+
+    // Rename RPR material to origin name of Arnold Material  
+    rename $rpr ($arnMaterial + "_rpr"); 
+    $rpr = $arnMaterial + "_rpr"; 
+    string $mySGs[] = `listConnections -type shadingEngine $arnMaterial`; 
+    rename $sg ($mySGs[0] + "_rpr"); 
+    $sg = $mySGs[0] + "_rpr"; 
+
+    // Enable properties, which are default in Arnold. Some examples: 
+    //setAttr ($rpr + ".diffuse") 1; 
+    //setAttr ($rpr + ".reflections") 1; 
+    //setAttr ($rpr + ".refraction") 1; 
+
+    string $type = `objectType $arnMaterial`; 
+
+    // Logging in file 
+    $filePath =    `file -q -sceneName` + ".log";   
+    $fileId = `fopen $filePath "a"` ;
+    fprint $fileId ("Found Arnold material: \r\n    name: " + $arnMaterial + "\r\n"); 
+    fprint $fileId ("    type: " + $type + "\r\n"); 
+    fprint $fileId ("    shading engine: " + $mySGs[0] + "\r\n");
+    fprint $fileId ("Converting to: \r\n    name: " + $rpr + "\r\n"); 
+    fprint $fileId ("    type: " + $yourType + "\r\n"); 
+    fprint $fileId ("    shading engine: " + $sg + "\r\n"); 
+    fprint $fileId ("Conversion details: \r\n");  
+    fclose $fileId;  
+
+    for ($attr in $attrs) {  
+
+        /*  
+
+        if ($attr == "message") {   
+            // manual settings:  
+            float $pr = `getAttr ($arnMaterial + "." + $attr)`;   
+            //check if there is connection   
+            string $rpr_attr_name = "valid_rpr_attr_name"   
+            string $result[] = listConnections ($arnMaterial + "." + $attr);    
+            if ($result[0] != "") {   
+                //uncomment one of the following   
+                //connectAttr -force ($result[0] + ".outColor")  ($rpr + "." + $rpr_attr_name);   
+                //connectAttr -force ($result[0] + ".outAlpha")  ($rpr + "." + $rpr_attr_name);   
+            } else {  
+                setAttr ( $rpr + "." + rpr_attr_name, $pr);   
+            }   
+            write_converted_property_log($rpr, $rs, $attrRPR, $attrRS);   
+        }
+
+        */  
+
+        // Uncomment and change "rpr_attribute_name" to valid RPR property name. Use copyPropertyColor only if you need to copy all 3 channels (RGB), else use simple copyProperty. 
+        //if (($attr == "message") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "caching") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "frozen") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "isHistoricallyInteresting") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "nodeState") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "binMembership") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "outColor") && (copyPropertyColor($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "outColorR") && (copyPropertyColor($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "outColorG") && (copyPropertyColor($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "outColorB") && (copyPropertyColor($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "outAlpha") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "outTransparency") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "outTransparencyR") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "outTransparencyG") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "outTransparencyB") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "normalCamera") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "normalCameraX") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "normalCameraY") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "normalCameraZ") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "hardwareColor") && (copyPropertyColor($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "hardwareColorR") && (copyPropertyColor($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "hardwareColorG") && (copyPropertyColor($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "hardwareColorB") && (copyPropertyColor($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "backgroundType") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "offscreenColor") && (copyPropertyColor($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "offscreenColorR") && (copyPropertyColor($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "offscreenColorG") && (copyPropertyColor($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "offscreenColorB") && (copyPropertyColor($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "shadowColor") && (copyPropertyColor($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "shadowColorR") && (copyPropertyColor($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "shadowColorG") && (copyPropertyColor($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "shadowColorB") && (copyPropertyColor($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "shadowOpacity") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "diffuseColor") && (copyPropertyColor($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "diffuseColorR") && (copyPropertyColor($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "diffuseColorG") && (copyPropertyColor($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "diffuseColorB") && (copyPropertyColor($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "diffuseUseBackground") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "diffuseIntensity") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "backlighting") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "indirectDiffuseEnable") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "indirectSpecularEnable") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "specularColor") && (copyPropertyColor($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "specularColorR") && (copyPropertyColor($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "specularColorG") && (copyPropertyColor($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "specularColorB") && (copyPropertyColor($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "specularIntensity") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "specularRoughness") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "aovShadow") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "aovShadowDiff") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "aovShadowMask") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "aovIndirectDiffuse") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "aovIndirectSpecular") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+}
+
+    $filePath =    `file -q -sceneName` + ".log";   
+    $fileId = `fopen $filePath "a"` ; 
+    fprint $fileId ("End: " + $arnMaterial);  
+    fprint $fileId ("\r\n\r\n\r\n");  
+    fclose $fileId;
+
+    return $rpr; 
+
+}
+
+/////////////////////// 
+// aiStandardHair 
+/////////////////////// 
+
+global proc string convertaiStandardHair (string $arnMaterial) { 
+
+    // Get all properties of the material 
+    string $attrs[] = `listAttr $arnMaterial`; 
+
+    // Creating new Uber material & SG or another material if you need
+    // Change type if you need
+    string $yourType = "RPRUberMaterial"; 
+    string $rpr = `shadingNode -asShader $yourType`; 
+    string $sg = $rpr + "SG"; 
+    sets -renderable true -noSurfaceShader true -empty -name $sg; 
+    connectAttr -f ($rpr + ".outColor") ($sg + ".surfaceShader"); 
+
+    // Rename RPR material to origin name of Arnold Material  
+    rename $rpr ($arnMaterial + "_rpr"); 
+    $rpr = $arnMaterial + "_rpr"; 
+    string $mySGs[] = `listConnections -type shadingEngine $arnMaterial`; 
+    rename $sg ($mySGs[0] + "_rpr"); 
+    $sg = $mySGs[0] + "_rpr"; 
+
+    // Enable properties, which are default in Arnold. Some examples: 
+    //setAttr ($rpr + ".diffuse") 1; 
+    //setAttr ($rpr + ".reflections") 1; 
+    //setAttr ($rpr + ".refraction") 1; 
+
+    string $type = `objectType $arnMaterial`; 
+
+    // Logging in file 
+    $filePath =    `file -q -sceneName` + ".log";   
+    $fileId = `fopen $filePath "a"` ;
+    fprint $fileId ("Found Arnold material: \r\n    name: " + $arnMaterial + "\r\n"); 
+    fprint $fileId ("    type: " + $type + "\r\n"); 
+    fprint $fileId ("    shading engine: " + $mySGs[0] + "\r\n");
+    fprint $fileId ("Converting to: \r\n    name: " + $rpr + "\r\n"); 
+    fprint $fileId ("    type: " + $yourType + "\r\n"); 
+    fprint $fileId ("    shading engine: " + $sg + "\r\n"); 
+    fprint $fileId ("Conversion details: \r\n");  
+    fclose $fileId;  
+
+    for ($attr in $attrs) {  
+
+        /*  
+
+        if ($attr == "message") {   
+            // manual settings:  
+            float $pr = `getAttr ($arnMaterial + "." + $attr)`;   
+            //check if there is connection   
+            string $rpr_attr_name = "valid_rpr_attr_name"   
+            string $result[] = listConnections ($arnMaterial + "." + $attr);    
+            if ($result[0] != "") {   
+                //uncomment one of the following   
+                //connectAttr -force ($result[0] + ".outColor")  ($rpr + "." + $rpr_attr_name);   
+                //connectAttr -force ($result[0] + ".outAlpha")  ($rpr + "." + $rpr_attr_name);   
+            } else {  
+                setAttr ( $rpr + "." + rpr_attr_name, $pr);   
+            }   
+            write_converted_property_log($rpr, $rs, $attrRPR, $attrRS);   
+        }
+
+        */  
+
+        // Uncomment and change "rpr_attribute_name" to valid RPR property name. Use copyPropertyColor only if you need to copy all 3 channels (RGB), else use simple copyProperty. 
+        //if (($attr == "message") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "caching") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "frozen") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "isHistoricallyInteresting") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "nodeState") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "binMembership") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "normalCamera") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "normalCameraX") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "normalCameraY") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "normalCameraZ") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "aiTransparency") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "aiTransparencyR") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "aiTransparencyG") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "aiTransparencyB") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "outColor") && (copyPropertyColor($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "outColorR") && (copyPropertyColor($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "outColorG") && (copyPropertyColor($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "outColorB") && (copyPropertyColor($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "outAlpha") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "base") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "baseColor") && (copyPropertyColor($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "baseColorR") && (copyPropertyColor($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "baseColorG") && (copyPropertyColor($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "baseColorB") && (copyPropertyColor($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "melanin") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "melaninRedness") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "melaninRandomize") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "roughness") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "ior") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "shift") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "specularTint") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "specularTintR") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "specularTintG") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "specularTintB") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "specular2Tint") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "specular2TintR") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "specular2TintG") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "specular2TintB") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "transmissionTint") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "transmissionTintR") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "transmissionTintG") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "transmissionTintB") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "diffuse") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "diffuseColor") && (copyPropertyColor($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "diffuseColorR") && (copyPropertyColor($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "diffuseColorG") && (copyPropertyColor($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "diffuseColorB") && (copyPropertyColor($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "emission") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "emissionColor") && (copyPropertyColor($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "emissionColorR") && (copyPropertyColor($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "emissionColorG") && (copyPropertyColor($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "emissionColorB") && (copyPropertyColor($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "opacity") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "opacityR") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "opacityG") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "opacityB") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "indirectDiffuse") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "indirectSpecular") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "extraDepth") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "aiUserOptions") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "aiEnableMatte") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "aiMatteColor") && (copyPropertyColor($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "aiMatteColorR") && (copyPropertyColor($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "aiMatteColorG") && (copyPropertyColor($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "aiMatteColorB") && (copyPropertyColor($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "aiMatteColorA") && (copyPropertyColor($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+}
+
+    $filePath =    `file -q -sceneName` + ".log";   
+    $fileId = `fopen $filePath "a"` ; 
+    fprint $fileId ("End: " + $arnMaterial);  
+    fprint $fileId ("\r\n\r\n\r\n");  
+    fclose $fileId;
+
+    return $rpr; 
+
+}
+
+/////////////////////// 
+// aiStandardSurface 
+/////////////////////// 
+
+global proc string convertaiStandardSurface (string $arnMaterial) { 
+
+    // Get all properties of the material 
+    string $attrs[] = `listAttr $arnMaterial`; 
+
+    // Creating new Uber material & SG or another material if you need
+    // Change type if you need
+    string $yourType = "RPRUberMaterial"; 
+    string $rpr = `shadingNode -asShader $yourType`; 
+    string $sg = $rpr + "SG"; 
+    sets -renderable true -noSurfaceShader true -empty -name $sg; 
+    connectAttr -f ($rpr + ".outColor") ($sg + ".surfaceShader"); 
+
+    // Rename RPR material to origin name of Arnold Material  
+    rename $rpr ($arnMaterial + "_rpr"); 
+    $rpr = $arnMaterial + "_rpr"; 
+    string $mySGs[] = `listConnections -type shadingEngine $arnMaterial`; 
+    rename $sg ($mySGs[0] + "_rpr"); 
+    $sg = $mySGs[0] + "_rpr"; 
+
+    // Enable properties, which are default in Arnold. Some examples: 
+    //setAttr ($rpr + ".diffuse") 1; 
+    //setAttr ($rpr + ".reflections") 1; 
+    //setAttr ($rpr + ".refraction") 1; 
+
+    string $type = `objectType $arnMaterial`; 
+
+    // Logging in file 
+    $filePath =    `file -q -sceneName` + ".log";   
+    $fileId = `fopen $filePath "a"` ;
+    fprint $fileId ("Found Arnold material: \r\n    name: " + $arnMaterial + "\r\n"); 
+    fprint $fileId ("    type: " + $type + "\r\n"); 
+    fprint $fileId ("    shading engine: " + $mySGs[0] + "\r\n");
+    fprint $fileId ("Converting to: \r\n    name: " + $rpr + "\r\n"); 
+    fprint $fileId ("    type: " + $yourType + "\r\n"); 
+    fprint $fileId ("    shading engine: " + $sg + "\r\n"); 
+    fprint $fileId ("Conversion details: \r\n");  
+    fclose $fileId;  
+
+    for ($attr in $attrs) {  
+
+        /*  
+
+        if ($attr == "message") {   
+            // manual settings:  
+            float $pr = `getAttr ($arnMaterial + "." + $attr)`;   
+            //check if there is connection   
+            string $rpr_attr_name = "valid_rpr_attr_name"   
+            string $result[] = listConnections ($arnMaterial + "." + $attr);    
+            if ($result[0] != "") {   
+                //uncomment one of the following   
+                //connectAttr -force ($result[0] + ".outColor")  ($rpr + "." + $rpr_attr_name);   
+                //connectAttr -force ($result[0] + ".outAlpha")  ($rpr + "." + $rpr_attr_name);   
+            } else {  
+                setAttr ( $rpr + "." + rpr_attr_name, $pr);   
+            }   
+            write_converted_property_log($rpr, $rs, $attrRPR, $attrRS);   
+        }
+
+        */  
+
+        // Uncomment and change "rpr_attribute_name" to valid RPR property name. Use copyPropertyColor only if you need to copy all 3 channels (RGB), else use simple copyProperty. 
+        //if (($attr == "message") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "caching") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "frozen") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "isHistoricallyInteresting") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "nodeState") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "binMembership") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "outColor") && (copyPropertyColor($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "outColorR") && (copyPropertyColor($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "outColorG") && (copyPropertyColor($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "outColorB") && (copyPropertyColor($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "outAlpha") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "outTransparency") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "outTransparencyR") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "outTransparencyG") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "outTransparencyB") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "normalCamera") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "normalCameraX") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "normalCameraY") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "normalCameraZ") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "aiEnableMatte") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "aiMatteColor") && (copyPropertyColor($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "aiMatteColorR") && (copyPropertyColor($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "aiMatteColorG") && (copyPropertyColor($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "aiMatteColorB") && (copyPropertyColor($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "aiMatteColorA") && (copyPropertyColor($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "base") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "baseColor") && (copyPropertyColor($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "baseColorR") && (copyPropertyColor($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "baseColorG") && (copyPropertyColor($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "baseColorB") && (copyPropertyColor($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "diffuseRoughness") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "specular") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "specularColor") && (copyPropertyColor($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "specularColorR") && (copyPropertyColor($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "specularColorG") && (copyPropertyColor($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "specularColorB") && (copyPropertyColor($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "specularRoughness") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "specularIOR") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "specularAnisotropy") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "specularRotation") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "metalness") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "transmission") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "transmissionColor") && (copyPropertyColor($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "transmissionColorR") && (copyPropertyColor($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "transmissionColorG") && (copyPropertyColor($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "transmissionColorB") && (copyPropertyColor($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "transmissionDepth") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "transmissionScatter") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "transmissionScatterR") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "transmissionScatterG") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "transmissionScatterB") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "transmissionScatterAnisotropy") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "transmissionDispersion") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "transmissionExtraRoughness") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "subsurface") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "subsurfaceColor") && (copyPropertyColor($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "subsurfaceColorR") && (copyPropertyColor($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "subsurfaceColorG") && (copyPropertyColor($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "subsurfaceColorB") && (copyPropertyColor($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "subsurfaceRadius") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "subsurfaceRadiusR") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "subsurfaceRadiusG") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "subsurfaceRadiusB") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "subsurfaceScale") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "thinWalled") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "tangent") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "tangentX") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "tangentY") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "tangentZ") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "coat") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "coatColor") && (copyPropertyColor($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "coatColorR") && (copyPropertyColor($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "coatColorG") && (copyPropertyColor($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "coatColorB") && (copyPropertyColor($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "coatRoughness") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "coatIOR") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "coatNormal") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "coatNormalX") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "coatNormalY") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "coatNormalZ") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "thinFilmThickness") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "thinFilmIOR") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "emission") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "emissionColor") && (copyPropertyColor($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "emissionColorR") && (copyPropertyColor($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "emissionColorG") && (copyPropertyColor($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "emissionColorB") && (copyPropertyColor($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "opacity") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "opacityR") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "opacityG") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "opacityB") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "caustics") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "internalReflections") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "exitToBackground") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "indirectDiffuse") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "indirectSpecular") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+}
+
+    $filePath =    `file -q -sceneName` + ".log";   
+    $fileId = `fopen $filePath "a"` ; 
+    fprint $fileId ("End: " + $arnMaterial);  
+    fprint $fileId ("\r\n\r\n\r\n");  
+    fclose $fileId; 
+
+    return $rpr; 
+
+}
+
+/////////////////////// 
+// aiSwitch 
+/////////////////////// 
+
+global proc string convertaiSwitch (string $arnMaterial) { 
+
+    // Get all properties of the material 
+    string $attrs[] = `listAttr $arnMaterial`; 
+
+    // Creating new Uber material & SG or another material if you need
+    // Change type if you need
+    string $yourType = "RPRUberMaterial"; 
+    string $rpr = `shadingNode -asShader $yourType`; 
+    string $sg = $rpr + "SG"; 
+    sets -renderable true -noSurfaceShader true -empty -name $sg; 
+    connectAttr -f ($rpr + ".outColor") ($sg + ".surfaceShader"); 
+
+    // Rename RPR material to origin name of Arnold Material  
+    rename $rpr ($arnMaterial + "_rpr"); 
+    $rpr = $arnMaterial + "_rpr"; 
+    string $mySGs[] = `listConnections -type shadingEngine $arnMaterial`; 
+    rename $sg ($mySGs[0] + "_rpr"); 
+    $sg = $mySGs[0] + "_rpr"; 
+
+    // Enable properties, which are default in Arnold. Some examples: 
+    //setAttr ($rpr + ".diffuse") 1; 
+    //setAttr ($rpr + ".reflections") 1; 
+    //setAttr ($rpr + ".refraction") 1; 
+
+    string $type = `objectType $arnMaterial`; 
+
+    // Logging in file 
+    $filePath =    `file -q -sceneName` + ".log";   
+    $fileId = `fopen $filePath "a"` ; 
+    fprint $fileId ("Found Arnold material: \r\n    name: " + $arnMaterial + "\r\n"); 
+    fprint $fileId ("    type: " + $type + "\r\n"); 
+    fprint $fileId ("    shading engine: " + $mySGs[0] + "\r\n");
+    fprint $fileId ("Converting to: \r\n    name: " + $rpr + "\r\n"); 
+    fprint $fileId ("    type: " + $yourType + "\r\n"); 
+    fprint $fileId ("    shading engine: " + $sg + "\r\n"); 
+    fprint $fileId ("Conversion details: \r\n");  
+    fclose $fileId;  
+
+    for ($attr in $attrs) {  
+
+        /*  
+
+        if ($attr == "message") {   
+            // manual settings:  
+            float $pr = `getAttr ($arnMaterial + "." + $attr)`;   
+            //check if there is connection   
+            string $rpr_attr_name = "valid_rpr_attr_name"   
+            string $result[] = listConnections ($arnMaterial + "." + $attr);    
+            if ($result[0] != "") {   
+                //uncomment one of the following   
+                //connectAttr -force ($result[0] + ".outColor")  ($rpr + "." + $rpr_attr_name);   
+                //connectAttr -force ($result[0] + ".outAlpha")  ($rpr + "." + $rpr_attr_name);   
+            } else {  
+                setAttr ( $rpr + "." + rpr_attr_name, $pr);   
+            }   
+            write_converted_property_log($rpr, $rs, $attrRPR, $attrRS);   
+        }
+
+        */  
+
+        // Uncomment and change "rpr_attribute_name" to valid RPR property name. Use copyPropertyColor only if you need to copy all 3 channels (RGB), else use simple copyProperty. 
+        //if (($attr == "message") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "caching") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "frozen") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "isHistoricallyInteresting") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "nodeState") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "binMembership") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "outColor") && (copyPropertyColor($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "outColorR") && (copyPropertyColor($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "outColorG") && (copyPropertyColor($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "outColorB") && (copyPropertyColor($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "outAlpha") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "outTransparency") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "outTransparencyR") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "outTransparencyG") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "outTransparencyB") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "normalCamera") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "normalCameraX") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "normalCameraY") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "normalCameraZ") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "hardwareColor") && (copyPropertyColor($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "hardwareColorR") && (copyPropertyColor($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "hardwareColorG") && (copyPropertyColor($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "hardwareColorB") && (copyPropertyColor($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "index") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "input0A") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "input0") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "input0R") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "input0G") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "input0B") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "input1A") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "input1") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "input1R") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "input1G") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "input1B") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "input2A") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "input2") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "input2R") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "input2G") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "input2B") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "input3A") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "input3") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "input3R") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "input3G") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "input3B") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "input4A") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "input4") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "input4R") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "input4G") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "input4B") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "input5A") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "input5") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "input5R") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "input5G") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "input5B") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "input6A") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "input6") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "input6R") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "input6G") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "input6B") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "input7A") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "input7") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "input7R") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "input7G") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "input7B") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "input8A") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "input8") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "input8R") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "input8G") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "input8B") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "input9A") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "input9") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "input9R") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "input9G") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "input9B") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "input10A") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "input10") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "input10R") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "input10G") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "input10B") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "input11A") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "input11") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "input11R") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "input11G") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "input11B") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "input12A") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "input12") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "input12R") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "input12G") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "input12B") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "input13A") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "input13") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "input13R") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "input13G") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "input13B") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "input14A") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "input14") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "input14R") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "input14G") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "input14B") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "input15A") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "input15") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "input15R") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "input15G") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "input15B") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "input16A") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "input16") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "input16R") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "input16G") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "input16B") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "input17A") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "input17") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "input17R") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "input17G") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "input17B") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "input18A") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "input18") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "input18R") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "input18G") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "input18B") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "input19A") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "input19") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "input19R") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "input19G") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "input19B") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+}
+
+    $filePath =    `file -q -sceneName` + ".log";   
+    $fileId = `fopen $filePath "a"` ; 
+    fprint $fileId ("End: " + $arnMaterial);  
+    fprint $fileId ("\r\n\r\n\r\n");  
+    fclose $fileId; 
+
+    return $rpr; 
+
+}
+
+/////////////////////// 
+// aiTwoSided 
+/////////////////////// 
+
+global proc string convertaiTwoSided (string $arnMaterial) { 
+
+    // Get all properties of the material 
+    string $attrs[] = `listAttr $arnMaterial`; 
+
+    // Creating new Uber material & SG or another material if you need
+    // Change type if you need
+    string $yourType = "RPRUberMaterial"; 
+    string $rpr = `shadingNode -asShader $yourType`; 
+    string $sg = $rpr + "SG"; 
+    sets -renderable true -noSurfaceShader true -empty -name $sg; 
+    connectAttr -f ($rpr + ".outColor") ($sg + ".surfaceShader"); 
+
+    // Rename RPR material to origin name of Arnold Material  
+    rename $rpr ($arnMaterial + "_rpr"); 
+    $rpr = $arnMaterial + "_rpr"; 
+    string $mySGs[] = `listConnections -type shadingEngine $arnMaterial`; 
+    rename $sg ($mySGs[0] + "_rpr"); 
+    $sg = $mySGs[0] + "_rpr"; 
+
+    // Enable properties, which are default in Arnold. Some examples: 
+    //setAttr ($rpr + ".diffuse") 1; 
+    //setAttr ($rpr + ".reflections") 1; 
+    //setAttr ($rpr + ".refraction") 1; 
+
+    string $type = `objectType $arnMaterial`; 
+
+    // Logging in file 
+    $filePath =    `file -q -sceneName` + ".log";   
+    $fileId = `fopen $filePath "a"` ; 
+    fprint $fileId ("Found Arnold material: \r\n    name: " + $arnMaterial + "\r\n"); 
+    fprint $fileId ("    type: " + $type + "\r\n"); 
+    fprint $fileId ("    shading engine: " + $mySGs[0] + "\r\n");
+    fprint $fileId ("Converting to: \r\n    name: " + $rpr + "\r\n"); 
+    fprint $fileId ("    type: " + $yourType + "\r\n"); 
+    fprint $fileId ("    shading engine: " + $sg + "\r\n"); 
+    fprint $fileId ("Conversion details: \r\n");  
+    fclose $fileId;  
+
+    for ($attr in $attrs) {  
+
+        /*  
+
+        if ($attr == "message") {   
+            // manual settings:  
+            float $pr = `getAttr ($arnMaterial + "." + $attr)`;   
+            //check if there is connection   
+            string $rpr_attr_name = "valid_rpr_attr_name"   
+            string $result[] = listConnections ($arnMaterial + "." + $attr);    
+            if ($result[0] != "") {   
+                //uncomment one of the following   
+                //connectAttr -force ($result[0] + ".outColor")  ($rpr + "." + $rpr_attr_name);   
+                //connectAttr -force ($result[0] + ".outAlpha")  ($rpr + "." + $rpr_attr_name);   
+            } else {  
+                setAttr ( $rpr + "." + rpr_attr_name, $pr);   
+            }   
+            write_converted_property_log($rpr, $rs, $attrRPR, $attrRS);   
+        }
+
+        */  
+
+        // Uncomment and change "rpr_attribute_name" to valid RPR property name. Use copyPropertyColor only if you need to copy all 3 channels (RGB), else use simple copyProperty. 
+        //if (($attr == "message") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "caching") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "frozen") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "isHistoricallyInteresting") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "nodeState") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "binMembership") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "outColor") && (copyPropertyColor($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "outColorR") && (copyPropertyColor($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "outColorG") && (copyPropertyColor($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "outColorB") && (copyPropertyColor($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "outAlpha") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "outTransparency") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "outTransparencyR") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "outTransparencyG") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "outTransparencyB") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "normalCamera") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "normalCameraX") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "normalCameraY") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "normalCameraZ") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "hardwareColor") && (copyPropertyColor($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "hardwareColorR") && (copyPropertyColor($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "hardwareColorG") && (copyPropertyColor($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "hardwareColorB") && (copyPropertyColor($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "frontA") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "front") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "frontR") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "frontG") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "frontB") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "backA") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "back") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "backR") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "backG") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "backB") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+}
+
+    $filePath =    `file -q -sceneName` + ".log";   
+    $fileId = `fopen $filePath "a"` ; 
+    fprint $fileId ("End: " + $arnMaterial);  
+    fprint $fileId ("\r\n\r\n\r\n");  
+    fclose $fileId;
+
+    return $rpr; 
+
+}
+
+/////////////////////// 
+// aiWireframe 
+/////////////////////// 
+
+global proc string convertaiWireframe (string $arnMaterial) { 
+
+    // Get all properties of the material 
+    string $attrs[] = `listAttr $arnMaterial`; 
+
+    // Creating new Uber material & SG or another material if you need
+    // Change type if you need
+    string $yourType = "RPRUberMaterial"; 
+    string $rpr = `shadingNode -asShader $yourType`; 
+    string $sg = $rpr + "SG"; 
+    sets -renderable true -noSurfaceShader true -empty -name $sg; 
+    connectAttr -f ($rpr + ".outColor") ($sg + ".surfaceShader"); 
+
+    // Rename RPR material to origin name of Arnold Material  
+    rename $rpr ($arnMaterial + "_rpr"); 
+    $rpr = $arnMaterial + "_rpr"; 
+    string $mySGs[] = `listConnections -type shadingEngine $arnMaterial`; 
+    rename $sg ($mySGs[0] + "_rpr"); 
+    $sg = $mySGs[0] + "_rpr"; 
+
+    // Enable properties, which are default in Arnold. Some examples: 
+    //setAttr ($rpr + ".diffuse") 1; 
+    //setAttr ($rpr + ".reflections") 1; 
+    //setAttr ($rpr + ".refraction") 1; 
+
+    string $type = `objectType $arnMaterial`; 
+
+    // Logging in file 
+    $filePath =    `file -q -sceneName` + ".log";   
+    $fileId = `fopen $filePath "a"` ;
+    fprint $fileId ("Found Arnold material: \r\n    name: " + $arnMaterial + "\r\n"); 
+    fprint $fileId ("    type: " + $type + "\r\n"); 
+    fprint $fileId ("    shading engine: " + $mySGs[0] + "\r\n");
+    fprint $fileId ("Converting to: \r\n    name: " + $rpr + "\r\n"); 
+    fprint $fileId ("    type: " + $yourType + "\r\n"); 
+    fprint $fileId ("    shading engine: " + $sg + "\r\n"); 
+    fprint $fileId ("Conversion details: \r\n");  
+    fclose $fileId;  
+
+    for ($attr in $attrs) {  
+
+        /*  
+
+        if ($attr == "message") {   
+            // manual settings:  
+            float $pr = `getAttr ($arnMaterial + "." + $attr)`;   
+            //check if there is connection   
+            string $rpr_attr_name = "valid_rpr_attr_name"   
+            string $result[] = listConnections ($arnMaterial + "." + $attr);    
+            if ($result[0] != "") {   
+                //uncomment one of the following   
+                //connectAttr -force ($result[0] + ".outColor")  ($rpr + "." + $rpr_attr_name);   
+                //connectAttr -force ($result[0] + ".outAlpha")  ($rpr + "." + $rpr_attr_name);   
+            } else {  
+                setAttr ( $rpr + "." + rpr_attr_name, $pr);   
+            }   
+            write_converted_property_log($rpr, $rs, $attrRPR, $attrRS);   
+        }
+
+        */  
+
+        // Uncomment and change "rpr_attribute_name" to valid RPR property name. Use copyPropertyColor only if you need to copy all 3 channels (RGB), else use simple copyProperty. 
+        //if (($attr == "message") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "caching") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "frozen") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "isHistoricallyInteresting") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "nodeState") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "binMembership") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "outColor") && (copyPropertyColor($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "outColorR") && (copyPropertyColor($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "outColorG") && (copyPropertyColor($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "outColorB") && (copyPropertyColor($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "outTransparency") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "outTransparencyR") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "outTransparencyG") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "outTransparencyB") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "normalCamera") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "normalCameraX") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "normalCameraY") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "normalCameraZ") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "hardwareColor") && (copyPropertyColor($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "hardwareColorR") && (copyPropertyColor($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "hardwareColorG") && (copyPropertyColor($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "hardwareColorB") && (copyPropertyColor($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "lineWidth") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "fillColor") && (copyPropertyColor($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "fillColorR") && (copyPropertyColor($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "fillColorG") && (copyPropertyColor($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "fillColorB") && (copyPropertyColor($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "lineColor") && (copyPropertyColor($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "lineColorR") && (copyPropertyColor($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "lineColorG") && (copyPropertyColor($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "lineColorB") && (copyPropertyColor($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "rasterSpace") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+        //if (($attr == "edgeType") && (copyProperty($rprMaterial, $arnMaterial, $attr, "rpr_attribute_name"))) { continue; } 
+}
+
+    $filePath =    `file -q -sceneName` + ".log";   
+    $fileId = `fopen $filePath "a"` ; 
+    fprint $fileId ("End: " + $arnMaterial);  
+    fprint $fileId ("\r\n\r\n\r\n");  
+    fclose $fileId;
+
+    return $rpr; 
+
+}
+
+
+
+// Convert material. Returns new material name.
+proc string convertArnoldMaterial (string $arnMaterial) {
+	
+    string $type = `objectType $arnMaterial`;
+    string $rprMaterial;
+
+	switch ($type) {
+
+    case "aiAmbientOcclusion": $rprMaterial = convertaiAmbientOcclusion($arnMaterial); break;
+    case "aiFlat": $rprMaterial = convertaiFlat($arnMaterial); break;
+    case "aiMixShader": $rprMaterial = convertaiMixShader($arnMaterial); break;
+    case "aiRaySwitch": $rprMaterial = convertaiRaySwitch($arnMaterial); break;
+    case "aiShadowMatte": $rprMaterial = convertaiShadowMatte($arnMaterial); break;
+    case "aiStandardHair": $rprMaterial = convertaiStandardHair($arnMaterial); break;
+    case "aiStandardSurface": $rprMaterial = convertaiStandardSurface($arnMaterial); break;
+    case "aiSwitch": $rprMaterial = convertaiSwitch($arnMaterial); break;
+    case "aiTwoSided": $rprMaterial = convertaiTwoSided($arnMaterial); break;
+    case "aiUtility": $rprMaterial = convertaiUtility($arnMaterial); break;
+    case "aiWireframe": $rprMaterial = convertaiWireframe($arnMaterial); break;
+    default : $rprMaterial = $arnMaterial; break;
+
+    }
+
+    return $rprMaterial;
+
+}
+
+global proc convertScene(){
+
+    // Check plugins
+    if( ! `pluginInfo -q -loaded "mtoa"` )
+    {
+        loadPlugin "mtoa";
+    }
+    if( ! `pluginInfo -q -loaded "RadeonProRender"` )
+    {
+        loadPlugin "RadeonProRender";
+    }
+
+    
+    // Get all materials from scene
+    string $listMaterials[] = `ls -materials`;
+
+    // Array of association of Arnold & RPR
+    string $arnMaterials[];
+    string $rprMaterials[];
+    int $i = 0;
+
+    // Convert materials
+    for ($each in $listMaterials) { 
+        $arnMaterials[$i] = $each;
+        $rprMaterials[$i] = convertArnoldMaterial($each);
+        $i += 1;
+    } 
+
+    for ($k = 0; $k < size($arnMaterials); $k++ ) {
+        hyperShade -objects $arnMaterials[$k];
+        string $sg[] = `listConnections -type shadingEngine $rprMaterials[$k]`;
+        sets -e -forceElement $sg[0];
+    }
+
+}
+
+string $filePath = "";
+print("Convertion start!");
+float $startTime = 0;
+float $testTime = 0;
+$startTime = `timerX`;
+convertScene();
+$testTime = `timerX -startTime $startTime`;
+print("Convertion finished! Time: " + $testTime);
+system("load " + `file -q -sceneName` + ".log" );

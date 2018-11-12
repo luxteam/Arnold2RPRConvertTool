@@ -1,0 +1,24 @@
+Found Arnold material: 
+    name: aiAmbientOcclusion1
+    type: aiAmbientOcclusion
+    shading engine: aiAmbientOcclusion1SG
+Converting to: 
+    name: aiAmbientOcclusion1_rpr
+    type: RPRUberMaterial
+    shading engine: aiAmbientOcclusion1SG_rpr
+Conversion details: 
+End: aiAmbientOcclusion1
+
+
+Found Arnold material: 
+    name: aiFlat1
+    type: aiFlat
+    shading engine: aiFlat1SG
+Converting to: 
+    name: aiFlat1_rpr
+    type: RPRUberMaterial
+    shading engine: aiFlat1SG_rpr
+Conversion details: 
+End: aiFlat1
+
+

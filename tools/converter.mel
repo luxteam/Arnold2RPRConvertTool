@@ -1,0 +1,73 @@
+
+// Convert material. Returns new material name.
+proc string convertArnoldMaterial (string $arnMaterial) {
+	
+    string $type = `objectType $arnMaterial`;
+    string $rprMaterial;
+
+	switch ($type) {
+
+    case "aiAmbientOcclusion": $rprMaterial = convertaiAmbientOcclusion($arnMaterial); break;
+    case "aiFlat": $rprMaterial = convertaiFlat($arnMaterial); break;
+    case "aiMixShader": $rprMaterial = convertaiMixShader($arnMaterial); break;
+    case "aiRaySwitch": $rprMaterial = convertaiRaySwitch($arnMaterial); break;
+    case "aiShadowMatte": $rprMaterial = convertaiShadowMatte($arnMaterial); break;
+    case "aiStandardHair": $rprMaterial = convertaiStandardHair($arnMaterial); break;
+    case "aiStandardSurface": $rprMaterial = convertaiStandardSurface($arnMaterial); break;
+    case "aiSwitch": $rprMaterial = convertaiSwitch($arnMaterial); break;
+    case "aiTwoSided": $rprMaterial = convertaiTwoSided($arnMaterial); break;
+    case "aiUtility": $rprMaterial = convertaiUtility($arnMaterial); break;
+    case "aiWireframe": $rprMaterial = convertaiWireframe($arnMaterial); break;
+    default : $rprMaterial = $arnMaterial; break;
+
+    }
+
+    return $rpr;
+
+}
+
+global proc convertScene(){
+
+    // Check plugins
+    if( ! `pluginInfo -q -loaded "mtoa"` )
+    {
+        loadPlugin "mtoa";
+    }
+    if( ! `pluginInfo -q -loaded "RadeonProRender"` )
+    {
+        loadPlugin "RadeonProRender";
+    }
+
+    
+    // Get all materials from scene
+    string $listMaterials[] = `ls -materials`;
+
+    // Array of association of RS & RPR
+    string $arnMaterials[];
+    string $rprMaterials[];
+    int $i = 0;
+
+    // Convert materials
+    for ($each in $listMaterials) { 
+        $arnMaterials[$i] = $each;
+        $rprMaterials[$i] = convertArnoldMaterial($each);
+        $i += 1;
+    } 
+
+    for ($k = 0; $k < size($arnMaterials); $k++ ) {
+        hyperShade -objects $arnMaterials[$k];
+        string $sg[] = `listConnections -type shadingEngine $rprMaterials[$k]`;
+        sets -e -forceElement $sg[0];
+    }
+
+}
+
+string $filePath = "";
+print("Convertion start!");
+float $startTime = 0;
+float $testTime = 0;
+$startTime = `timerX`;
+convertScene();
+$testTime = `timerX -startTime $startTime`;
+print("Convertion finished! Time: " + $testTime);
+system("load " + `file -q -sceneName` + ".log" );
