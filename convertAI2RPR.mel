@@ -1798,25 +1798,38 @@ global proc convertScene(){
 
 }
 
-string $filePath = "";
-print("Convertion start!");
-float $startTime = 0;
-float $testTime = 0;
-$startTime = `timerX`;
-convertScene();
-$testTime = `timerX -startTime $startTime`;
-print("Convertion finished! Time: " + $testTime);
-
-$response = `confirmDialog -title "Convertation finished" 
-                          -message ("Total time: " + $testTime + "\nDelete all Arnold instances?")
-                          -button "Yes" 
-                          -button "No"
-                          -defaultButton "Yes"
-                          -cancelButton "No"
-                          -dismissString "No"`;
-        
-if( $response == "Yes" ) {
+global proc auto_launch(){
+    convertScene();
     cleanScene();
 }
 
-system("load " + `file -q -sceneName` + ".log" );
+global proc manual_launch(){
+    global int $manual;
+
+    if ($manual == 0){
+        string $filePath = "";
+        print("Convertion start!");
+        float $startTime = 0;
+        float $testTime = 0;
+        $startTime = `timerX`;
+        convertScene();
+        $testTime = `timerX -startTime $startTime`;
+        print("Convertion finished! Time: " + $testTime);
+
+        $response = `confirmDialog -title "Convertation finished" 
+                                  -message ("Total time: " + $testTime + "\nDelete all Arnold instances?")
+                                  -button "Yes" 
+                                  -button "No"
+                                  -defaultButton "Yes"
+                                  -cancelButton "No"
+                                  -dismissString "No"`;
+                
+        if( $response == "Yes" ) {
+            cleanScene();
+        }
+
+        system("load " + `file -q -sceneName` + ".log" );
+    }
+}
+
+manual_launch();
