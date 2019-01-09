@@ -772,7 +772,7 @@ def convertaiPhotometricLight(ai_light):
 	end_log(aiLightShape) 
 
 
-def convertaiAreaLight(rs_light):
+def convertaiAreaLight(ai_light):
 
 	# Redshift light transform
 	aiTransform = cmds.listRelatives(ai_light, p=True)[0]
@@ -792,10 +792,10 @@ def convertaiAreaLight(rs_light):
 	# Logging to file 
 	start_log(aiLightShape, rprLightShape)
 
-	# Copy properties from rsLight
-	copyProperty(rprLightShape, rs_light, "lightIntensity", "intensity")
-	copyProperty(rprLightShape, rs_light, "colorPicker", "color")
-	copyProperty(rprLightShape, rs_light, "luminousEfficacy", "exposure")
+	# Copy properties from aiLight
+	copyProperty(rprLightShape, ai_light, "lightIntensity", "intensity")
+	copyProperty(rprLightShape, ai_light, "colorPicker", "color")
+	copyProperty(rprLightShape, ai_light, "luminousEfficacy", "exposure")
 	
 	copyProperty(rprTransform, aiTransform, "translateX", "translateX")
 	copyProperty(rprTransform, aiTransform, "translateY", "translateY")
