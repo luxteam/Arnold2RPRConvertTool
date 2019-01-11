@@ -1004,7 +1004,7 @@ def manual_launch():
 	print("Convertion finished! Time: " + str(testTime))
 
 	response = cmds.confirmDialog(title="Convertation finished",
-							  message=("Total time: " + str(testTime) + "\nDelete all redshift instances?"),
+							  message=("Total time: " + str(testTime) + "\nDelete all arnold instances?"),
 							  button=["Yes", "No"],
 							  defaultButton="Yes",
 							  cancelButton="No",
