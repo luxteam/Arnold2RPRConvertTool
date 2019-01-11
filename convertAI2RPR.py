@@ -87,16 +87,10 @@ def copyProperty(rpr_name, ai_name, rpr_attr, ai_attr):
 
 	if listConnections:
 		obj, channel = cmds.connectionInfo(ai_field, sourceFromDestination=True).split('.')
-		source = convertaiMaterial(obj, channel)
-		try:
-			if cmds.objectType(obj) == "file":
-				setProperty(obj, "ignoreColorSpaceFileRules", 1)
-			cmds.connectAttr(source, rpr_field, force=True)
-			write_converted_property_log(rpr_name, source[0], rpr_attr, source[1])
-		except Exception as ex:
-			print(ex)
-			print("Connection {} to {} failed. Check the connectors. ".format(source, rpr_field))
-			write_own_property_log("Connection {} to {} failed. Check the connectors. ".format(source, rpr_field))
+		if cmds.objectType(obj) == "file":
+			setProperty(obj, "ignoreColorSpaceFileRules", 1)
+		source_name, source_attr = convertaiMaterial(obj, channel).split('.')
+		connectProperty(source_name, source_attr, rpr_name, rpr_attr)
 	else:
 		setProperty(rpr_name, rpr_attr, getProperty(ai_name, ai_attr))
 		write_converted_property_log(rpr_name, ai_name, rpr_attr, ai_attr)
@@ -956,7 +950,7 @@ def convertScene():
 				"aiPhysicalSky": convertaiPhysicalSky,
 				"aiSky": convertaiSky
 			}
-			conversion_func_sky[sky_type](sky)
+			conversion_func_sky[sky_type](sky[0])
 		except Exception as ex:
 			print(ex)
 			print("Error while converting physical sky. \n")
