@@ -648,12 +648,14 @@ def convertaiSkyDomeLight(dome_light):
 	setProperty(iblShape, "intensity", 1 * 2 ** exposure)
 
 	# Copy properties from ai dome light
-	setProperty(iblTransform, "rotateY", getProperty(envTransform, "rotateY") + 180)
+	domeTransform = cmds.listRelatives(dome_light, p=True)[0]
+	setProperty(iblTransform, "rotateY", getProperty(domeTransform, "rotateY") + 180)
 	
 	try:
-		file = cmds.listConnections(dome_light, "color")[0]
+		file = cmds.listConnections(dome_light + ".color")
 		if file:
-			ibl_map = getProperty(file, "fileTextureName")
+			ibl_map = getProperty(file[0], "fileTextureName")
+			print(ibl_map)
 			cmds.setAttr(iblTransform + ".filePath", ibl_map, type="string")
 	except Exception as ex:
 		print(ex)
