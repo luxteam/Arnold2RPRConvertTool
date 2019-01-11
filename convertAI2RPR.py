@@ -807,6 +807,64 @@ def convertaiAreaLight(ai_light):
 	end_log(aiLightShape)  
 
 
+def convertaiMeshLight(ai_light):
+
+	# Redshift light transform
+	aiTransform = cmds.listRelatives(ai_light, p=True)[0]
+	aiLightShape = ai_light.split("|")[-1]
+
+	if cmds.objExists(aiLightShape + "_rpr"):
+		rprLightShape = aiLightShape + "_rpr"
+		rprTransform = cmds.listRelatives(rprLightShape, p=True)[0]
+	else: 
+		rprLightShape = cmds.createNode("RPRPhysicalLight", n="RPRPhysicalLightShape")
+		cmds.rename(rprLightShape, aiLightShape + "_rpr")
+		rprLightShape = aiLightShape + "_rpr"
+		rprTransform = cmds.listRelatives(rprLightShape, p=True)[0]
+		cmds.rename(rprTransform, aiTransform + "_rpr")
+		rprTransform = aiTransform + "_rpr"
+
+	# Logging to file 
+	start_log(aiLightShape, rprLightShape)
+
+	# Copy properties from aiLight
+	setProperty(rprLightShape, "lightType", 0)
+	setProperty(rprLightShape, "areaLightShape", 4)
+
+	copyProperty(rprLightShape, ai_light, "lightIntensity", "intensity")
+	copyProperty(rprLightShape, ai_light, "colorPicker", "color")
+	copyProperty(rprLightShape, ai_light, "luminousEfficacy", "aiExposure")
+	if getProperty(ai_light, "aiUseColorTemperature"):
+		setProperty(rprLightShape, "colorMode", 1)
+	copyProperty(rprLightShape, ai_light, "temperature", "aiColorTemperature")
+	copyProperty(rprLightShape, ai_light, "shadowsEnabled", "aiCastShadows")
+	copyProperty(rprLightShape, ai_light, "shadowsSoftness", "aiShadowDensity")
+
+	copyProperty(rprTransform, aiTransform, "translateX", "translateX")
+	copyProperty(rprTransform, aiTransform, "translateY", "translateY")
+	copyProperty(rprTransform, aiTransform, "translateZ", "translateZ")
+	copyProperty(rprTransform, aiTransform, "rotateX", "rotateX")
+	copyProperty(rprTransform, aiTransform, "rotateY", "rotateY")
+	copyProperty(rprTransform, aiTransform, "rotateZ", "rotateZ")
+	copyProperty(rprTransform, aiTransform, "scaleX", "scaleX")
+	copyProperty(rprTransform, aiTransform, "scaleY", "scaleY")
+	copyProperty(rprTransform, aiTransform, "scaleZ", "scaleZ")
+
+	try:
+		light_mesh = cmds.listConnections(ai_light, type="mesh")[1]
+		cmds.delete(ai_light)
+		cmds.delete(aiTransform)
+		setProperty(rprLightShape, "areaLightSelectingMesh", 1)
+		cmds.select(light_mesh)
+		#setProperty(rprLightShape, "areaLightMeshSelectedName", light_mesh)
+	except Exception as ex:
+		print(ex)
+		print("Failed to convert mesh in Physical light")
+
+	# Logging to file
+	end_log(aiLightShape)
+
+
 # Convert material. Returns new material name.
 def convertaiMaterial(aiMaterial, source):
 
@@ -858,7 +916,7 @@ def convertLight(light):
 
 	conversion_func = {
 		"aiAreaLight": convertaiAreaLight,
-		#"aiMeshLight": convertaiMeshLight,
+		"aiMeshLight": convertaiMeshLight,
 		"aiPhotometricLight": convertaiPhotometricLight,
 		"aiSkyDomeLight": convertaiSkyDomeLight,
 	}
