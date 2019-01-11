@@ -178,13 +178,13 @@ def connectProperty(source_name, source_attr, rpr_name, rpr_attr):
 # dispalcement convertion
 def convertDisplacement(ai_sg, rpr_name):
 	try:
-		displacement = cmds.listConnections(ai_sg, type="displacementShader")[0]
+		displacement = cmds.listConnections(ai_sg, type="displacementShader")
 		if displacement:
-			displacement_file = cmds.listConnections(displacement, type="file")[0]
+			displacement_file = cmds.listConnections(displacement[0], type="file")
 			if displacement_file:
 				setProperty(rpr_name, "displacementEnable", 1)
-				cmds.connectAttr(displacement_file + ".outColor", rpr_name + ".displacementMap", f=True)
-				copyProperty(rpr_name, displacement, "scale", "displacementMax")
+				cmds.connectAttr(displacement_file[0] + ".outColor", rpr_name + ".displacementMap", f=True)
+				copyProperty(rpr_name, displacement[0], "scale", "displacementMax")
 	except Exception as ex:
 		print(ex)
 		print("Failed to convert displacement for {} material".format(rpr_name))
@@ -943,7 +943,7 @@ def convertScene():
 	'''
 
 	# Convert ArnoldPhysicalSky
-	sky = cmds.ls(type=("aiPhysicalSky", "aiSky"))
+	sky = cmds.ls(type=("aiPhysicalSky", "aiSky"))[0]
 	if sky:
 		try:
 			sky_type = cmds.objectType(sky)
