@@ -818,13 +818,18 @@ def convertaiMaterial(aiMaterial, source):
 
 	conversion_func = {
 		"aiAmbientOcclusion": convertUnsupportedMaterial,
+		"aiCarPaint": convertUnsupportedMaterial,
 		"aiFlat": convertaiFlat,
+		"aiLayerShader": convertUnsupportedMaterial,
+		"aiMatte": convertUnsupportedMaterial,
 		"aiMixShader": convertaiMixShader,
+		"aiPassthrough": convertUnsupportedMaterial,
 		"aiRaySwitch": convertUnsupportedMaterial,
 		"aiShadowMatte": convertUnsupportedMaterial,
 		"aiStandardHair": convertUnsupportedMaterial,
 		"aiStandardSurface": convertaiStandardSurface,
 		"aiSwitch": convertUnsupportedMaterial,
+		"aiToon": convertUnsupportedMaterial,
 		"aiTwoSided": convertUnsupportedMaterial,
 		"aiUtility": convertUnsupportedMaterial,
 		"aiWireframe": convertUnsupportedMaterial,
@@ -943,10 +948,10 @@ def convertScene():
 	'''
 
 	# Convert ArnoldPhysicalSky
-	sky = cmds.ls(type=("aiPhysicalSky", "aiSky"))[0]
+	sky = cmds.ls(type=("aiPhysicalSky", "aiSky"))
 	if sky:
 		try:
-			sky_type = cmds.objectType(sky)
+			sky_type = cmds.objectType(sky[0])
 			conversion_func_sky = {
 				"aiPhysicalSky": convertaiPhysicalSky,
 				"aiSky": convertaiSky
