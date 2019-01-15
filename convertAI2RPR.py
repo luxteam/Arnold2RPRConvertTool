@@ -308,6 +308,230 @@ def convertaiMultiply(ai, source):
 	return rpr
 
 
+def convertaiAbs(ai, source):
+
+	if cmds.objExists(ai + "_rpr"):
+		rpr = ai + "_rpr"
+	else:
+		rpr = cmds.shadingNode("RPRArithmetic", asUtility=True)
+		cmds.rename(rpr, ai + "_rpr")
+		rpr = ai + "_rpr"
+
+	# Logging to file
+	start_log(ai, rpr)
+
+	# Fields conversion
+	setProperty(rpr, "operation", 20)
+	copyProperty(rpr, ai, "inputA", "input")
+	
+	# Logging to file
+	end_log(ai)
+
+	conversion_map = {
+		"outColor": "out",
+		"outColorR": "outX",
+		"outColorG": "outY",
+		"outColorB": "outZ"
+	}
+
+	rpr += "." + conversion_map[source]
+	return rpr
+
+
+def convertaiAtan(ai, source):
+
+	if cmds.objExists(ai + "_rpr"):
+		rpr = ai + "_rpr"
+	else:
+		rpr = cmds.shadingNode("RPRArithmetic", asUtility=True)
+		cmds.rename(rpr, ai + "_rpr")
+		rpr = ai + "_rpr"
+
+	# Logging to file
+	start_log(ai, rpr)
+
+	# Fields conversion
+	setProperty(rpr, "operation", 18)
+	copyProperty(rpr, ai, "inputA", "x")
+	copyProperty(rpr, ai, "inputB", "y")
+	
+	# Logging to file
+	end_log(ai)
+
+	conversion_map = {
+		"outColor": "out",
+		"outColorR": "outX",
+		"outColorG": "outY",
+		"outColorB": "outZ"
+	}
+
+	rpr += "." + conversion_map[source]
+	return rpr
+
+
+def convertaiCross(ai, source):
+
+	if cmds.objExists(ai + "_rpr"):
+		rpr = ai + "_rpr"
+	else:
+		rpr = cmds.shadingNode("RPRArithmetic", asUtility=True)
+		cmds.rename(rpr, ai + "_rpr")
+		rpr = ai + "_rpr"
+
+	# Logging to file
+	start_log(ai, rpr)
+
+	# Fields conversion
+	setProperty(rpr, "operation", 12)
+	copyProperty(rpr, ai, "inputA", "input1")
+	copyProperty(rpr, ai, "inputB", "input2")
+	
+	# Logging to file
+	end_log(ai)
+
+	conversion_map = {
+		"outValue": "out",
+		"outValueX": "outX",
+		"outValueY": "outY",
+		"outValueZ": "outZ"
+	}
+
+	rpr += "." + conversion_map[source]
+	return rpr
+
+
+def convertaiDot(ai, source):
+
+	if cmds.objExists(ai + "_rpr"):
+		rpr = ai + "_rpr"
+	else:
+		rpr = cmds.shadingNode("RPRArithmetic", asUtility=True)
+		cmds.rename(rpr, ai + "_rpr")
+		rpr = ai + "_rpr"
+
+	# Logging to file
+	start_log(ai, rpr)
+
+	# Fields conversion
+	setProperty(rpr, "operation", 11)
+	copyProperty(rpr, ai, "inputA", "input1")
+	copyProperty(rpr, ai, "inputB", "input2")
+	
+	# Logging to file
+	end_log(ai)
+
+	conversion_map = {
+		"outValue": "outX"
+	}
+
+	rpr += "." + conversion_map[source]
+	return rpr
+
+
+def convertaiPow(ai, source):
+
+	if cmds.objExists(ai + "_rpr"):
+		rpr = ai + "_rpr"
+	else:
+		rpr = cmds.shadingNode("RPRArithmetic", asUtility=True)
+		cmds.rename(rpr, ai + "_rpr")
+		rpr = ai + "_rpr"
+
+	# Logging to file
+	start_log(ai, rpr)
+
+	# Fields conversion
+	setProperty(rpr, "operation", 15)
+	copyProperty(rpr, ai, "inputA", "base")
+	copyProperty(rpr, ai, "inputB", "exponent")
+	
+	# Logging to file
+	end_log(ai)
+
+	conversion_map = {
+		"outColor": "out",
+		"outColorR": "outX",
+		"outColorG": "outY",
+		"outColorB": "outZ"
+	}
+
+	rpr += "." + conversion_map[source]
+	return rpr
+
+
+def convertaiTrigo(ai, source):
+
+	if cmds.objExists(ai + "_rpr"):
+		rpr = ai + "_rpr"
+	else:
+		rpr = cmds.shadingNode("RPRArithmetic", asUtility=True)
+		cmds.rename(rpr, ai + "_rpr")
+		rpr = ai + "_rpr"
+
+	# Logging to file
+	start_log(ai, rpr)
+
+	# Fields conversion
+	function = getProperty(ai, "function")
+	operation_map = {
+		0: 5,
+		1: 4,
+		2: 6
+ 	}
+	setProperty(rpr, "operation", operation_map[function])
+	copyProperty(rpr, ai, "inputA", "input")
+	
+	# Logging to file
+	end_log(ai)
+
+	conversion_map = {
+		"outColor": "out",
+		"outColorR": "outX",
+		"outColorG": "outY",
+		"outColorB": "outZ"
+	}
+
+	rpr += "." + conversion_map[source]
+	return rpr
+
+
+def convertmultiplyDivide(ai, source):
+
+	if cmds.objExists(ai + "_rpr"):
+		rpr = ai + "_rpr"
+	else:
+		rpr = cmds.shadingNode("RPRArithmetic", asUtility=True)
+		cmds.rename(rpr, ai + "_rpr")
+		rpr = ai + "_rpr"
+
+	# Logging to file
+	start_log(ai, rpr)
+
+	# Fields conversion
+	operation = getProperty(ai, "operation")
+	operation_map = {
+		1: 2,
+		2: 3,
+		3: 15
+ 	}
+	setProperty(rpr, "operation", operation_map[operation])
+	copyProperty(rpr, ai, "inputA", "input1")
+	copyProperty(rpr, ai, "inputB", "input2")
+	
+	# Logging to file
+	end_log(ai)
+
+	conversion_map = {
+		"output": "out",
+		"outputX": "outX",
+		"outputY": "outY",
+		"outputZ": "outZ"
+	}
+
+	rpr += "." + conversion_map[source]
+	return rpr
+
+
 def convertbump2d(ai, source):
 
 	if cmds.objExists(ai + "_rpr"):
@@ -895,7 +1119,14 @@ def convertaiMaterial(aiMaterial, source):
 		"aiAdd": convertaiAdd,
 		"aiMultiply": convertaiMultiply,
 		"aiDivide": convertaiDivide,
-		"aiSubtract": convertaiSubstract
+		"aiSubtract": convertaiSubstract,
+		"aiAbs": convertaiAbs,
+		"aiAtan": convertaiAtan,
+		"aiCross": convertaiCross,
+		"aiDot": convertaiDot,
+		"aiPow": convertaiPow,
+		"aiTrigo": convertaiTrigo,
+		"multiplyDivide": convertmultiplyDivide
 	}
 
 	if ai_type in conversion_func:
