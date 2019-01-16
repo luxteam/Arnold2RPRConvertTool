@@ -553,7 +553,7 @@ def convertbump2d(ai, source):
 
 	# Fields conversion
 	try:
-		bumpConnections = cmds.listConnections(ai + "." + "bumpValue", type="file")[0]
+		bumpConnections = cmds.listConnections(ai + ".bumpValue", type="file")[0]
 		if bumpConnections:
 			cmds.connectAttr(bumpConnections + ".outColor", rpr + ".color", force=True)
 	except Exception:
@@ -570,6 +570,110 @@ def convertbump2d(ai, source):
 		"outNormalX": "outX",
 		"outNormalY": "outY",
 		"outNormalZ": "outZ"
+	}
+
+	rpr += "." + conversion_map[source]
+	return rpr
+
+
+def convertaiBump2d(ai, source):
+
+	if cmds.objExists(ai + "_rpr"):
+		rpr = ai + "_rpr"
+	else:
+		rpr = cmds.shadingNode("RPRBump", asUtility=True)
+		cmds.rename(rpr, ai + "_rpr")
+		rpr = ai + "_rpr"
+		
+	# Logging to file
+	start_log(ai, rpr)
+
+	# Fields conversion
+	try:
+		bumpConnections = cmds.listConnections(ai + ".bumpMap", type="file")[0]
+		if bumpConnections:
+			cmds.connectAttr(bumpConnections + ".outColor", rpr + ".color", force=True)
+	except Exception:
+		print("Connection {} to {} failed. Check the connectors. ".format(bumpConnections + ".outColor", rpr + ".color"))
+		write_own_property_log("Connection {} to {} failed. Check the connectors. ".format(bumpConnections + ".outColor", rpr + ".color"))
+
+	copyProperty(rpr, ai, "strength", "bumpHeight")
+
+	# Logging to file
+	end_log(ai)
+
+	conversion_map = {
+		"outValue": "out",
+		"outValueX": "outX",
+		"outValueY": "outY",
+		"outValueZ": "outZ"
+	}
+
+	rpr += "." + conversion_map[source]
+	return rpr
+
+
+def convertaiBump3d(ai, source):
+
+	if cmds.objExists(ai + "_rpr"):
+		rpr = ai + "_rpr"
+	else:
+		rpr = cmds.shadingNode("RPRBump", asUtility=True)
+		cmds.rename(rpr, ai + "_rpr")
+		rpr = ai + "_rpr"
+		
+	# Logging to file
+	start_log(ai, rpr)
+
+	# Fields conversion
+	try:
+		bumpConnections = cmds.listConnections(ai + ".bumpMap", type="file")[0]
+		if bumpConnections:
+			cmds.connectAttr(bumpConnections + ".outColor", rpr + ".color", force=True)
+	except Exception:
+		print("Connection {} to {} failed. Check the connectors. ".format(bumpConnections + ".outColor", rpr + ".color"))
+		write_own_property_log("Connection {} to {} failed. Check the connectors. ".format(bumpConnections + ".outColor", rpr + ".color"))
+
+	copyProperty(rpr, ai, "strength", "bumpHeight")
+
+	# Logging to file
+	end_log(ai)
+
+	conversion_map = {
+		"outValue": "out",
+		"outValueX": "outX",
+		"outValueY": "outY",
+		"outValueZ": "outZ"
+	}
+
+	rpr += "." + conversion_map[source]
+	return rpr
+
+
+def convertaiNormalMap(ai, source):
+
+	if cmds.objExists(ai + "_rpr"):
+		rpr = ai + "_rpr"
+	else:
+		rpr = cmds.shadingNode("RPRNormal", asUtility=True)
+		cmds.rename(rpr, ai + "_rpr")
+		rpr = ai + "_rpr"
+		
+	# Logging to file
+	start_log(ai, rpr)
+
+	# Fields conversion
+	copyProperty(rpr, ai, "color", "normal")
+	copyProperty(rpr, ai, "strength", "strength")
+
+	# Logging to file
+	end_log(ai)
+
+	conversion_map = {
+		"outValue": "out",
+		"outValueX": "outX",
+		"outValueY": "outY",
+		"outValueZ": "outZ"
 	}
 
 	rpr += "." + conversion_map[source]
@@ -1114,8 +1218,9 @@ def convertaiMaterial(aiMaterial, source):
 		"aiStandardVolume": convertaiStandardVolume,
 		##utilities
 		"bump2d": convertbump2d,
-		#"aiBump2d": convertaiBump2d,
-		#"aiBump3d": convertaiBump3d,
+		"aiBump2d": convertaiBump2d,
+		"aiBump3d": convertaiBump3d,
+		"aiNormalMap": convertaiNormalMap,
 		"aiAdd": convertaiAdd,
 		"aiMultiply": convertaiMultiply,
 		"aiDivide": convertaiDivide,
