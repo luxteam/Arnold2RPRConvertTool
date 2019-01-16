@@ -680,6 +680,63 @@ def convertaiNormalMap(ai, source):
 	return rpr
 
 
+def convertaiImage(ai, source):
+
+	if cmds.objExists(ai + "_rpr"):
+		rpr = ai + "_rpr"
+	else:
+		rpr = cmds.shadingNode("file", asTexture=True, isColorManaged=True)
+		cmds.rename(rpr, ai + "_rpr")
+		rpr = ai + "_rpr"
+		texture = cmds.shadingNode("place2dTexture", asUtility=True)
+
+		connectProperty(texture, "coverage", rpr, "coverage")
+		connectProperty(texture, "translateFrame", rpr, "translateFrame")
+		connectProperty(texture, "rotateFrame", rpr, "rotateFrame")
+		connectProperty(texture, "mirrorU", rpr, "mirrorU")
+		connectProperty(texture, "mirrorV", rpr, "mirrorV")
+		connectProperty(texture, "stagger", rpr, "stagger")
+		connectProperty(texture, "wrapU", rpr, "wrapU")
+		connectProperty(texture, "wrapV", rpr, "wrapV")
+		connectProperty(texture, "repeatUV", rpr, "repeatUV")
+		connectProperty(texture, "offset", rpr, "offset")
+		connectProperty(texture, "rotateUV", rpr, "rotateUV")
+		connectProperty(texture, "noiseUV", rpr, "noiseUV")
+		connectProperty(texture, "vertexUvOne", rpr, "vertexUvOne")
+		connectProperty(texture, "vertexUvTwo", rpr, "vertexUvTwo")
+		connectProperty(texture, "vertexUvThree", rpr, "vertexUvThree")
+		connectProperty(texture, "vertexCameraOne", rpr, "vertexCameraOne")
+		connectProperty(texture, "outUV", rpr, "uv")
+		connectProperty(texture, "outUvFilterSize", rpr, "uvFilterSize")
+		
+	# Logging to file
+	start_log(ai, rpr)
+
+	# Fields conversion
+	try:
+		cmds.setAttr(rpr + ".fileTextureName", getProperty(ai, "filename"), type="string")
+		cmds.setAttr(rpr + ".colorSpace", getProperty(ai, "colorSpace"), type="string")
+	except Exception as ex:
+		print(ex)
+
+	copyProperty(rpr, ai, "useFrameExtension", "useFrameExtension")
+	copyProperty(rpr, ai, "frameExtension", "frame")
+	copyProperty(rpr, ai, "ignoreColorSpaceFileRules", "ignoreColorSpaceFileRules")
+
+	# Logging to file
+	end_log(ai)
+
+	conversion_map = {
+		"outColor": "outColor",
+		"outColorR": "outColorR",
+		"outColorG": "outColorG",
+		"outColorB": "outColorB"
+	}
+
+	rpr += "." + conversion_map[source]
+	return rpr
+
+
 # Create default uber material for unsupported material
 def convertUnsupportedMaterial(aiMaterial, source):
 
@@ -703,8 +760,62 @@ def convertUnsupportedMaterial(aiMaterial, source):
 	start_log(aiMaterial, rprMaterial)
 	end_log(aiMaterial)
 
+	setProperty(rprMaterial, "diffuseColor", (0, 1, 0))
+
 	if not materialSG:
 		rprMaterial += "." + source
+	return rprMaterial
+
+
+#######################
+## aiAmbientOcclusion 
+#######################
+
+def convertaiAmbientOcclusion(aiMaterial, source):
+
+	materialSG = cmds.listConnections(aiMaterial, type="shadingEngine")
+	# Check material exist
+	if cmds.objExists(aiMaterial + "_rpr"):
+		rprMaterial = aiMaterial + "_rpr"
+	else:
+		if materialSG:
+			# Creating new Uber material
+			print('okkk1')
+			rprMaterial = cmds.shadingNode("RPRUberMaterial", asShader=True)
+			cmds.rename(rprMaterial, (aiMaterial + "_rpr"))
+			rprMaterial = aiMaterial + "_rpr"
+
+			sg = rprMaterial + "SG"
+			cmds.sets(renderable=True, noSurfaceShader=True, empty=True, name=sg)
+			cmds.connectAttr(rprMaterial + ".outColor", sg + ".surfaceShader", f=True)
+
+			ao = cmds.shadingNode("RPRAmbientOcclusion", asUtility=True)
+			connectProperty(ao, "output", rprMaterial, "diffuseColor")
+			print('okkk')
+		else:
+			ao = cmds.shadingNode("RPRAmbientOcclusion", asUtility=True)
+			cmds.rename(ao, (aiMaterial + "_rpr"))
+			ao = aiMaterial + "_rpr"
+
+	# Logging to file
+	start_log(aiMaterial, ao)
+
+	# Fields conversion
+	copyProperty(ao, aiMaterial, "occludedColor", "white")
+	copyProperty(ao, aiMaterial, "unoccludedColor", "black")
+	copyProperty(ao, aiMaterial, "radius", "falloff")
+
+	# Logging in file
+	end_log(aiMaterial)
+
+	if not materialSG:
+		conversion_map = {
+		"outColor": "output",
+		"outColorR": "outputR",
+		"outColorG": "outputG",
+		"outColorB": "outputB"
+		}	
+		rprMaterial = ao + "." + conversion_map[source]
 	return rprMaterial
 
 
@@ -831,12 +942,6 @@ def convertaiStandardSurface(aiMaterial, source):
 	copyProperty(rprMaterial, aiMaterial, "diffuseWeight", "base")
 	copyProperty(rprMaterial, aiMaterial, "diffuseRoughness", "diffuseRoughness")
 
-	metalness = getProperty(aiMaterial, "metalness")
-	if metalness:
-		setProperty(rprMaterial, "reflections", 1)
-		setProperty(rprMaterial, "reflectMetalMaterial", 1)
-		copyProperty(rprMaterial, aiMaterial, "reflectMetalness", "metalness")
-
 	copyProperty(rprMaterial, aiMaterial, "reflectColor", "specularColor")
 	copyProperty(rprMaterial, aiMaterial, "reflectWeight", "specular")
 	copyProperty(rprMaterial, aiMaterial, "reflectRoughness", "specularRoughness")
@@ -844,10 +949,25 @@ def convertaiStandardSurface(aiMaterial, source):
 	copyProperty(rprMaterial, aiMaterial, "reflectAnisotropyRotation", "specularRotation")
 	copyProperty(rprMaterial, aiMaterial, "reflectIOR", "specularIOR")
 
+	metalness = getProperty(aiMaterial, "metalness")
+	if metalness:
+		setProperty(rprMaterial, "reflections", 1)
+		setProperty(rprMaterial, "diffuse", 1)
+		setProperty(rprMaterial, "reflectMetalMaterial", 1)
+		setProperty(rprMaterial, "reflectWeight", 1)
+		copyProperty(rprMaterial, aiMaterial, "reflectMetalness", "metalness")
+		copyProperty(rprMaterial, aiMaterial, "diffuseColor", "baseColor")
+		copyProperty(rprMaterial, aiMaterial, "reflectColor", "baseColor")
+
 	copyProperty(rprMaterial, aiMaterial, "refractColor", "transmissionColor")
 	copyProperty(rprMaterial, aiMaterial, "refractWeight", "transmission")
 	copyProperty(rprMaterial, aiMaterial, "refractRoughness", "transmissionExtraRoughness")
 	setProperty(rprMaterial, "refractThinSurface", getProperty(aiMaterial, "thinWalled"))
+
+	subsurface = getProperty(aiMaterial, "subsurface")
+	if subsurface:
+		setProperty(rprMaterial, "diffuse", 1)
+		setProperty(rprMaterial, "diffuseWeight", 1)
 
 	copyProperty(rprMaterial, aiMaterial, "volumeScatter", "subsurfaceColor")
 	copyProperty(rprMaterial, aiMaterial, "sssWeight", "subsurface")
@@ -1199,7 +1319,7 @@ def convertaiMaterial(aiMaterial, source):
 	ai_type = cmds.objectType(aiMaterial)
 
 	conversion_func = {
-		"aiAmbientOcclusion": convertUnsupportedMaterial,
+		"aiAmbientOcclusion": convertaiAmbientOcclusion,
 		"aiCarPaint": convertUnsupportedMaterial,
 		"aiFlat": convertaiFlat,
 		"aiLayerShader": convertUnsupportedMaterial,
@@ -1231,6 +1351,7 @@ def convertaiMaterial(aiMaterial, source):
 		"aiDot": convertaiDot,
 		"aiPow": convertaiPow,
 		"aiTrigo": convertaiTrigo,
+		"aiImage": convertaiImage,
 		"multiplyDivide": convertmultiplyDivide
 	}
 
@@ -1381,6 +1502,7 @@ def convertScene():
 	
 	cmds.setAttr("defaultRenderGlobals.currentRenderer", "FireRender", type="string")
 	setProperty("defaultRenderGlobals", "imageFormat", 8)
+	setProperty("RadeonProRenderGlobals", "applyGammaToMayaViews", 1)
 	#setProperty("RadeonProRenderGlobals", "completionCriteriaIterations", getProperty("???", "???"))
 
 
