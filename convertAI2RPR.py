@@ -270,7 +270,11 @@ def convertaiSubstract(ai, source):
 		"outColor": "out",
 		"outColorR": "outX",
 		"outColorG": "outY",
-		"outColorB": "outZ"
+		"outColorB": "outZ",
+		"outTransparency": "out",
+		"outTransparencyR": "outX",
+		"outTransparencyG": "outY",
+		"outTransparencyB": "outZ",
 	}
 
 	rpr += "." + conversion_map[source]
@@ -740,7 +744,7 @@ def convertaiImage(ai, source):
 # Create default uber material for unsupported material
 def convertUnsupportedMaterial(aiMaterial, source):
 
-	materialSG = cmds.listConnections(aiMaterial, type="shadingEngine")
+	assigned = checkAssign(aiMaterial)
 	# Check material exist
 	if cmds.objExists(aiMaterial + "_rpr"):
 		rprMaterial = aiMaterial + "_rpr"
@@ -750,8 +754,8 @@ def convertUnsupportedMaterial(aiMaterial, source):
 		cmds.rename(rprMaterial, (aiMaterial + "_rpr"))
 		rprMaterial = aiMaterial + "_rpr"
 
-		# Check shading engine in aiMaterial
-		if materialSG:
+		# Check assigned to any mesh
+		if assigned:
 			sg = rprMaterial + "SG"
 			cmds.sets(renderable=True, noSurfaceShader=True, empty=True, name=sg)
 			cmds.connectAttr(rprMaterial + ".outColor", sg + ".surfaceShader", f=True)
@@ -762,7 +766,7 @@ def convertUnsupportedMaterial(aiMaterial, source):
 
 	setProperty(rprMaterial, "diffuseColor", (0, 1, 0))
 
-	if not materialSG:
+	if not assigned:
 		rprMaterial += "." + source
 	return rprMaterial
 
@@ -773,12 +777,12 @@ def convertUnsupportedMaterial(aiMaterial, source):
 
 def convertaiAmbientOcclusion(aiMaterial, source):
 
-	materialSG = cmds.listConnections(aiMaterial, type="shadingEngine")
+	assigned = checkAssign(aiMaterial)
 	# Check material exist
 	if cmds.objExists(aiMaterial + "_rpr"):
 		rprMaterial = aiMaterial + "_rpr"
 	else:
-		if materialSG:
+		if assigned:
 			# Creating new Uber material
 			rprMaterial = cmds.shadingNode("RPRUberMaterial", asShader=True)
 			cmds.rename(rprMaterial, (aiMaterial + "_rpr"))
@@ -806,7 +810,7 @@ def convertaiAmbientOcclusion(aiMaterial, source):
 	# Logging in file
 	end_log(aiMaterial)
 
-	if not materialSG:
+	if not assigned:
 		conversion_map = {
 		"outColor": "output",
 		"outColorR": "outputR",
@@ -823,7 +827,7 @@ def convertaiAmbientOcclusion(aiMaterial, source):
 
 def convertaiFlat(aiMaterial, source):
 
-	materialSG = cmds.listConnections(aiMaterial, type="shadingEngine")
+	assigned = checkAssign(aiMaterial)
 	# Check material exist
 	if cmds.objExists(aiMaterial + "_rpr"):
 		rprMaterial = aiMaterial + "_rpr"
@@ -834,7 +838,7 @@ def convertaiFlat(aiMaterial, source):
 		rprMaterial = aiMaterial + "_rpr"
 
 		# Check shading engine in aiMaterial
-		if materialSG:
+		if assigned:
 			sg = rprMaterial + "SG"
 			cmds.sets(renderable=True, noSurfaceShader=True, empty=True, name=sg)
 			cmds.connectAttr(rprMaterial + ".outColor", sg + ".surfaceShader", f=True)
@@ -852,7 +856,7 @@ def convertaiFlat(aiMaterial, source):
 	# Logging in file
 	end_log(aiMaterial)
 
-	if not materialSG:
+	if not assigned:
 		rprMaterial += "." + source
 	return rprMaterial
 
@@ -863,7 +867,7 @@ def convertaiFlat(aiMaterial, source):
 
 def convertaiMixShader(aiMaterial, source):
 
-	materialSG = cmds.listConnections(aiMaterial, type="shadingEngine")
+	assigned = checkAssign(aiMaterial)
 	# Check material exist
 	if cmds.objExists(aiMaterial + "_rpr"):
 		rprMaterial = aiMaterial + "_rpr"
@@ -874,7 +878,7 @@ def convertaiMixShader(aiMaterial, source):
 		rprMaterial = aiMaterial + "_rpr"
 
 		# Check shading engine in aiMaterial
-		if materialSG:
+		if assigned:
 			sg = rprMaterial + "SG"
 			cmds.sets(renderable=True, noSurfaceShader=True, empty=True, name=sg)
 			cmds.connectAttr(rprMaterial + ".outColor", sg + ".surfaceShader", f=True)
@@ -894,7 +898,7 @@ def convertaiMixShader(aiMaterial, source):
 	# Logging in file
 	end_log(aiMaterial)
 
-	if not materialSG:
+	if not assigned:
 		rprMaterial += "." + source
 	return rprMaterial
 
@@ -905,7 +909,7 @@ def convertaiMixShader(aiMaterial, source):
 
 def convertaiStandardSurface(aiMaterial, source):
 
-	materialSG = cmds.listConnections(aiMaterial, type="shadingEngine")
+	assigned = checkAssign(aiMaterial)
 	# Check material exist
 	if cmds.objExists(aiMaterial + "_rpr"):
 		rprMaterial = aiMaterial + "_rpr"
@@ -916,12 +920,13 @@ def convertaiStandardSurface(aiMaterial, source):
 		rprMaterial = aiMaterial + "_rpr"
 
 		# Check shading engine in aiMaterial
-		if materialSG:
+		if assigned:
 			sg = rprMaterial + "SG"
 			cmds.sets(renderable=True, noSurfaceShader=True, empty=True, name=sg)
 			cmds.connectAttr(rprMaterial + ".outColor", sg + ".surfaceShader", f=True)
 
-			convertDisplacement(materialSG, rprMaterial)
+			ai_materialSG = cmds.listConnections(aiMaterial, type="shadingEngine")
+			convertDisplacement(ai_materialSG, rprMaterial)
 
 	# Enable properties, which are default in Arnold
 	defaultEnable(rprMaterial, aiMaterial, "diffuse", "base")
@@ -1025,7 +1030,7 @@ def convertaiStandardSurface(aiMaterial, source):
 	# Logging in file
 	end_log(aiMaterial)
 
-	if not materialSG:
+	if not assigned:
 		rprMaterial += "." + source
 	return rprMaterial
 
@@ -1036,7 +1041,7 @@ def convertaiStandardSurface(aiMaterial, source):
 
 def convertaiStandardVolume(aiMaterial, source):
 
-	materialSG = cmds.listConnections(aiMaterial, type="shadingEngine")
+	assigned = checkAssign(aiMaterial)
 	# Check material exist
 	if cmds.objExists(aiMaterial + "_rpr"):
 		rprMaterial = aiMaterial + "_rpr"
@@ -1047,7 +1052,7 @@ def convertaiStandardVolume(aiMaterial, source):
 		rprMaterial = aiMaterial + "_rpr"
 
 		# Check shading engine in aiMaterial
-		if materialSG:
+		if assigned:
 			sg = rprMaterial + "SG"
 			cmds.sets(renderable=True, noSurfaceShader=True, empty=True, name=sg)
 			cmds.connectAttr(rprMaterial + ".outColor", sg + ".surfaceShader", f=True)
@@ -1068,7 +1073,7 @@ def convertaiStandardVolume(aiMaterial, source):
 	# Logging in file
 	end_log(aiMaterial)
 
-	if not materialSG:
+	if not assigned:
 		rprMaterial += "." + source
 	return rprMaterial
 
@@ -1169,22 +1174,28 @@ def convertaiPhysicalSky(sky):
 def convertaiPhotometricLight(ai_light):
 
 	# Redshift light transform
-	aiTransform = cmds.listRelatives(ai_light, p=True)[0]
-	aiLightShape = ai_light.split("|")[-1]
+	splited_name = ai_light.split("|")
+	aiTransform = "|".join(splited_name[0:-1])
+	group = "|".join(splited_name[0:-2])
 
-	if cmds.objExists(aiLightShape + "_rpr"):
-		rprLightShape = aiLightShape + "_rpr"
-		rprTransform = cmds.listRelatives(rprLightShape, p=True)[0]
+	if cmds.objExists(aiTransform + "_rpr"):
+		rprTransform = aiTransform + "_rpr"
+		rprLightShape = cmds.listRelatives(rprTransform)[0]
 	else: 
 		rprLightShape = cmds.createNode("RPRIES", n="RPRIESLight")
-		cmds.rename(rprLightShape, aiLightShape + "_rpr")
-		rprLightShape = aiLightShape + "_rpr"
+		rprLightShape = cmds.rename(rprLightShape, splited_name[-1] + "_rpr")
 		rprTransform = cmds.listRelatives(rprLightShape, p=True)[0]
-		cmds.rename(rprTransform, aiTransform + "_rpr")
-		rprTransform = aiTransform + "_rpr"
+		rprTransform = cmds.rename(rprTransform, splited_name[-2] + "_rpr")
+		rprLightShape = cmds.listRelatives(rprTransform)[0]
+
+		if group:
+			cmds.parent(rprTransform, group)
+
+		rprTransform = group + "|" + rprTransform
+		rprLightShape = rprTransform + "|" + rprLightShape
 
 	# Logging to file 
-	start_log(aiLightShape, rprLightShape)
+	start_log(ai_light, rprLightShape)
 
 	# Copy properties from rsLight
 	copyProperty(rprTransform, aiTransform, "translateX", "translateX")
@@ -1211,28 +1222,34 @@ def convertaiPhotometricLight(ai_light):
 		print("Failed to convert map from Redshift IES light")
 
 	# Logging to file
-	end_log(aiLightShape) 
+	end_log(ai_light) 
 
 
 def convertaiAreaLight(ai_light):
 
-	# Redshift light transform
-	aiTransform = cmds.listRelatives(ai_light, p=True)[0]
-	aiLightShape = ai_light.split("|")[-1]
+	splited_name = ai_light.split("|")
+	aiTransform = "|".join(splited_name[0:-1])
+	group = "|".join(splited_name[0:-2])
 
-	if cmds.objExists(aiLightShape + "_rpr"):
-		rprLightShape = aiLightShape + "_rpr"
-		rprTransform = cmds.listRelatives(rprLightShape, p=True)[0]
+	# Redshift light transform
+	if cmds.objExists(aiTransform + "_rpr"):
+		rprTransform = aiTransform + "_rpr"
+		rprLightShape = cmds.listRelatives(rprTransform)[0]
 	else: 
 		rprLightShape = cmds.createNode("RPRPhysicalLight", n="RPRPhysicalLightShape")
-		cmds.rename(rprLightShape, aiLightShape + "_rpr")
-		rprLightShape = aiLightShape + "_rpr"
+		rprLightShape = cmds.rename(rprLightShape, splited_name[-1] + "_rpr")
 		rprTransform = cmds.listRelatives(rprLightShape, p=True)[0]
-		cmds.rename(rprTransform, aiTransform + "_rpr")
-		rprTransform = aiTransform + "_rpr"
+		rprTransform = cmds.rename(rprTransform, splited_name[-2] + "_rpr")
+		rprLightShape = cmds.listRelatives(rprTransform)[0]
+
+		if group:
+			cmds.parent(rprTransform, group)
+
+		rprTransform = group + "|" + rprTransform
+		rprLightShape = rprTransform + "|" + rprLightShape
 
 	# Logging to file 
-	start_log(aiLightShape, rprLightShape)
+	start_log(ai_light, rprLightShape)
 
 	# Copy properties from aiLight
 	copyProperty(rprLightShape, ai_light, "lightIntensity", "intensity")
@@ -1250,28 +1267,34 @@ def convertaiAreaLight(ai_light):
 	copyProperty(rprTransform, aiTransform, "scaleZ", "scaleZ")
 
 	# Logging to file
-	end_log(aiLightShape)  
+	end_log(ai_light)  
 
 
 def convertaiMeshLight(ai_light):
 
 	# Redshift light transform
-	aiTransform = cmds.listRelatives(ai_light, p=True)[0]
-	aiLightShape = ai_light.split("|")[-1]
+	splited_name = ai_light.split("|")
+	aiTransform = "|".join(splited_name[0:-1])
+	group = "|".join(splited_name[0:-2])
 
-	if cmds.objExists(aiLightShape + "_rpr"):
-		rprLightShape = aiLightShape + "_rpr"
-		rprTransform = cmds.listRelatives(rprLightShape, p=True)[0]
+	if cmds.objExists(aiTransform + "_rpr"):
+		rprTransform = aiTransform + "_rpr"
+		rprLightShape = cmds.listRelatives(rprTransform)[0]
 	else: 
 		rprLightShape = cmds.createNode("RPRPhysicalLight", n="RPRPhysicalLightShape")
-		cmds.rename(rprLightShape, aiLightShape + "_rpr")
-		rprLightShape = aiLightShape + "_rpr"
+		rprLightShape = cmds.rename(rprLightShape, splited_name[-1] + "_rpr")
 		rprTransform = cmds.listRelatives(rprLightShape, p=True)[0]
-		cmds.rename(rprTransform, aiTransform + "_rpr")
-		rprTransform = aiTransform + "_rpr"
+		rprTransform = cmds.rename(rprTransform, splited_name[-2] + "_rpr")
+		rprLightShape = cmds.listRelatives(rprTransform)[0]
+
+		if group:
+			cmds.parent(rprTransform, group)
+
+		rprTransform = group + "|" + rprTransform
+		rprLightShape = rprTransform + "|" + rprLightShape
 
 	# Logging to file 
-	start_log(aiLightShape, rprLightShape)
+	start_log(ai_light, rprLightShape)
 
 	# Copy properties from aiLight
 	setProperty(rprLightShape, "lightType", 0)
@@ -1308,7 +1331,7 @@ def convertaiMeshLight(ai_light):
 		print("Failed to convert mesh in Physical light")
 
 	# Logging to file
-	end_log(aiLightShape)
+	end_log(ai_light)
 
 
 # Convert material. Returns new material name.
@@ -1418,12 +1441,15 @@ def cleanScene():
 				print(ex)
 
 
-def checkSG(material):
+def checkAssign(material):
 
 	if searchArnoldType(material):
-		SGs = cmds.listConnections(material, type="shadingEngine")
-		if SGs:
-			return 1
+		materialSG = cmds.listConnections(material, type="shadingEngine")
+		if materialSG:
+			cmds.hyperShade(objects=material)
+			assigned = cmds.ls(sl=True)
+			if assigned:
+				return 1
 	return 0
 
 
@@ -1487,7 +1513,7 @@ def convertScene():
 	listMaterials = cmds.ls(materials=True)
 	materialsDict = {}
 	for each in listMaterials:
-		if checkSG(each):
+		if checkAssign(each):
 			materialsDict[each] = convertaiMaterial(each, "")
 
 	for ai, rpr in materialsDict.items():
