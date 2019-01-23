@@ -29,46 +29,45 @@ def write_converted_property_log(rpr_name, ai_name, rpr_attr, ai_attr):
 	try:
 		file_path = cmds.file(q=True, sceneName=True) + ".log"
 		with open(file_path, 'a') as f:
-			f.write("    property " + ai_name + "." + ai_attr + " converted to " + rpr_name + "." + rpr_attr + "   \r\n")
-	except Exception:
-		print("Error writing logs. Scene is not saved")
+			f.write(u"    property {}.{} is converted to {}.{}   \r\n".format(ai_name, ai_attr, rpr_name, rpr_attr).encode('utf-8'))
+	except Exception as ex:
+		print("Error writing conversion logs. Scene is not saved")
 
 def write_own_property_log(text):
 
 	try:
 		file_path = cmds.file(q=True, sceneName=True) + ".log"
 		with open(file_path, 'a') as f:
-			f.write("    " + text + "   \r\n")
-	except Exception:
+			f.write("    {}   \r\n".format(text))
+	except Exception as ex:
 		print("Error writing logs. Scene is not saved")
 
 def start_log(ai, rpr):
 
 	try:
-		text  = "Found node: \r\n    name: " + ai + "\r\n"
-		text += "type: " + cmds.objectType(ai) + "\r\n"
-		text += "Converting to: \r\n    name: " + rpr + "\r\n"
-		text += "type: " + cmds.objectType(rpr) + "\r\n"
+		text  = u"Found node: \r\n    name: {} \r\n".format(ai).encode('utf-8')
+		text += "type: {} \r\n".format(cmds.objectType(ai))
+		text += u"Converting to: \r\n    name: {} \r\n".format(rpr).encode('utf-8')
+		text += "type: {} \r\n".format(cmds.objectType(rpr))
 		text += "Conversion details: \r\n"
 
 		file_path = cmds.file(q=True, sceneName=True) + ".log"
 		with open(file_path, 'a') as f:
 			f.write(text)
-	except Exception:
-		print("Error writing logs. Scene is not saved")
+	except Exception as ex:
+		print("Error writing start log. Scene is not saved")
 
 
 def end_log(ai):
 
 	try:
-		text  = "Conversion of " + ai + " is finished.\n\n"
-		text += "\r\n"
+		text  = u"Conversion of {} is finished.\n\n \r\n".format(ai).encode('utf-8')
 
 		file_path = cmds.file(q=True, sceneName=True) + ".log"
 		with open(file_path, 'a') as f:
 			f.write(text)
-	except Exception:
-		print("Error writing logs. Scene is not saved")
+	except Exception as ex:
+		print("Error writing end logs. Scene is not saved")
 
 # additional fucntions
 
@@ -81,8 +80,8 @@ def copyProperty(rpr_name, ai_name, rpr_attr, ai_attr):
 	try:
 		listConnections = cmds.listConnections(ai_field)
 	except Exception:
-		print("There is no {} field in this node. Check the field and try again. ".format(ai_field))
-		write_own_property_log("There is no {} field in this node. Check the field and try again. ".format(ai_field))
+		print(u"There is no {} field in this node. Check the field and try again. ".format(ai_field).encode('utf-8'))
+		write_own_property_log(u"There is no {} field in this node. Check the field and try again. ".format(ai_field).encode('utf-8'))
 		return
 
 	try:
@@ -97,7 +96,7 @@ def copyProperty(rpr_name, ai_name, rpr_attr, ai_attr):
 			write_converted_property_log(rpr_name, ai_name, rpr_attr, ai_attr)
 	except Exception as ex:
 		print(ex)
-		print(u"Error while copying from {} to {}".format(rs_field, rpr_field).encode('utf-8'))
+		print(u"Error while copying from {} to {}".format(ai_field, rpr_field).encode('utf-8'))
 
 
 def setProperty(rpr_name, rpr_attr, value):
@@ -105,20 +104,18 @@ def setProperty(rpr_name, rpr_attr, value):
 	# full name of attribute
 	rpr_field = rpr_name + "." + rpr_attr
 
-	if type(value) == tuple:
-		try:
+	try:
+		if type(value) == tuple:
 			cmds.setAttr(rpr_field, value[0], value[1], value[2])
-			write_own_property_log("Set value {} to {}.".format(value, rpr_field))
-		except Exception:
-			print("Set value {} to {} is failed. Check the values and their boundaries. ".format(value, rpr_field))
-			write_own_property_log("Set value {} to {} is failed. Check the values and their boundaries. ".format(value, rpr_field))
-	else:
-		try:
+		elif type(value) == str or type(value) == unicode:
+			cmds.setAttr(rpr_field, value, type="string")
+		else:
 			cmds.setAttr(rpr_field, value)
-			write_own_property_log("Set value {} to {}.".format(value, rpr_field))
-		except Exception:
-			print("Set value {} to {} is failed. Check the values and their boundaries. ".format(value, rpr_field))
-			write_own_property_log("Set value {} to {} is failed. Check the values and their boundaries. ".format(value, rpr_field))
+		write_own_property_log(u"Set value {} to {}.".format(value, rpr_field).encode('utf-8'))
+	except Exception as ex:
+		print(ex)
+		print(u"Set value {} to {} is failed. Check the values and their boundaries. ".format(value, rpr_field).encode('utf-8'))
+		write_own_property_log(u"Set value {} to {} is failed. Check the values and their boundaries. ".format(value, rpr_field).encode('utf-8'))
 
 
 def getProperty(material, attr):
@@ -131,7 +128,7 @@ def getProperty(material, attr):
 			value = value[0]
 	except Exception as ex:
 		print(ex)
-		write_own_property_log("There is no {} field in this node. Check the field and try again. ".format(field))
+		write_own_property_log(u"There is no {} field in this node. Check the field and try again. ".format(field).encode('utf-8'))
 		return
 
 	return value
@@ -144,16 +141,12 @@ def mapDoesNotExist(rpr_name, ai_name, rpr_attr, ai_attr):
 
 	try:
 		listConnections = cmds.listConnections(ai_field)
+		if listConnections:
+			return 0
 	except Exception as ex:
 		print(ex)
-		write_own_property_log("There is no {} field in this node. Check the field and try again. ".format(ai_field))
+		write_own_property_log(u"There is no {} field in this node. Check the field and try again. ".format(ai_field).encode('utf-8'))
 		return
-
-	if listConnections:
-		source = cmds.connectionInfo(ai_field, sourceFromDestination=True)
-		print("Connection {} to {} isn't available. Map isn't supported in this field.".format(source, rpr_field))
-		write_own_property_log("Connection {} to {} isn't available. Map isn't supported for this field.".format(source, rpr_field))
-		return 0
 
 	return 1
 
@@ -165,27 +158,34 @@ def connectProperty(source_name, source_attr, rpr_name, rpr_attr):
 	rpr_field = rpr_name + "." + rpr_attr
 
 	try:
+		if cmds.objectType(source_name) == "file":
+			setProperty(source_name, "ignoreColorSpaceFileRules", 1)
 		cmds.connectAttr(source, rpr_field, force=True)
-		write_own_property_log("Created connection from {} to {}.".format(source, rpr_field))
+		write_own_property_log(u"Created connection from {} to {}.".format(source, rpr_field).encode('utf-8'))
 	except Exception as ex:
 		print(ex)
-		print("Connection {} to {} is failed.".format(source, rpr_field))
-		write_own_property_log("Connection {} to {} is failed.".format(source, rpr_field))
+		print(u"Connection {} to {} is failed.".format(source, rpr_field).encode('utf-8'))
+		write_own_property_log(u"Connection {} to {} is failed.".format(source, rpr_field).encode('utf-8'))
 
 
 # dispalcement convertion
 def convertDisplacement(ai_sg, rpr_name):
 	try:
-		displacement = cmds.listConnections(ai_sg, type="displacementShader")
+		displacement = cmds.listConnections(ai_sg + ".displacementShader")
 		if displacement:
-			displacement_file = cmds.listConnections(displacement[0], type="file")
-			if displacement_file:
+			displacementType = cmds.objectType(displacement[0])
+			if displacementType == "displacementShader":
+				displacement_file = cmds.listConnections(displacement[0], type="file")
+				if displacement_file:
+					setProperty(rpr_name, "displacementEnable", 1)
+					connectProperty(displacement_file[0], "outColor", rpr_name, "displacementMap")
+					copyProperty(rpr_name, displacement[0], "scale", "displacementMax")
+			elif displacementType == "file":
 				setProperty(rpr_name, "displacementEnable", 1)
-				cmds.connectAttr(displacement_file[0] + ".outColor", rpr_name + ".displacementMap", f=True)
-				copyProperty(rpr_name, displacement[0], "scale", "displacementMax")
+				connectProperty(displacement[0], "outColor", rpr_name, "displacementMap")
 	except Exception as ex:
 		print(ex)
-		print("Failed to convert displacement for {} material".format(rpr_name))
+		print(u"Failed to convert displacement for {} material".format(rpr_name).encode('utf-8'))
 
 
 def convertaiAdd(ai, source):
@@ -194,8 +194,7 @@ def convertaiAdd(ai, source):
 		rpr = ai + "_rpr"
 	else:
 		rpr = cmds.shadingNode("RPRArithmetic", asUtility=True)
-		cmds.rename(rpr, ai + "_rpr")
-		rpr = ai + "_rpr"
+		rpr = cmds.rename(rpr, ai + "_rpr")
 
 	# Logging to file
 	start_log(ai, rpr)
@@ -225,8 +224,7 @@ def convertaiDivide(ai, source):
 		rpr = ai + "_rpr"
 	else:
 		rpr = cmds.shadingNode("RPRArithmetic", asUtility=True)
-		cmds.rename(rpr, ai + "_rpr")
-		rpr = ai + "_rpr"
+		rpr = cmds.rename(rpr, ai + "_rpr")
 
 	# Logging to file
 	start_log(ai, rpr)
@@ -256,8 +254,7 @@ def convertaiSubstract(ai, source):
 		rpr = ai + "_rpr"
 	else:
 		rpr = cmds.shadingNode("RPRArithmetic", asUtility=True)
-		cmds.rename(rpr, ai + "_rpr")
-		rpr = ai + "_rpr"
+		rpr = cmds.rename(rpr, ai + "_rpr")
 
 	# Logging to file
 	start_log(ai, rpr)
@@ -291,8 +288,7 @@ def convertaiMultiply(ai, source):
 		rpr = ai + "_rpr"
 	else:
 		rpr = cmds.shadingNode("RPRArithmetic", asUtility=True)
-		cmds.rename(rpr, ai + "_rpr")
-		rpr = ai + "_rpr"
+		rpr = cmds.rename(rpr, ai + "_rpr")
 
 	# Logging to file
 	start_log(ai, rpr)
@@ -322,8 +318,7 @@ def convertaiAbs(ai, source):
 		rpr = ai + "_rpr"
 	else:
 		rpr = cmds.shadingNode("RPRArithmetic", asUtility=True)
-		cmds.rename(rpr, ai + "_rpr")
-		rpr = ai + "_rpr"
+		rpr = cmds.rename(rpr, ai + "_rpr")
 
 	# Logging to file
 	start_log(ai, rpr)
@@ -352,8 +347,7 @@ def convertaiAtan(ai, source):
 		rpr = ai + "_rpr"
 	else:
 		rpr = cmds.shadingNode("RPRArithmetic", asUtility=True)
-		cmds.rename(rpr, ai + "_rpr")
-		rpr = ai + "_rpr"
+		rpr = cmds.rename(rpr, ai + "_rpr")
 
 	# Logging to file
 	start_log(ai, rpr)
@@ -383,8 +377,7 @@ def convertaiCross(ai, source):
 		rpr = ai + "_rpr"
 	else:
 		rpr = cmds.shadingNode("RPRArithmetic", asUtility=True)
-		cmds.rename(rpr, ai + "_rpr")
-		rpr = ai + "_rpr"
+		rpr = cmds.rename(rpr, ai + "_rpr")
 
 	# Logging to file
 	start_log(ai, rpr)
@@ -414,8 +407,7 @@ def convertaiDot(ai, source):
 		rpr = ai + "_rpr"
 	else:
 		rpr = cmds.shadingNode("RPRArithmetic", asUtility=True)
-		cmds.rename(rpr, ai + "_rpr")
-		rpr = ai + "_rpr"
+		rpr = cmds.rename(rpr, ai + "_rpr")
 
 	# Logging to file
 	start_log(ai, rpr)
@@ -442,8 +434,7 @@ def convertaiPow(ai, source):
 		rpr = ai + "_rpr"
 	else:
 		rpr = cmds.shadingNode("RPRArithmetic", asUtility=True)
-		cmds.rename(rpr, ai + "_rpr")
-		rpr = ai + "_rpr"
+		rpr = cmds.rename(rpr, ai + "_rpr")
 
 	# Logging to file
 	start_log(ai, rpr)
@@ -473,8 +464,7 @@ def convertaiTrigo(ai, source):
 		rpr = ai + "_rpr"
 	else:
 		rpr = cmds.shadingNode("RPRArithmetic", asUtility=True)
-		cmds.rename(rpr, ai + "_rpr")
-		rpr = ai + "_rpr"
+		rpr = cmds.rename(rpr, ai + "_rpr")
 
 	# Logging to file
 	start_log(ai, rpr)
@@ -509,8 +499,7 @@ def convertmultiplyDivide(ai, source):
 		rpr = ai + "_rpr"
 	else:
 		rpr = cmds.shadingNode("RPRArithmetic", asUtility=True)
-		cmds.rename(rpr, ai + "_rpr")
-		rpr = ai + "_rpr"
+		rpr = cmds.rename(rpr, ai + "_rpr")
 
 	# Logging to file
 	start_log(ai, rpr)
@@ -549,24 +538,18 @@ def convertbump2d(ai, source):
 		bump_type = getProperty(ai, "bumpInterp")
 		if not bump_type:
 			rpr = cmds.shadingNode("RPRBump", asUtility=True)
-			cmds.rename(rpr, ai + "_rpr")
-			rpr = ai + "_rpr"
+			rpr = cmds.rename(rpr, ai + "_rpr")
 		else:
 			rpr = cmds.shadingNode("RPRNormal", asUtility=True)
-			cmds.rename(rpr, ai + "_rpr")
-			rpr = ai + "_rpr"
+			rpr = cmds.rename(rpr, ai + "_rpr")
 
 	# Logging to file
 	start_log(ai, rpr)
 
 	# Fields conversion
-	try:
-		bumpConnections = cmds.listConnections(ai + ".bumpValue", type="file")[0]
-		if bumpConnections:
-			cmds.connectAttr(bumpConnections + ".outColor", rpr + ".color", force=True)
-	except Exception:
-		print("Connection {} to {} failed. Check the connectors. ".format(bumpConnections + ".outColor", rpr + ".color"))
-		write_own_property_log("Connection {} to {} failed. Check the connectors. ".format(bumpConnections + ".outColor", rpr + ".color"))
+	bumpConnections = cmds.listConnections(ai + ".bumpValue", type="file")
+	if bumpConnections:
+		connectProperty(bumpConnections[0], "outColor", rpr, "color")
 
 	copyProperty(rpr, ai, "strength", "bumpDepth")
 
@@ -590,20 +573,15 @@ def convertaiBump2d(ai, source):
 		rpr = ai + "_rpr"
 	else:
 		rpr = cmds.shadingNode("RPRBump", asUtility=True)
-		cmds.rename(rpr, ai + "_rpr")
-		rpr = ai + "_rpr"
+		rpr = cmds.rename(rpr, ai + "_rpr")
 		
 	# Logging to file
 	start_log(ai, rpr)
 
 	# Fields conversion
-	try:
-		bumpConnections = cmds.listConnections(ai + ".bumpMap", type="file")[0]
-		if bumpConnections:
-			cmds.connectAttr(bumpConnections + ".outColor", rpr + ".color", force=True)
-	except Exception:
-		print("Connection {} to {} failed. Check the connectors. ".format(bumpConnections + ".outColor", rpr + ".color"))
-		write_own_property_log("Connection {} to {} failed. Check the connectors. ".format(bumpConnections + ".outColor", rpr + ".color"))
+	bumpConnections = cmds.listConnections(ai + ".bumpMap", type="file")
+	if bumpConnections:
+		connectProperty(bumpConnections[0], "outColor", rpr, "color")
 
 	copyProperty(rpr, ai, "strength", "bumpHeight")
 
@@ -627,20 +605,15 @@ def convertaiBump3d(ai, source):
 		rpr = ai + "_rpr"
 	else:
 		rpr = cmds.shadingNode("RPRBump", asUtility=True)
-		cmds.rename(rpr, ai + "_rpr")
-		rpr = ai + "_rpr"
+		rpr = cmds.rename(rpr, ai + "_rpr")
 		
 	# Logging to file
 	start_log(ai, rpr)
 
 	# Fields conversion
-	try:
-		bumpConnections = cmds.listConnections(ai + ".bumpMap", type="file")[0]
-		if bumpConnections:
-			cmds.connectAttr(bumpConnections + ".outColor", rpr + ".color", force=True)
-	except Exception:
-		print("Connection {} to {} failed. Check the connectors. ".format(bumpConnections + ".outColor", rpr + ".color"))
-		write_own_property_log("Connection {} to {} failed. Check the connectors. ".format(bumpConnections + ".outColor", rpr + ".color"))
+	bumpConnections = cmds.listConnections(ai + ".bumpMap", type="file")
+	if bumpConnections:
+		connectProperty(bumpConnections[0], "outColor", rpr, "color")
 
 	copyProperty(rpr, ai, "strength", "bumpHeight")
 
@@ -664,8 +637,7 @@ def convertaiNormalMap(ai, source):
 		rpr = ai + "_rpr"
 	else:
 		rpr = cmds.shadingNode("RPRNormal", asUtility=True)
-		cmds.rename(rpr, ai + "_rpr")
-		rpr = ai + "_rpr"
+		rpr = cmds.rename(rpr, ai + "_rpr")
 		
 	# Logging to file
 	start_log(ai, rpr)
@@ -694,8 +666,7 @@ def convertaiImage(ai, source):
 		rpr = ai + "_rpr"
 	else:
 		rpr = cmds.shadingNode("file", asTexture=True, isColorManaged=True)
-		cmds.rename(rpr, ai + "_rpr")
-		rpr = ai + "_rpr"
+		rpr = cmds.rename(rpr, ai + "_rpr")
 		texture = cmds.shadingNode("place2dTexture", asUtility=True)
 
 		connectProperty(texture, "coverage", rpr, "coverage")
@@ -721,12 +692,9 @@ def convertaiImage(ai, source):
 	start_log(ai, rpr)
 
 	# Fields conversion
-	try:
-		cmds.setAttr(rpr + ".fileTextureName", getProperty(ai, "filename"), type="string")
-		cmds.setAttr(rpr + ".colorSpace", getProperty(ai, "colorSpace"), type="string")
-	except Exception as ex:
-		print(ex)
-
+	setProperty(rpr, "fileTextureName", getProperty(ai, "filename"))
+	setProperty(rpr, "colorSpace", getProperty(ai, "colorSpace"))
+	
 	copyProperty(rpr, ai, "useFrameExtension", "useFrameExtension")
 	copyProperty(rpr, ai, "frameExtension", "frame")
 	copyProperty(rpr, ai, "ignoreColorSpaceFileRules", "ignoreColorSpaceFileRules")
@@ -755,14 +723,13 @@ def convertUnsupportedMaterial(aiMaterial, source):
 	else:
 		# Creating new Uber material
 		rprMaterial = cmds.shadingNode("RPRUberMaterial", asShader=True)
-		cmds.rename(rprMaterial, (aiMaterial + "_rpr"))
-		rprMaterial = aiMaterial + "_rpr"
+		rprMaterial = cmds.rename(rprMaterial, (aiMaterial + "_rpr"))
 
 		# Check assigned to any mesh
 		if assigned:
 			sg = rprMaterial + "SG"
 			cmds.sets(renderable=True, noSurfaceShader=True, empty=True, name=sg)
-			cmds.connectAttr(rprMaterial + ".outColor", sg + ".surfaceShader", f=True)
+			connectProperty(rprMaterial, "outColor", sg, "surfaceShader")
 
 	# Logging to file
 	start_log(aiMaterial, rprMaterial)
@@ -789,19 +756,17 @@ def convertaiAmbientOcclusion(aiMaterial, source):
 		if assigned:
 			# Creating new Uber material
 			rprMaterial = cmds.shadingNode("RPRUberMaterial", asShader=True)
-			cmds.rename(rprMaterial, (aiMaterial + "_rpr"))
-			rprMaterial = aiMaterial + "_rpr"
+			rprMaterial = cmds.rename(rprMaterial, (aiMaterial + "_rpr"))
 
 			sg = rprMaterial + "SG"
 			cmds.sets(renderable=True, noSurfaceShader=True, empty=True, name=sg)
-			cmds.connectAttr(rprMaterial + ".outColor", sg + ".surfaceShader", f=True)
+			connectProperty(rprMaterial, "outColor", sg, "surfaceShader")
 
 			ao = cmds.shadingNode("RPRAmbientOcclusion", asUtility=True)
 			connectProperty(ao, "output", rprMaterial, "diffuseColor")
 		else:
 			ao = cmds.shadingNode("RPRAmbientOcclusion", asUtility=True)
-			cmds.rename(ao, (aiMaterial + "_rpr"))
-			ao = aiMaterial + "_rpr"
+			ao = cmds.rename(ao, (aiMaterial + "_rpr"))
 
 	# Logging to file
 	start_log(aiMaterial, ao)
@@ -838,14 +803,13 @@ def convertaiFlat(aiMaterial, source):
 	else:
 		# Creating new Uber material
 		rprMaterial = cmds.shadingNode("RPRFlatColorMaterial", asShader=True)
-		cmds.rename(rprMaterial, (aiMaterial + "_rpr"))
-		rprMaterial = aiMaterial + "_rpr"
+		rprMaterial = cmds.rename(rprMaterial, (aiMaterial + "_rpr"))
 
 		# Check shading engine in aiMaterial
 		if assigned:
 			sg = rprMaterial + "SG"
 			cmds.sets(renderable=True, noSurfaceShader=True, empty=True, name=sg)
-			cmds.connectAttr(rprMaterial + ".outColor", sg + ".surfaceShader", f=True)
+			connectProperty(rprMaterial, "outColor", sg, "surfaceShader")
 
 	# Enable properties, which are default in Arnold
 	#
@@ -878,14 +842,13 @@ def convertaiMixShader(aiMaterial, source):
 	else:
 		# Creating new Uber material
 		rprMaterial = cmds.shadingNode("RPRBlendMaterial", asShader=True)
-		cmds.rename(rprMaterial, (aiMaterial + "_rpr"))
-		rprMaterial = aiMaterial + "_rpr"
+		rprMaterial = cmds.rename(rprMaterial, (aiMaterial + "_rpr"))
 
 		# Check shading engine in aiMaterial
 		if assigned:
 			sg = rprMaterial + "SG"
 			cmds.sets(renderable=True, noSurfaceShader=True, empty=True, name=sg)
-			cmds.connectAttr(rprMaterial + ".outColor", sg + ".surfaceShader", f=True)
+			connectProperty(rprMaterial, "outColor", sg, "surfaceShader")
 
 	# Enable properties, which are default in Arnold
 	#
@@ -920,16 +883,15 @@ def convertaiStandardSurface(aiMaterial, source):
 	else:
 		# Creating new Uber material
 		rprMaterial = cmds.shadingNode("RPRUberMaterial", asShader=True)
-		cmds.rename(rprMaterial, (aiMaterial + "_rpr"))
-		rprMaterial = aiMaterial + "_rpr"
+		rprMaterial = cmds.rename(rprMaterial, (aiMaterial + "_rpr"))
 
 		# Check shading engine in aiMaterial
 		if assigned:
 			sg = rprMaterial + "SG"
 			cmds.sets(renderable=True, noSurfaceShader=True, empty=True, name=sg)
-			cmds.connectAttr(rprMaterial + ".outColor", sg + ".surfaceShader", f=True)
+			connectProperty(rprMaterial, "outColor", sg, "surfaceShader")
 
-			ai_materialSG = cmds.listConnections(aiMaterial, type="shadingEngine")
+			ai_materialSG = cmds.listConnections(aiMaterial, type="shadingEngine")[0]
 			convertDisplacement(ai_materialSG, rprMaterial)
 
 	# Enable properties, which are default in Arnold
@@ -1023,20 +985,15 @@ def convertaiStandardSurface(aiMaterial, source):
 		print("Conversion {} to {} is failed. Check this material. ".format(source, rpr_opacity))
 		write_own_property_log("Conversion {} to {} is failed. Check this material. ".format(source, rpr_opacity))
 
-	try:
-		bumpConnections = cmds.listConnections(aiMaterial + ".normalCamera")
-		if bumpConnections:
-			setProperty(rprMaterial, "normalMapEnable", 1)
-			copyProperty(rprMaterial, aiMaterial, "normalMap", "normalCamera")
-			setProperty(rprMaterial, "useShaderNormal", 1)
-			setProperty(rprMaterial, "reflectUseShaderNormal", 1)
-			setProperty(rprMaterial, "refractUseShaderNormal", 1)
-			setProperty(rprMaterial, "coatUseShaderNormal", 1)
-	except Exception as ex:
-		print(ex)
-		print("Failed to convert bump.")
-		write_own_property_log("Failed to convert bump.")
-
+	bumpConnections = cmds.listConnections(aiMaterial + ".normalCamera")
+	if bumpConnections:
+		setProperty(rprMaterial, "normalMapEnable", 1)
+		copyProperty(rprMaterial, aiMaterial, "normalMap", "normalCamera")
+		setProperty(rprMaterial, "useShaderNormal", 1)
+		setProperty(rprMaterial, "reflectUseShaderNormal", 1)
+		setProperty(rprMaterial, "refractUseShaderNormal", 1)
+		setProperty(rprMaterial, "coatUseShaderNormal", 1)
+	
 	# Logging in file
 	end_log(aiMaterial)
 
@@ -1058,14 +1015,13 @@ def convertaiStandardVolume(aiMaterial, source):
 	else:
 		# Creating new Uber material
 		rprMaterial = cmds.shadingNode("RPRVolumeMaterial", asShader=True)
-		cmds.rename(rprMaterial, (aiMaterial + "_rpr"))
-		rprMaterial = aiMaterial + "_rpr"
+		rprMaterial = cmds.rename(rprMaterial, (aiMaterial + "_rpr"))
 
 		# Check shading engine in aiMaterial
 		if assigned:
 			sg = rprMaterial + "SG"
 			cmds.sets(renderable=True, noSurfaceShader=True, empty=True, name=sg)
-			cmds.connectAttr(rprMaterial + ".outColor", sg + ".surfaceShader", f=True)
+			connectProperty(rprMaterial, "outColor", sg, "surfaceShader")
 
 	# Enable properties, which are default in Arnold
 	#
@@ -1112,15 +1068,9 @@ def convertaiSkyDomeLight(dome_light):
 	domeTransform = cmds.listRelatives(dome_light, p=True)[0]
 	setProperty(iblTransform, "rotateY", getProperty(domeTransform, "rotateY") + 180)
 	
-	try:
-		file = cmds.listConnections(dome_light + ".color")
-		if file:
-			ibl_map = getProperty(file[0], "fileTextureName")
-			print(ibl_map)
-			cmds.setAttr(iblTransform + ".filePath", ibl_map, type="string")
-	except Exception as ex:
-		print(ex)
-		print("Failed to convert map from Arnold Dome light")
+	file = cmds.listConnections(dome_light + ".color")
+	if file:
+		setProperty(iblTransform, "filePath", getProperty(file[0], "fileTextureName"))
 		   
 	# Logging to file
 	end_log(dome_light)  
@@ -1145,15 +1095,10 @@ def convertaiSky(sky):
 	# Copy properties from ai dome light
 	setProperty(iblShape, "intensity", getProperty(sky, "intensity"))
 
-	try:
-		file = cmds.listConnections(sky, "color")[0]
-		if file:
-			ibl_map = getProperty(file, "fileTextureName")
-			cmds.setAttr(iblTransform + ".filePath", ibl_map, type="string")
-	except Exception as ex:
-		print(ex)
-		print("Failed to convert map from Arnold Sky")
-		   
+	file = cmds.listConnections(sky + ".color")
+	if file:
+		setProperty(iblTransform, "filePath", getProperty(file[0], "fileTextureName"))
+	 
 	# Logging to file
 	end_log(sky)  
 
@@ -1224,13 +1169,8 @@ def convertaiPhotometricLight(ai_light):
 	exposure = getProperty(ai_light, "exposure")
 	setProperty(rprLightShape, "intensity", intensity * (exposure + 5) / 500)
 
-	try:
-		ies = getProperty(ai_light, "aiFilename")
-		cmds.setAttr(rprLightShape + ".iesFile", ies, type="string")
-	except Exception as ex:
-		print(ex)
-		print("Failed to convert map from Redshift IES light")
-
+	setProperty(rprLightShape, "iesFile", getProperty(ai_light, "aiFilename"))
+	
 	# Logging to file
 	end_log(ai_light) 
 
@@ -1465,11 +1405,11 @@ def checkAssign(material):
 
 def defaultEnable(RPRmaterial, aiMaterial, enable, value):
 
-	weight = cmds.getAttr(aiMaterial + "." + value)
+	weight = getProperty(aiMaterial, value)
 	if weight > 0:
-		cmds.setAttr(RPRmaterial + "." + enable, 1)
+		setProperty(RPRmaterial, enable, 1)
 	else:
-		cmds.setAttr(RPRmaterial + "." + enable, 0)
+		setProperty(RPRmaterial, enable, 0)
 
 
 def convertScene():
@@ -1524,7 +1464,11 @@ def convertScene():
 	materialsDict = {}
 	for each in listMaterials:
 		if checkAssign(each):
-			materialsDict[each] = convertaiMaterial(each, "")
+			try:
+				materialsDict[each] = convertaiMaterial(each, "")
+			except Exception as ex:
+				print(ex)
+				print("Error while converting {}".format(each))
 
 	for ai, rpr in materialsDict.items():
 		try:
