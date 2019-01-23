@@ -1028,6 +1028,10 @@ def convertaiStandardSurface(aiMaterial, source):
 		if bumpConnections:
 			setProperty(rprMaterial, "normalMapEnable", 1)
 			copyProperty(rprMaterial, aiMaterial, "normalMap", "normalCamera")
+			setProperty(rprMaterial, "useShaderNormal", 1)
+			setProperty(rprMaterial, "reflectUseShaderNormal", 1)
+			setProperty(rprMaterial, "refractUseShaderNormal", 1)
+			setProperty(rprMaterial, "coatUseShaderNormal", 1)
 	except Exception as ex:
 		print(ex)
 		print("Failed to convert bump.")
