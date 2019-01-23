@@ -85,15 +85,19 @@ def copyProperty(rpr_name, ai_name, rpr_attr, ai_attr):
 		write_own_property_log("There is no {} field in this node. Check the field and try again. ".format(ai_field))
 		return
 
-	if listConnections:
-		obj, channel = cmds.connectionInfo(ai_field, sourceFromDestination=True).split('.')
-		if cmds.objectType(obj) == "file":
-			setProperty(obj, "ignoreColorSpaceFileRules", 1)
-		source_name, source_attr = convertaiMaterial(obj, channel).split('.')
-		connectProperty(source_name, source_attr, rpr_name, rpr_attr)
-	else:
-		setProperty(rpr_name, rpr_attr, getProperty(ai_name, ai_attr))
-		write_converted_property_log(rpr_name, ai_name, rpr_attr, ai_attr)
+	try:
+		if listConnections:
+			obj, channel = cmds.connectionInfo(ai_field, sourceFromDestination=True).split('.')
+			if cmds.objectType(obj) == "file":
+				setProperty(obj, "ignoreColorSpaceFileRules", 1)
+			source_name, source_attr = convertaiMaterial(obj, channel).split('.')
+			connectProperty(source_name, source_attr, rpr_name, rpr_attr)
+		else:
+			setProperty(rpr_name, rpr_attr, getProperty(ai_name, ai_attr))
+			write_converted_property_log(rpr_name, ai_name, rpr_attr, ai_attr)
+	except Exception as ex:
+		print(ex)
+		print(u"Error while copying from {} to {}".format(rs_field, rpr_field).encode('utf-8'))
 
 
 def setProperty(rpr_name, rpr_attr, value):
@@ -933,7 +937,6 @@ def convertaiStandardSurface(aiMaterial, source):
 	defaultEnable(rprMaterial, aiMaterial, "reflections", "specular")
 	defaultEnable(rprMaterial, aiMaterial, "refraction", "transmission")
 	defaultEnable(rprMaterial, aiMaterial, "sssEnable", "subsurface")
-	defaultEnable(rprMaterial, aiMaterial, "separateBackscatterColor", "subsurface")
 	defaultEnable(rprMaterial, aiMaterial, "emissive", "emission")
 	defaultEnable(rprMaterial, aiMaterial, "clearCoat", "coat")
 
@@ -967,15 +970,18 @@ def convertaiStandardSurface(aiMaterial, source):
 	copyProperty(rprMaterial, aiMaterial, "refractRoughness", "transmissionExtraRoughness")
 	setProperty(rprMaterial, "refractThinSurface", getProperty(aiMaterial, "thinWalled"))
 
-	subsurface = getProperty(aiMaterial, "subsurface")
-	if subsurface:
-		setProperty(rprMaterial, "diffuse", 1)
-		setProperty(rprMaterial, "diffuseWeight", 1)
-
 	copyProperty(rprMaterial, aiMaterial, "volumeScatter", "subsurfaceColor")
 	copyProperty(rprMaterial, aiMaterial, "sssWeight", "subsurface")
 	copyProperty(rprMaterial, aiMaterial, "backscatteringWeight", "subsurface")
 	copyProperty(rprMaterial, aiMaterial, "subsurfaceRadius", "subsurfaceRadius")
+
+	subsurface = getProperty(aiMaterial, "subsurface")
+	if subsurface:
+		setProperty(rprMaterial, "diffuse", 1)
+		setProperty(rprMaterial, "diffuseWeight", 1)
+		setProperty(rprMaterial, "separateBackscatterColor", 0)
+		setProperty(rprMaterial, "multipleScattering", 0)
+		setProperty(rprMaterial, "backscatteringWeight", 0.75)
 
 	copyProperty(rprMaterial, aiMaterial, "coatColor", "coatColor")
 	copyProperty(rprMaterial, aiMaterial, "coatWeight", "coat")
@@ -1173,7 +1179,7 @@ def convertaiPhysicalSky(sky):
 
 def convertaiPhotometricLight(ai_light):
 
-	# Redshift light transform
+	# Arnold light transform
 	splited_name = ai_light.split("|")
 	aiTransform = "|".join(splited_name[0:-1])
 	group = "|".join(splited_name[0:-2])
@@ -1231,7 +1237,7 @@ def convertaiAreaLight(ai_light):
 	aiTransform = "|".join(splited_name[0:-1])
 	group = "|".join(splited_name[0:-2])
 
-	# Redshift light transform
+	# Arnold light transform
 	if cmds.objExists(aiTransform + "_rpr"):
 		rprTransform = aiTransform + "_rpr"
 		rprLightShape = cmds.listRelatives(rprTransform)[0]
@@ -1272,7 +1278,7 @@ def convertaiAreaLight(ai_light):
 
 def convertaiMeshLight(ai_light):
 
-	# Redshift light transform
+	# Arnold light transform
 	splited_name = ai_light.split("|")
 	aiTransform = "|".join(splited_name[0:-1])
 	group = "|".join(splited_name[0:-2])
