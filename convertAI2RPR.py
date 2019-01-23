@@ -660,6 +660,37 @@ def convertaiNormalMap(ai, source):
 	return rpr
 
 
+def convertaiFacingRatio(ai, source):
+
+	if cmds.objExists(ai + "_rpr"):
+		rpr = ai + "_rpr"
+	else:
+		rpr = cmds.shadingNode("RPRLookup", asUtility=True)
+		rpr = cmds.rename(rpr, ai + "_rpr")
+		
+	# Logging to file
+	start_log(ai, rpr)
+
+	# Fields conversion
+	setProperty(rpr, "type", 3)
+
+	# Logging to file
+	end_log(ai)
+
+	conversion_map = {
+		"message": "out",
+		"outTransparency": "out",
+		"outTransparencyR": "outX",
+		"outTransparencyG": "outY",
+		"outTransparencyB": "outZ",
+		"outValue": "outX"
+	}
+
+	rpr += "." + conversion_map[source]
+	return rpr
+
+
+
 def convertaiImage(ai, source):
 
 	if cmds.objExists(ai + "_rpr"):
@@ -1325,6 +1356,7 @@ def convertaiMaterial(aiMaterial, source):
 		"aiPow": convertaiPow,
 		"aiTrigo": convertaiTrigo,
 		"aiImage": convertaiImage,
+		"aiFacingRatio": convertaiFacingRatio,
 		"multiplyDivide": convertmultiplyDivide
 	}
 
