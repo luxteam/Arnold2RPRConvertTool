@@ -13,6 +13,13 @@ v.1.5 - aiPhotometricLight support.
 v.1.6 - Fix ies light position; aiStandartVolume, aiMixShader, aiFlat, aiSky, aiAdd, aiSubstract, aiDivide, aiMultiply support
 v.1.7 - Fix bug with channel converting, fix bug with creating extra materials.
 v.2.0 - Rewritten to python, update material conversion.
+v.2.1 - aiMath nodes support
+	aiImage and aiFacingRatio conversion support
+	aiAmbientOcclusion material conversion support
+	Improve metalness, coat, subsurface and normal map conversion in aiStandartSurface
+	Improve displacement conversion
+	Fixed issue with group of lights
+	Fixed issue with unassign materials with shader catcher
 
 '''
 
