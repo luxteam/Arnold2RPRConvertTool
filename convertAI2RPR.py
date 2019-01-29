@@ -1142,10 +1142,10 @@ def convertaiCarPaint(aiMaterial, source):
 	copyProperty(rprMaterial, aiMaterial, "coatRoughness", "coatRoughness")
 	copyProperty(rprMaterial, aiMaterial, "coatIor", "coatIOR")
 
-	bumpConnections = cmds.listConnections(rsMaterial + ".coatNormal")
+	bumpConnections = cmds.listConnections(aiMaterial + ".coatNormal")
 	if bumpConnections:
 		setProperty(rprMaterial, "normalMapEnable", 1)
-		copyProperty(rprMaterial, rsMaterial, "normalMap", "coatNormal")
+		copyProperty(rprMaterial, aiMaterial, "normalMap", "coatNormal")
 		setProperty(rprMaterial, "useShaderNormal", 1)
 		setProperty(rprMaterial, "reflectUseShaderNormal", 1)
 		setProperty(rprMaterial, "refractUseShaderNormal", 1)
