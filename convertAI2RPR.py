@@ -200,6 +200,25 @@ def convertDisplacement(ai_sg, rpr_name):
 		print(u"Failed to convert displacement for {} material".format(rpr_name).encode('utf-8'))
 
 
+# dispalcement convertion
+def convertShadowDisplacement(ai_sg, rpr_name):
+	try:
+		displacement = cmds.listConnections(ai_sg + ".displacementShader")
+		if displacement:
+			displacementType = cmds.objectType(displacement[0])
+			if displacementType == "displacementShader":
+				displacement_file = cmds.listConnections(displacement[0], type="file")
+				if displacement_file:
+					setProperty(rpr_name, "useDispMap", 1)
+					connectProperty(displacement_file[0], "outColor", rpr_name, "dispMap")
+			elif displacementType == "file":
+				setProperty(rpr_name, "useDispMap", 1)
+				connectProperty(displacement[0], "outColor", rpr_name, "dispMap")
+	except Exception as ex:
+		traceback.print_exc()
+		print(u"Failed to convert displacement for {} material".format(rpr_name).encode('utf-8'))
+
+
 def convertaiAdd(ai, source):
 
 	rpr = cmds.shadingNode("RPRArithmetic", asUtility=True)
@@ -1083,6 +1102,53 @@ def convertaiStandardSurface(aiMaterial, source):
 
 
 #######################
+## aiShadowMatte 
+#######################
+
+def convertaiShadowMatte(aiMaterial, source):
+
+	assigned = checkAssign(aiMaterial)
+	
+	# Creating new Uber material
+	rprMaterial = cmds.shadingNode("RPRShadowCatcherMaterial", asShader=True)
+	rprMaterial = cmds.rename(rprMaterial, (aiMaterial + "_rpr"))
+
+	# Check shading engine in aiMaterial
+	if assigned:
+		sg = rprMaterial + "SG"
+		cmds.sets(renderable=True, noSurfaceShader=True, empty=True, name=sg)
+		connectProperty(rprMaterial, "outColor", sg, "surfaceShader")
+
+		ai_materialSG = cmds.listConnections(aiMaterial, type="shadingEngine")[0]
+		convertShadowDisplacement(ai_materialSG, rprMaterial)
+
+	# Logging to file
+	start_log(aiMaterial, rprMaterial)
+
+	# Fields conversion
+	copyProperty(rprMaterial, aiMaterial, "shadowColor", "shadowColor")
+
+	if mapDoesNotExist(aiMaterial, "shadowOpacity"):
+		transparency = 1 - getProperty(aiMaterial, "shadowOpacity")
+		setProperty(rprMaterial, "shadowTransp", transparency)
+	else:
+		arithmetic = cmds.shadingNode("RPRArithmetic", asUtility=True)
+		setProperty(arithmetic, "operation", 1)
+		setProperty(arithmetic, "inputA", (1, 1, 1))
+		copyProperty(arithmetic, aiMaterial, "inputBX", "shadowOpacity")
+		connectProperty(arithmetic, "outX", rprMaterial, "shadowTransp")
+
+	copyProperty(rprMaterial, aiMaterial, "bgColor", "backgroundColor")
+
+	# Logging in file
+	end_log(aiMaterial)
+
+	if not assigned:
+		rprMaterial += "." + source
+	return rprMaterial
+
+
+#######################
 ## aiStandardVolume 
 #######################
 
@@ -1372,7 +1438,7 @@ def convertaiMaterial(aiMaterial, source):
 		"aiMixShader": convertaiMixShader,
 		"aiPassthrough": convertUnsupportedMaterial,
 		"aiRaySwitch": convertUnsupportedMaterial,
-		"aiShadowMatte": convertUnsupportedMaterial,
+		"aiShadowMatte": convertaiShadowMatte,
 		"aiStandardHair": convertUnsupportedMaterial,
 		"aiStandardSurface": convertaiStandardSurface,
 		"aiSwitch": convertUnsupportedMaterial,
@@ -1557,7 +1623,16 @@ def convertScene():
 	setProperty("defaultRenderGlobals", "currentRenderer", "FireRender")
 	setProperty("defaultRenderGlobals", "imageFormat", 8)
 	setProperty("RadeonProRenderGlobals", "applyGammaToMayaViews", 1)
-	#setProperty("RadeonProRenderGlobals", "completionCriteriaIterations", getProperty("???", "???"))
+	
+	matteShadowCatcher = cmds.ls(materials=True, type="aiShadowMatte")
+	if matteShadowCatcher:
+		try:
+			setProperty("RadeonProRenderGlobals", "aovOpacity", 1)
+			setProperty("RadeonProRenderGlobals", "aovBackground", 1)
+			setProperty("RadeonProRenderGlobals", "aovShadowCatcher", 1)
+		except Exception as ex:
+			traceback.print_exc()
+
 
 
 def auto_launch():
