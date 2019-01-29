@@ -1081,7 +1081,8 @@ def convertaiSkyDomeLight(dome_light):
   
 	# display IBL option
 	exposure = getProperty(dome_light, "exposure")
-	setProperty(iblShape, "intensity", 1 * 2 ** exposure)
+	intensity = getProperty(dome_light, "intensity")
+	setProperty(iblShape, "intensity", intensity * 2 ** exposure)
 
 	# Copy properties from ai dome light
 	domeTransform = cmds.listRelatives(dome_light, p=True)[0]
