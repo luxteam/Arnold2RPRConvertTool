@@ -1102,6 +1102,64 @@ def convertaiStandardSurface(aiMaterial, source):
 
 
 #######################
+## aiCarPaint 
+#######################
+
+def convertaiCarPaint(aiMaterial, source):
+
+	assigned = checkAssign(aiMaterial)
+	
+	# Creating new Uber material
+	rprMaterial = cmds.shadingNode("RPRUberMaterial", asShader=True)
+	rprMaterial = cmds.rename(rprMaterial, (aiMaterial + "_rpr"))
+
+	# Check shading engine in aiMaterial
+	if assigned:
+		sg = rprMaterial + "SG"
+		cmds.sets(renderable=True, noSurfaceShader=True, empty=True, name=sg)
+		connectProperty(rprMaterial, "outColor", sg, "surfaceShader")
+
+	# Enable properties, which are default in Arnold
+	defaultEnable(rprMaterial, aiMaterial, "diffuse", "base")
+	defaultEnable(rprMaterial, aiMaterial, "reflections", "specular")
+	defaultEnable(rprMaterial, aiMaterial, "clearCoat", "coat")
+
+	# Logging to file
+	start_log(aiMaterial, rprMaterial)
+
+	# Fields conversion
+	copyProperty(rprMaterial, aiMaterial, "diffuseColor", "baseColor")
+	copyProperty(rprMaterial, aiMaterial, "diffuseWeight", "base")
+	copyProperty(rprMaterial, aiMaterial, "diffuseRoughness", "baseRoughness")
+
+	copyProperty(rprMaterial, aiMaterial, "reflectColor", "specularColor")
+	copyProperty(rprMaterial, aiMaterial, "reflectWeight", "specular")
+	copyProperty(rprMaterial, aiMaterial, "reflectRoughness", "specularRoughness")
+	copyProperty(rprMaterial, aiMaterial, "reflectIOR", "specularIOR")
+
+	copyProperty(rprMaterial, aiMaterial, "coatColor", "coatColor")
+	copyProperty(rprMaterial, aiMaterial, "coatWeight", "coat")
+	copyProperty(rprMaterial, aiMaterial, "coatRoughness", "coatRoughness")
+	copyProperty(rprMaterial, aiMaterial, "coatIor", "coatIOR")
+
+	bumpConnections = cmds.listConnections(rsMaterial + ".coatNormal")
+	if bumpConnections:
+		setProperty(rprMaterial, "normalMapEnable", 1)
+		copyProperty(rprMaterial, rsMaterial, "normalMap", "coatNormal")
+		setProperty(rprMaterial, "useShaderNormal", 1)
+		setProperty(rprMaterial, "reflectUseShaderNormal", 1)
+		setProperty(rprMaterial, "refractUseShaderNormal", 1)
+		setProperty(rprMaterial, "coatUseShaderNormal", 1)
+
+	# Logging in file
+	end_log(aiMaterial)
+
+	if not assigned:
+		rprMaterial += "." + source
+	return rprMaterial
+
+
+#######################
 ## aiShadowMatte 
 #######################
 
@@ -1473,7 +1531,7 @@ def convertaiMaterial(aiMaterial, source):
 
 	conversion_func = {
 		"aiAmbientOcclusion": convertaiAmbientOcclusion,
-		"aiCarPaint": convertUnsupportedMaterial,
+		"aiCarPaint": convertaiCarPaint,
 		"aiFlat": convertaiFlat,
 		"aiLayerShader": convertUnsupportedMaterial,
 		"aiMatte": convertUnsupportedMaterial,
