@@ -663,6 +663,60 @@ def convertaiFacingRatio(ai, source):
 	return rpr
 
 
+def convertaiColorConvert(ai, source):
+
+	from_value = getProperty(ai, "from")
+	to_value = getProperty(ai, "to")
+
+	print(from_value)
+	print(to_value)
+
+	if from_value == 0 and to_value == 1:
+		objectType = "rgbToHsv"
+		rpr = cmds.shadingNode("rgbToHsv", asUtility=True)
+		rpr = cmds.rename(rpr, ai + "_rpr")
+
+	elif from_value == 1 and to_value == 0:
+		objectType = "hsvToRgb"
+		rpr = cmds.shadingNode("hsvToRgb", asUtility=True)
+		rpr = cmds.rename(rpr, ai + "_rpr")
+
+	else:
+		print("Wrong parameters for aiColorConvert conversion")
+		return
+		
+	# Logging to file
+	start_log(ai, rpr)
+
+	if objectType == "rgbToHsv":
+		copyProperty(rpr, ai, "inRgb", "input")
+	elif objectType == "hsvToRgb":
+		copyProperty(rpr, ai, "inHsv", "input")
+
+	end_log(ai)
+
+	conversion_map_rgb = {
+		"outColor": "outRgb",
+		"outColorR": "outRgbR",
+		"outColorG": "outRgbG",
+		"outColorB": "outRgbB",
+	}
+
+	conversion_map_hsv = {
+		"outColor": "outHsv",
+		"outColorR": "outHsvH",
+		"outColorG": "outHsvS",
+		"outColorB": "outHsvV",
+	}
+
+	if objectType == "rgbToHsv":
+		rpr += "." + conversion_map_hsv[source]
+	elif objectType == "hsvToRgb":
+		rpr += "." + conversion_map_rgb[source]
+
+	return rpr
+
+
 
 def convertaiImage(ai, source):
 
@@ -1344,6 +1398,7 @@ def convertaiMaterial(aiMaterial, source):
 		"aiTrigo": convertaiTrigo,
 		"aiImage": convertaiImage,
 		"aiFacingRatio": convertaiFacingRatio,
+		"aiColorConvert": convertaiColorConvert,
 		"multiplyDivide": convertmultiplyDivide
 	}
 
