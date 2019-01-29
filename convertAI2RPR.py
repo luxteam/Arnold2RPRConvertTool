@@ -989,7 +989,7 @@ def convertaiStandardSurface(aiMaterial, source):
 		setProperty(rprMaterial, "backscatteringWeight", 0.75)
 
 	copyProperty(rprMaterial, aiMaterial, "coatColor", "coatColor")
-	copyProperty(rprMaterial, aiMaterial, "coatColor", "coatTransmissionColor")
+	copyProperty(rprMaterial, aiMaterial, "coatTransmissionColor", "coatColor")
 	copyProperty(rprMaterial, aiMaterial, "coatWeight", "coat")
 	copyProperty(rprMaterial, aiMaterial, "coatRoughness", "coatRoughness")
 	copyProperty(rprMaterial, aiMaterial, "coatIor", "coatIOR")
