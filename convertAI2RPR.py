@@ -1424,6 +1424,48 @@ def convertaiMeshLight(ai_light):
 	end_log(ai_light)
 
 
+def convertaiAtmosphere(aiAtmosphere):
+
+	# Creating new Volume material
+	rprMaterial = cmds.shadingNode("RPRVolumeMaterial", asShader=True)
+	rprMaterial = cmds.rename(rprMaterial, (aiAtmosphere + "_rpr"))
+	
+	sg = rprMaterial + "SG"
+	cmds.sets(renderable=True, noSurfaceShader=True, empty=True, name=sg)
+	connectProperty(rprMaterial, "outColor", sg, "volumeShader")
+
+	# create sphere
+	cmds.polySphere(n="Volume")
+	setProperty("Volume", "scaleX", 999)
+	setProperty("Volume", "scaleY", 999)
+	setProperty("Volume", "scaleZ", 999)
+
+	# assign material
+	cmds.select("Volume")
+	cmds.sets(e=True, forceElement=sg)
+
+	# Logging to file 
+	start_log(aiAtmosphere, rprMaterial) 
+
+	# Fields conversion
+	aiAtmosphereType = cmds.objectType(aiAtmosphere)
+	if aiAtmosphereType == "aiFog":
+		copyProperty(rprMaterial, aiAtmosphere, "emissionColor", "color")
+		avg_color = getProperty(aiAtmosphere, "color") / 3.0
+		setProperty(rprMaterial, "density", avg_color)
+	elif aiAtmosphereType == "aiAtmosphereVolume":
+		copyProperty(rprMaterial, aiAtmosphere, "density", "density")
+		copyProperty(rprMaterial, aiAtmosphere, "scatterColor", "rgbDensity")
+		copyProperty(rprMaterial, aiAtmosphere, "transmissionColor", "rgbDensity")
+		copyProperty(rprMaterial, aiAtmosphere, "scatteringDirection", "eccentricity")
+
+		density = getProperty(aiAtmosphere, "scatteringAmount") * 8
+		setProperty(rprMaterial, "density", density)
+	
+	# Logging to file
+	end_log(aiAtmosphere)  
+
+
 # Convert material. Returns new material name.
 def convertaiMaterial(aiMaterial, source):
 
@@ -1563,16 +1605,14 @@ def convertScene():
 	if not cmds.pluginInfo("RadeonProRender", q=True, loaded=True):
 		cmds.loadPlugin("RadeonProRender")
 
-	# Convert ArnoldEnvironment
-	'''
-	env = cmds.ls(type="aiEnvironment")
+	# Convert aiAtmosphere
+	env = cmds.ls(type=("aiAtmosphereVolume", "aiFog"))
 	if env:
 		try:
-			convertaiEnvironment(env[0])
+			convertaiAtmosphere(env[0])
 		except Exception as ex:
 			traceback.print_exc()
-			print("Error while converting environment. ")
-	'''
+			print("Error while converting Atmosphere. ")
 
 	# Convert ArnoldPhysicalSky
 	sky = cmds.ls(type=("aiPhysicalSky", "aiSky"))
