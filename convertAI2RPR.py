@@ -1354,7 +1354,7 @@ def convertaiPhotometricLight(ai_light):
 	copyProperty(rprTransform, aiTransform, "translateX", "translateX")
 	copyProperty(rprTransform, aiTransform, "translateY", "translateY")
 	copyProperty(rprTransform, aiTransform, "translateZ", "translateZ")
-	setProperty(rprTransform, "rotateX", getProperty(aiTransform, "rotateX") + 90)
+	copyProperty(rprTransform, aiTransform, "rotateX", "rotateX")
 	copyProperty(rprTransform, aiTransform, "rotateY", "rotateY")
 	copyProperty(rprTransform, aiTransform, "rotateZ", "rotateZ")
 	copyProperty(rprTransform, aiTransform, "scaleX", "scaleX")
