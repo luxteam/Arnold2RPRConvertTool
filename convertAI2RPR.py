@@ -738,6 +738,35 @@ def convertaiThinFilm(ai, source):
 	return rpr
 
 
+def convertaiCurvature(ai, source):
+
+	rpr = cmds.shadingNode("RPRAmbientOcclusion", asUtility=True)
+	rpr = cmds.rename(rpr, ai + "_rpr")
+		
+	# Logging to file
+	start_log(ai, rpr)
+
+	# Fields conversion
+	setProperty(rpr, "side", 1)
+	setProperty(rpr, "occludedColor", (1, 1, 1))
+	setProperty(rpr, "unoccludedColor", (0, 0, 0))
+	if mapDoesNotExist(ai, "radius"):
+		setProperty(rpr, "radius", getProperty(ai, "radius") / 100)
+
+	# Logging to file
+	end_log(ai)
+
+	conversion_map = {
+		"outColor": "output",
+		"outColorR": "outputR",
+		"outColorG": "outputG",
+		"outColorB": "outputB",
+	}
+
+	rpr += "." + conversion_map[source]
+	return rpr
+
+
 def convertaiBlackbody(ai, source):
 
 	rpr = cmds.shadingNode("RPRUberMaterial", asShader=True)
@@ -1766,6 +1795,7 @@ def convertaiMaterial(aiMaterial, source):
 		"aiCellNoise": convertaiCellNoise,
 		"aiNoise": convertaiNoise,
 		"aiBlackbody": convertaiBlackbody,
+		"aiCurvature": convertaiCurvature,
 		"multiplyDivide": convertmultiplyDivide
 	}
 
