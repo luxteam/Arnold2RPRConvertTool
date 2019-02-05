@@ -738,6 +738,73 @@ def convertaiThinFilm(ai, source):
 	return rpr
 
 
+def convertaiBlackbody(ai, source):
+
+	rpr = cmds.shadingNode("RPRUberMaterial", asShader=True)
+	rpr = cmds.rename(rpr, ai + "_rpr")
+		
+	# Logging to file
+	start_log(ai, rpr)
+
+	# Fields conversion
+	setProperty(rpr, "diffuse", 0)
+	setProperty(rpr, "emissive", 1)
+
+	temperature = getProperty(ai, "temperature") / 100
+
+	if temperature <= 66:
+		colorR = 255
+	else:
+		colorR = temperature - 60
+		colorR = 329.698727446 * colorR ** -0.1332047592
+		if colorR < 0:
+			colorR = 0
+		if colorR > 255:
+			colorR = 255
+
+
+	if temperature <= 66:
+		colorG = temperature
+		colorG = 99.4708025861 * math.log(colorG) - 161.1195681661
+		if colorG < 0:
+			colorG = 0
+		if colorG > 255:
+			colorG = 255
+	else:
+		colorG = temperature - 60
+		colorG = 288.1221695283 * colorG ** -0.0755148492
+		if colorG < 0:
+			colorG = 0
+		if colorG > 255:
+			colorG = 255
+
+
+	if temperature >= 66:
+		colorB = 255
+	elif temperature <= 19:
+		colorB = 0
+	else:
+		colorB = temperature - 10
+		colorB = 138.5177312231 * math.log(colorB) - 305.0447927307
+		if colorB < 0:
+			colorB = 0
+		if colorB > 255:
+			colorB = 255
+
+	colorR = colorR / 255
+	colorG = colorG / 255
+	colorB = colorB / 255
+
+	setProperty(rpr, "emissiveColor", (colorR, colorG, colorB))
+	copyProperty(rpr, ai, "emissiveIntensity", "intensity")
+
+	# Logging to file
+	end_log(ai)
+
+	rpr += "." + source
+	return rpr
+
+
 def convertaiColorConvert(ai, source):
 
 	from_value = getProperty(ai, "from")
@@ -1698,6 +1765,7 @@ def convertaiMaterial(aiMaterial, source):
 		"aiColorConvert": convertaiColorConvert,
 		"aiCellNoise": convertaiCellNoise,
 		"aiNoise": convertaiNoise,
+		"aiBlackbody": convertaiBlackbody,
 		"multiplyDivide": convertmultiplyDivide
 	}
 
