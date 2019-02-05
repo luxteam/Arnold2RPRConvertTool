@@ -1582,10 +1582,6 @@ def convertaiPhotometricLight(ai_light):
 	setProperty(rprLightShape, "intensity", intensity * (exposure + 5) / 500)
 
 	setProperty(rprLightShape, "iesFile", getProperty(ai_light, "aiFilename"))
-
-	volume = cmds.ls(type=("aiAtmosphereVolume", "aiFog"))
-	if volume:
-		setProperty(rprLightShape, "intensity", getProperty(rprLightShape, "intensity") * 6)
 	
 	# Logging to file
 	end_log(ai_light) 
@@ -1631,11 +1627,6 @@ def convertaiAreaLight(ai_light):
 	copyProperty(rprTransform, aiTransform, "scaleX", "scaleX")
 	copyProperty(rprTransform, aiTransform, "scaleY", "scaleY")
 	copyProperty(rprTransform, aiTransform, "scaleZ", "scaleZ")
-
-	volume = cmds.ls(type=("aiAtmosphereVolume", "aiFog"))
-	if volume:
-		setProperty(rprLightShape, "intensityUnits", 0)
-		setProperty(rprLightShape, "lightIntensity", getProperty(rprLightShape, "lightIntensity") * 6)
 
 	# Logging to file
 	end_log(ai_light)  
