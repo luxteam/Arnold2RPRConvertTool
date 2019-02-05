@@ -1202,10 +1202,14 @@ def convertaiStandardSurface(aiMaterial, source):
 	if bumpConnections:
 		setProperty(rprMaterial, "normalMapEnable", 1)
 		copyProperty(rprMaterial, aiMaterial, "normalMap", "normalCamera")
-		setProperty(rprMaterial, "useShaderNormal", 1)
-		setProperty(rprMaterial, "reflectUseShaderNormal", 1)
-		setProperty(rprMaterial, "refractUseShaderNormal", 1)
-		setProperty(rprMaterial, "coatUseShaderNormal", 1)
+		if getProperty(aiMaterial, "base"):
+			copyProperty(rprMaterial, aiMaterial, "diffuseNormal", "normalCamera")
+		if getProperty(aiMaterial, "specular"):
+			copyProperty(rprMaterial, aiMaterial, "reflectNormal", "normalCamera")
+		if getProperty(aiMaterial, "transmission"):
+			copyProperty(rprMaterial, aiMaterial, "refractNormal", "normalCamera")
+		if getProperty(aiMaterial, "coat"):
+			copyProperty(rprMaterial, aiMaterial, "coatNormal", "normalCamera")
 	
 	# Logging in file
 	end_log(aiMaterial)
