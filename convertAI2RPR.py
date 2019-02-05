@@ -1494,9 +1494,9 @@ def convertaiAtmosphere(aiAtmosphere):
 
 	# create sphere
 	cmds.polySphere(n="Volume")
-	setProperty("Volume", "scaleX", 999)
-	setProperty("Volume", "scaleY", 999)
-	setProperty("Volume", "scaleZ", 999)
+	setProperty("Volume", "scaleX", 2000)
+	setProperty("Volume", "scaleY", 2000)
+	setProperty("Volume", "scaleZ", 2000)
 
 	# assign material
 	cmds.select("Volume")
