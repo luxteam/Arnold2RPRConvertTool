@@ -655,6 +655,36 @@ def convertaiNormalMap(ai, source):
 	return rpr
 
 
+def convertaiVectorMap(ai, source):
+
+	rpr = cmds.shadingNode("RPRNormal", asUtility=True)
+	rpr = cmds.rename(rpr, ai + "_rpr")
+	
+	# Logging to file
+	start_log(ai, rpr)
+
+	# Fields conversion
+	if mapDoesNotExist(ai, "input"):
+		copyProperty(rpr, ai, "color", "normal")
+	else:
+		copyProperty(rpr, ai, "color", "input")
+
+	copyProperty(rpr, ai, "strength", "scale")
+
+	# Logging to file
+	end_log(ai)
+
+	conversion_map = {
+		"outValue": "out",
+		"outValueX": "outX",
+		"outValueY": "outY",
+		"outValueZ": "outZ"
+	}
+
+	rpr += "." + conversion_map[source]
+	return rpr
+
+
 def convertaiFacingRatio(ai, source):
 
 	rpr = cmds.shadingNode("RPRLookup", asUtility=True)
@@ -1552,6 +1582,7 @@ def convertaiMaterial(aiMaterial, source):
 		"aiBump2d": convertaiBump2d,
 		"aiBump3d": convertaiBump3d,
 		"aiNormalMap": convertaiNormalMap,
+		"aiVectorMap": convertaiVectorMap,
 		"aiAdd": convertaiAdd,
 		"aiMultiply": convertaiMultiply,
 		"aiDivide": convertaiDivide,
