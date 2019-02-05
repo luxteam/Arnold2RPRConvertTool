@@ -712,13 +712,36 @@ def convertaiFacingRatio(ai, source):
 	return rpr
 
 
+def convertaiThinFilm(ai, source):
+
+	rpr = cmds.shadingNode("RPRFresnel", asUtility=True)
+	rpr = cmds.rename(rpr, ai + "_rpr")
+		
+	# Logging to file
+	start_log(ai, rpr)
+
+	# Fields conversion
+	ior = (getProperty(ai, "iorMedium") + getProperty(ai, "iorFilm") + getProperty(ai, "iorInternal")) / 3.0
+	setProperty(rpr, "ior", ior)
+
+	# Logging to file
+	end_log(ai)
+
+	conversion_map = {
+		"outColor": "out",
+		"outColorR": "out",
+		"outColorG": "out",
+		"outColorB": "out",
+	}
+
+	rpr += "." + conversion_map[source]
+	return rpr
+
+
 def convertaiColorConvert(ai, source):
 
 	from_value = getProperty(ai, "from")
 	to_value = getProperty(ai, "to")
-
-	print(from_value)
-	print(to_value)
 
 	if from_value == 0 and to_value == 1:
 		objectType = "rgbToHsv"
@@ -814,6 +837,67 @@ def convertaiImage(ai, source):
 	}
 
 	rpr += "." + conversion_map[source]
+	return rpr
+
+
+def convertaiNoise(ai, source):
+
+	rpr = cmds.shadingNode("noise", asUtility=True)
+	rpr = cmds.rename(rpr, ai + "_rpr")
+
+	texture = cmds.shadingNode("place2dTexture", asUtility=True)
+
+	connectProperty(texture, "outUV", rpr, "uv")
+	connectProperty(texture, "outUvFilterSize", rpr, "uvFilterSize")
+		
+	# Logging to file
+	start_log(ai, rpr)
+
+	# Fields conversion
+	copyProperty(rpr, ai, "frequencyRatio", "octaves")
+	copyProperty(rpr, ai, "frequency", "octaves")
+	copyProperty(rpr, ai, "threshold", "distortion")
+	copyProperty(rpr, ai, "ratio", "lacunarity")
+	copyProperty(rpr, ai, "amplitude", "amplitude")
+	copyProperty(rpr, ai, "defaultColor", "color1")
+	copyProperty(rpr, ai, "colorGain", "color1")
+	copyProperty(rpr, ai, "colorOffset", "color2")
+
+	# Logging to file
+	end_log(ai)
+
+	rpr += "." + source
+	return rpr
+
+
+def convertaiCellNoise(ai, source):
+
+	rpr = cmds.shadingNode("noise", asUtility=True)
+	rpr = cmds.rename(rpr, ai + "_rpr")
+
+	texture = cmds.shadingNode("place2dTexture", asUtility=True)
+
+	connectProperty(texture, "outUV", rpr, "uv")
+	connectProperty(texture, "outUvFilterSize", rpr, "uvFilterSize")
+		
+	# Logging to file
+	start_log(ai, rpr)
+
+	# Fields conversion
+	copyProperty(rpr, ai, "frequencyRatio", "octaves")
+	copyProperty(rpr, ai, "frequency", "octaves")
+	copyProperty(rpr, ai, "ratio", "lacunarity")
+	copyProperty(rpr, ai, "amplitude", "amplitude")
+	copyProperty(rpr, ai, "defaultColor", "color")
+	copyProperty(rpr, ai, "colorGain", "color")
+	copyProperty(rpr, ai, "colorOffset", "palette")
+	copyProperty(rpr, ai, "density", "density")
+	copyProperty(rpr, ai, "randomness", "randomness")
+
+	# Logging to file
+	end_log(ai)
+
+	rpr += "." + source
 	return rpr
 
 
@@ -1595,7 +1679,10 @@ def convertaiMaterial(aiMaterial, source):
 		"aiTrigo": convertaiTrigo,
 		"aiImage": convertaiImage,
 		"aiFacingRatio": convertaiFacingRatio,
+		"aiThinFilm": convertaiThinFilm,
 		"aiColorConvert": convertaiColorConvert,
+		"aiCellNoise": convertaiCellNoise,
+		"aiNoise": convertaiNoise,
 		"multiplyDivide": convertmultiplyDivide
 	}
 
