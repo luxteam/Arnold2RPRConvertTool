@@ -655,6 +655,36 @@ def convertaiNormalMap(ai, source):
 	return rpr
 
 
+def convertaiVectorMap(ai, source):
+
+	rpr = cmds.shadingNode("RPRNormal", asUtility=True)
+	rpr = cmds.rename(rpr, ai + "_rpr")
+	
+	# Logging to file
+	start_log(ai, rpr)
+
+	# Fields conversion
+	if mapDoesNotExist(ai, "input"):
+		copyProperty(rpr, ai, "color", "normal")
+	else:
+		copyProperty(rpr, ai, "color", "input")
+
+	copyProperty(rpr, ai, "strength", "scale")
+
+	# Logging to file
+	end_log(ai)
+
+	conversion_map = {
+		"outValue": "out",
+		"outValueX": "outX",
+		"outValueY": "outY",
+		"outValueZ": "outZ"
+	}
+
+	rpr += "." + conversion_map[source]
+	return rpr
+
+
 def convertaiFacingRatio(ai, source):
 
 	rpr = cmds.shadingNode("RPRLookup", asUtility=True)
@@ -682,13 +712,132 @@ def convertaiFacingRatio(ai, source):
 	return rpr
 
 
+def convertaiThinFilm(ai, source):
+
+	rpr = cmds.shadingNode("RPRFresnel", asUtility=True)
+	rpr = cmds.rename(rpr, ai + "_rpr")
+		
+	# Logging to file
+	start_log(ai, rpr)
+
+	# Fields conversion
+	ior = (getProperty(ai, "iorMedium") + getProperty(ai, "iorFilm") + getProperty(ai, "iorInternal")) / 3.0
+	setProperty(rpr, "ior", ior)
+
+	# Logging to file
+	end_log(ai)
+
+	conversion_map = {
+		"outColor": "out",
+		"outColorR": "out",
+		"outColorG": "out",
+		"outColorB": "out",
+	}
+
+	rpr += "." + conversion_map[source]
+	return rpr
+
+
+def convertaiCurvature(ai, source):
+
+	rpr = cmds.shadingNode("RPRAmbientOcclusion", asUtility=True)
+	rpr = cmds.rename(rpr, ai + "_rpr")
+		
+	# Logging to file
+	start_log(ai, rpr)
+
+	# Fields conversion
+	setProperty(rpr, "side", 1)
+	setProperty(rpr, "occludedColor", (1, 1, 1))
+	setProperty(rpr, "unoccludedColor", (0, 0, 0))
+	if mapDoesNotExist(ai, "radius"):
+		setProperty(rpr, "radius", getProperty(ai, "radius") / 100)
+
+	# Logging to file
+	end_log(ai)
+
+	conversion_map = {
+		"outColor": "output",
+		"outColorR": "outputR",
+		"outColorG": "outputG",
+		"outColorB": "outputB",
+	}
+
+	rpr += "." + conversion_map[source]
+	return rpr
+
+
+def convertaiBlackbody(ai, source):
+
+	rpr = cmds.shadingNode("RPRUberMaterial", asShader=True)
+	rpr = cmds.rename(rpr, ai + "_rpr")
+		
+	# Logging to file
+	start_log(ai, rpr)
+
+	# Fields conversion
+	setProperty(rpr, "diffuse", 0)
+	setProperty(rpr, "emissive", 1)
+
+	temperature = getProperty(ai, "temperature") / 100
+
+	if temperature <= 66:
+		colorR = 255
+	else:
+		colorR = temperature - 60
+		colorR = 329.698727446 * colorR ** -0.1332047592
+		if colorR < 0:
+			colorR = 0
+		if colorR > 255:
+			colorR = 255
+
+
+	if temperature <= 66:
+		colorG = temperature
+		colorG = 99.4708025861 * math.log(colorG) - 161.1195681661
+		if colorG < 0:
+			colorG = 0
+		if colorG > 255:
+			colorG = 255
+	else:
+		colorG = temperature - 60
+		colorG = 288.1221695283 * colorG ** -0.0755148492
+		if colorG < 0:
+			colorG = 0
+		if colorG > 255:
+			colorG = 255
+
+
+	if temperature >= 66:
+		colorB = 255
+	elif temperature <= 19:
+		colorB = 0
+	else:
+		colorB = temperature - 10
+		colorB = 138.5177312231 * math.log(colorB) - 305.0447927307
+		if colorB < 0:
+			colorB = 0
+		if colorB > 255:
+			colorB = 255
+
+	colorR = colorR / 255
+	colorG = colorG / 255
+	colorB = colorB / 255
+
+	setProperty(rpr, "emissiveColor", (colorR, colorG, colorB))
+	copyProperty(rpr, ai, "emissiveIntensity", "intensity")
+
+	# Logging to file
+	end_log(ai)
+
+	rpr += "." + source
+	return rpr
+
+
 def convertaiColorConvert(ai, source):
 
 	from_value = getProperty(ai, "from")
 	to_value = getProperty(ai, "to")
-
-	print(from_value)
-	print(to_value)
 
 	if from_value == 0 and to_value == 1:
 		objectType = "rgbToHsv"
@@ -784,6 +933,67 @@ def convertaiImage(ai, source):
 	}
 
 	rpr += "." + conversion_map[source]
+	return rpr
+
+
+def convertaiNoise(ai, source):
+
+	rpr = cmds.shadingNode("noise", asUtility=True)
+	rpr = cmds.rename(rpr, ai + "_rpr")
+
+	texture = cmds.shadingNode("place2dTexture", asUtility=True)
+
+	connectProperty(texture, "outUV", rpr, "uv")
+	connectProperty(texture, "outUvFilterSize", rpr, "uvFilterSize")
+		
+	# Logging to file
+	start_log(ai, rpr)
+
+	# Fields conversion
+	copyProperty(rpr, ai, "frequencyRatio", "octaves")
+	copyProperty(rpr, ai, "frequency", "octaves")
+	copyProperty(rpr, ai, "threshold", "distortion")
+	copyProperty(rpr, ai, "ratio", "lacunarity")
+	copyProperty(rpr, ai, "amplitude", "amplitude")
+	copyProperty(rpr, ai, "defaultColor", "color1")
+	copyProperty(rpr, ai, "colorGain", "color1")
+	copyProperty(rpr, ai, "colorOffset", "color2")
+
+	# Logging to file
+	end_log(ai)
+
+	rpr += "." + source
+	return rpr
+
+
+def convertaiCellNoise(ai, source):
+
+	rpr = cmds.shadingNode("noise", asUtility=True)
+	rpr = cmds.rename(rpr, ai + "_rpr")
+
+	texture = cmds.shadingNode("place2dTexture", asUtility=True)
+
+	connectProperty(texture, "outUV", rpr, "uv")
+	connectProperty(texture, "outUvFilterSize", rpr, "uvFilterSize")
+		
+	# Logging to file
+	start_log(ai, rpr)
+
+	# Fields conversion
+	copyProperty(rpr, ai, "frequencyRatio", "octaves")
+	copyProperty(rpr, ai, "frequency", "octaves")
+	copyProperty(rpr, ai, "ratio", "lacunarity")
+	copyProperty(rpr, ai, "amplitude", "amplitude")
+	copyProperty(rpr, ai, "defaultColor", "color")
+	copyProperty(rpr, ai, "colorGain", "color")
+	copyProperty(rpr, ai, "colorOffset", "palette")
+	copyProperty(rpr, ai, "density", "density")
+	copyProperty(rpr, ai, "randomness", "randomness")
+
+	# Logging to file
+	end_log(ai)
+
+	rpr += "." + source
 	return rpr
 
 
@@ -1088,10 +1298,14 @@ def convertaiStandardSurface(aiMaterial, source):
 	if bumpConnections:
 		setProperty(rprMaterial, "normalMapEnable", 1)
 		copyProperty(rprMaterial, aiMaterial, "normalMap", "normalCamera")
-		setProperty(rprMaterial, "useShaderNormal", 1)
-		setProperty(rprMaterial, "reflectUseShaderNormal", 1)
-		setProperty(rprMaterial, "refractUseShaderNormal", 1)
-		setProperty(rprMaterial, "coatUseShaderNormal", 1)
+		if getProperty(aiMaterial, "base"):
+			copyProperty(rprMaterial, aiMaterial, "diffuseNormal", "normalCamera")
+		if getProperty(aiMaterial, "specular"):
+			copyProperty(rprMaterial, aiMaterial, "reflectNormal", "normalCamera")
+		if getProperty(aiMaterial, "transmission"):
+			copyProperty(rprMaterial, aiMaterial, "refractNormal", "normalCamera")
+		if getProperty(aiMaterial, "coat"):
+			copyProperty(rprMaterial, aiMaterial, "coatNormal", "normalCamera")
 	
 	# Logging in file
 	end_log(aiMaterial)
@@ -1494,9 +1708,9 @@ def convertaiAtmosphere(aiAtmosphere):
 
 	# create sphere
 	cmds.polySphere(n="Volume")
-	setProperty("Volume", "scaleX", 999)
-	setProperty("Volume", "scaleY", 999)
-	setProperty("Volume", "scaleZ", 999)
+	setProperty("Volume", "scaleX", 2000)
+	setProperty("Volume", "scaleY", 2000)
+	setProperty("Volume", "scaleZ", 2000)
 
 	# assign material
 	cmds.select("Volume")
@@ -1506,6 +1720,8 @@ def convertaiAtmosphere(aiAtmosphere):
 	start_log(aiAtmosphere, rprMaterial) 
 
 	# Fields conversion
+	setProperty(rprMaterial, "multiscatter", 0)
+
 	aiAtmosphereType = cmds.objectType(aiAtmosphere)
 	if aiAtmosphereType == "aiFog":
 		copyProperty(rprMaterial, aiAtmosphere, "emissionColor", "color")
@@ -1517,7 +1733,7 @@ def convertaiAtmosphere(aiAtmosphere):
 		copyProperty(rprMaterial, aiAtmosphere, "transmissionColor", "rgbDensity")
 		copyProperty(rprMaterial, aiAtmosphere, "scatteringDirection", "eccentricity")
 
-		density = getProperty(aiAtmosphere, "scatteringAmount") * 8
+		density = getProperty(aiAtmosphere, "scatteringAmount") / 10
 		setProperty(rprMaterial, "density", density)
 	
 	# Logging to file
@@ -1552,6 +1768,7 @@ def convertaiMaterial(aiMaterial, source):
 		"aiBump2d": convertaiBump2d,
 		"aiBump3d": convertaiBump3d,
 		"aiNormalMap": convertaiNormalMap,
+		"aiVectorMap": convertaiVectorMap,
 		"aiAdd": convertaiAdd,
 		"aiMultiply": convertaiMultiply,
 		"aiDivide": convertaiDivide,
@@ -1564,7 +1781,12 @@ def convertaiMaterial(aiMaterial, source):
 		"aiTrigo": convertaiTrigo,
 		"aiImage": convertaiImage,
 		"aiFacingRatio": convertaiFacingRatio,
+		"aiThinFilm": convertaiThinFilm,
 		"aiColorConvert": convertaiColorConvert,
+		"aiCellNoise": convertaiCellNoise,
+		"aiNoise": convertaiNoise,
+		"aiBlackbody": convertaiBlackbody,
+		"aiCurvature": convertaiCurvature,
 		"multiplyDivide": convertmultiplyDivide
 	}
 
@@ -1720,7 +1942,7 @@ def convertScene():
 	
 	setProperty("defaultRenderGlobals", "currentRenderer", "FireRender")
 	setProperty("defaultRenderGlobals", "imageFormat", 8)
-	setProperty("RadeonProRenderGlobals", "applyGammaToMayaViews", 1)
+	# setProperty("RadeonProRenderGlobals", "applyGammaToMayaViews", 1)
 	
 	matteShadowCatcher = cmds.ls(materials=True, type="aiShadowMatte")
 	if matteShadowCatcher:
