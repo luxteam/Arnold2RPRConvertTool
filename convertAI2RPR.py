@@ -186,15 +186,30 @@ def convertDisplacement(ai_sg, rpr_name):
 		displacement = cmds.listConnections(ai_sg + ".displacementShader")
 		if displacement:
 			displacementType = cmds.objectType(displacement[0])
+
 			if displacementType == "displacementShader":
 				displacement_file = cmds.listConnections(displacement[0], type="file")
 				if displacement_file:
 					setProperty(rpr_name, "displacementEnable", 1)
 					connectProperty(displacement_file[0], "outColor", rpr_name, "displacementMap")
 					copyProperty(rpr_name, displacement[0], "scale", "displacementMax")
+
 			elif displacementType == "file":
 				setProperty(rpr_name, "displacementEnable", 1)
 				connectProperty(displacement[0], "outColor", rpr_name, "displacementMap")
+
+			elif displacementType == "aiVectorMap":
+				displacement_file = cmds.listConnections(displacement[0], type="file")
+				if displacement_file:
+					setProperty(rpr_name, "displacementEnable", 1)
+					connectProperty(displacement_file[0], "outColor", rpr_name, "displacementMap")
+
+					meshs = cmds.listConnections(ai_sg, type="mesh")
+					if meshs:
+						shapes = cmds.listRelatives(meshs[0], type="mesh")
+						copyProperty(rpr_name, shapes[0], "displacementMin", "aiDispHeight")
+						copyProperty(rpr_name, shapes[0], "displacementCreaseWeight", "aiDispPadding")
+
 	except Exception as ex:
 		traceback.print_exc()
 		print(u"Failed to convert displacement for {} material".format(rpr_name).encode('utf-8'))
@@ -206,14 +221,22 @@ def convertShadowDisplacement(ai_sg, rpr_name):
 		displacement = cmds.listConnections(ai_sg + ".displacementShader")
 		if displacement:
 			displacementType = cmds.objectType(displacement[0])
+
 			if displacementType == "displacementShader":
 				displacement_file = cmds.listConnections(displacement[0], type="file")
 				if displacement_file:
 					setProperty(rpr_name, "useDispMap", 1)
 					connectProperty(displacement_file[0], "outColor", rpr_name, "dispMap")
+
 			elif displacementType == "file":
 				setProperty(rpr_name, "useDispMap", 1)
 				connectProperty(displacement[0], "outColor", rpr_name, "dispMap")
+
+			elif displacementType == "aiVectorMap":
+				displacement_file = cmds.listConnections(displacement[0], type="file")
+				if displacement_file:
+					setProperty(rpr_name, "useDispMap", 1)
+					connectProperty(displacement_file[0], "outColor", rpr_name, "dispMap")
 	except Exception as ex:
 		traceback.print_exc()
 		print(u"Failed to convert displacement for {} material".format(rpr_name).encode('utf-8'))
