@@ -883,15 +883,25 @@ def convertaiCurvature(ai, source):
 
 def convertaiBlackbody(ai, source):
 
-	rpr = cmds.shadingNode("RPRUberMaterial", asShader=True)
+	rpr = cmds.shadingNode("RPRArithmetic", asUtility=True)
 	rpr = cmds.rename(rpr, ai + "_rpr")
-		
+
 	# Logging to file
 	start_log(ai, rpr)
 
 	# Fields conversion
-	setProperty(rpr, "diffuse", 0)
-	setProperty(rpr, "emissive", 1)
+	arithmetic1 = cmds.shadingNode("RPRArithmetic", asUtility=True)
+	setProperty(arithmetic1, "operation", 19)
+	intensity = getProperty(ai, "intensity")
+	setProperty(arithmetic1, "inputA", (intensity, intensity, intensity))
+
+	arithmetic2 = cmds.shadingNode("RPRArithmetic", asUtility=True)
+	setProperty(arithmetic1, "operation", 2)
+	connectProperty(arithmetic1, "out", arithmetic2, "inputA")
+	setProperty(arithmetic2, "inputB", (0.01, 0.01, 0.01))
+
+	arithmetic3 = cmds.shadingNode("RPRArithmetic", asUtility=True)
+	setProperty(arithmetic1, "operation", 0)
 
 	temperature = getProperty(ai, "temperature") / 100
 
@@ -938,13 +948,24 @@ def convertaiBlackbody(ai, source):
 	colorG = colorG / 255
 	colorB = colorB / 255
 
-	setProperty(rpr, "emissiveColor", (colorR, colorG, colorB))
-	copyProperty(rpr, ai, "emissiveIntensity", "intensity")
+	setProperty(arithmetic3, "inputA", (colorR, colorG, colorB))
+	setProperty(arithmetic3, "inputB", (colorR, colorG, colorB))
+
+	setProperty(rpr, "operation", 0)
+	connectProperty(arithmetic2, "out", rpr, "inputA")
+	connectProperty(arithmetic3, "out", rpr, "inputB")
 
 	# Logging to file
 	end_log(ai)
 
-	rpr += "." + source
+	conversion_map = {
+		"outColor": "out",
+		"outColorR": "outR",
+		"outColorG": "outG",
+		"outColorB": "outB",
+	}
+
+	rpr += "." + conversion_map[source]
 	return rpr
 
 
