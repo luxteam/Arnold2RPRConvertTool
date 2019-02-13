@@ -550,6 +550,42 @@ def convertmultiplyDivide(ai, source):
 	return rpr
 
 
+def convertaiComposite(ai, source):
+
+	rpr = cmds.shadingNode("RPRArithmetic", asUtility=True)
+	rpr = cmds.rename(rpr, ai + "_rpr")
+
+	# Logging to file
+	start_log(ai, rpr)
+
+	# Fields conversion
+	operation = getProperty(ai, "operation")
+	operation_map = {
+		7: 3, # divide
+		19: 2, # mulitply
+		23: 0, # plus 
+		18: 1, # minus
+
+ 	}
+	setProperty(rpr, "operation", operation_map[operation])
+	copyProperty(rpr, ai, "inputA", "A")
+	copyProperty(rpr, ai, "inputB", "B")
+	
+	# Logging to file
+	end_log(ai)
+
+	conversion_map = {
+		"outColor": "out",
+		"outColorR": "outX",
+		"outColorG": "outY",
+		"outColorB": "outZ",
+		"outAlpha": "outX"
+	}
+
+	rpr += "." + conversion_map[source]
+	return rpr
+
+
 def convertbump2d(ai, source):
 
 	bump_type = getProperty(ai, "bumpInterp")
@@ -1859,6 +1895,7 @@ def convertaiMaterial(aiMaterial, source):
 		"aiDot": convertaiDot,
 		"aiPow": convertaiPow,
 		"aiTrigo": convertaiTrigo,
+		"aiComposite": convertaiComposite,
 		"aiImage": convertaiImage,
 		"aiFacingRatio": convertaiFacingRatio,
 		"aiThinFilm": convertaiThinFilm,
