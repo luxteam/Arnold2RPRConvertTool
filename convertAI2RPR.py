@@ -244,19 +244,22 @@ def convertShadowDisplacement(ai_sg, rpr_name):
 
 def convertaiAdd(ai, source):
 
-	rpr = cmds.shadingNode("RPRArithmetic", asUtility=True)
-	rpr = cmds.rename(rpr, ai + "_rpr")
+	if cmds.objExists(ai + "_rpr"):
+		rpr = ai + "_rpr"
+	else:
+		rpr = cmds.shadingNode("RPRArithmetic", asUtility=True)
+		rpr = cmds.rename(rpr, ai + "_rpr")
 
-	# Logging to file
-	start_log(ai, rpr)
+		# Logging to file
+		start_log(ai, rpr)
 
-	# Fields conversion
-	setProperty(rpr, "operation", 0)
-	copyProperty(rpr, ai, "inputA", "input1")
-	copyProperty(rpr, ai, "inputB", "input2")
-	
-	# Logging to file
-	end_log(ai)
+		# Fields conversion
+		setProperty(rpr, "operation", 0)
+		copyProperty(rpr, ai, "inputA", "input1")
+		copyProperty(rpr, ai, "inputB", "input2")
+		
+		# Logging to file
+		end_log(ai)
 
 	conversion_map = {
 		"outColor": "out",
@@ -271,19 +274,22 @@ def convertaiAdd(ai, source):
 
 def convertaiDivide(ai, source):
 
-	rpr = cmds.shadingNode("RPRArithmetic", asUtility=True)
-	rpr = cmds.rename(rpr, ai + "_rpr")
+	if cmds.objExists(ai + "_rpr"):
+		rpr = ai + "_rpr"
+	else:
+		rpr = cmds.shadingNode("RPRArithmetic", asUtility=True)
+		rpr = cmds.rename(rpr, ai + "_rpr")
 
-	# Logging to file
-	start_log(ai, rpr)
+		# Logging to file
+		start_log(ai, rpr)
 
-	# Fields conversion
-	setProperty(rpr, "operation", 3)
-	copyProperty(rpr, ai, "inputA", "input1")
-	copyProperty(rpr, ai, "inputB", "input2")
-	
-	# Logging to file
-	end_log(ai)
+		# Fields conversion
+		setProperty(rpr, "operation", 3)
+		copyProperty(rpr, ai, "inputA", "input1")
+		copyProperty(rpr, ai, "inputB", "input2")
+		
+		# Logging to file
+		end_log(ai)
 
 	conversion_map = {
 		"outColor": "out",
@@ -298,19 +304,22 @@ def convertaiDivide(ai, source):
 
 def convertaiSubstract(ai, source):
 
-	rpr = cmds.shadingNode("RPRArithmetic", asUtility=True)
-	rpr = cmds.rename(rpr, ai + "_rpr")
+	if cmds.objExists(ai + "_rpr"):
+		rpr = ai + "_rpr"
+	else:
+		rpr = cmds.shadingNode("RPRArithmetic", asUtility=True)
+		rpr = cmds.rename(rpr, ai + "_rpr")
 
-	# Logging to file
-	start_log(ai, rpr)
+		# Logging to file
+		start_log(ai, rpr)
 
-	# Fields conversion
-	setProperty(rpr, "operation", 1)
-	copyProperty(rpr, ai, "inputA", "input1")
-	copyProperty(rpr, ai, "inputB", "input2")
-	
-	# Logging to file
-	end_log(ai)
+		# Fields conversion
+		setProperty(rpr, "operation", 1)
+		copyProperty(rpr, ai, "inputA", "input1")
+		copyProperty(rpr, ai, "inputB", "input2")
+		
+		# Logging to file
+		end_log(ai)
 
 	conversion_map = {
 		"outColor": "out",
@@ -329,19 +338,22 @@ def convertaiSubstract(ai, source):
 
 def convertaiMultiply(ai, source):
 
-	rpr = cmds.shadingNode("RPRArithmetic", asUtility=True)
-	rpr = cmds.rename(rpr, ai + "_rpr")
+	if cmds.objExists(ai + "_rpr"):
+		rpr = ai + "_rpr"
+	else:
+		rpr = cmds.shadingNode("RPRArithmetic", asUtility=True)
+		rpr = cmds.rename(rpr, ai + "_rpr")
 
-	# Logging to file
-	start_log(ai, rpr)
+		# Logging to file
+		start_log(ai, rpr)
 
-	# Fields conversion
-	setProperty(rpr, "operation", 2)
-	copyProperty(rpr, ai, "inputA", "input1")
-	copyProperty(rpr, ai, "inputB", "input2")
-	
-	# Logging to file
-	end_log(ai)
+		# Fields conversion
+		setProperty(rpr, "operation", 2)
+		copyProperty(rpr, ai, "inputA", "input1")
+		copyProperty(rpr, ai, "inputB", "input2")
+		
+		# Logging to file
+		end_log(ai)
 
 	conversion_map = {
 		"outColor": "out",
@@ -356,18 +368,21 @@ def convertaiMultiply(ai, source):
 
 def convertaiAbs(ai, source):
 
-	rpr = cmds.shadingNode("RPRArithmetic", asUtility=True)
-	rpr = cmds.rename(rpr, ai + "_rpr")
+	if cmds.objExists(ai + "_rpr"):
+		rpr = ai + "_rpr"
+	else:
+		rpr = cmds.shadingNode("RPRArithmetic", asUtility=True)
+		rpr = cmds.rename(rpr, ai + "_rpr")
 
-	# Logging to file
-	start_log(ai, rpr)
+		# Logging to file
+		start_log(ai, rpr)
 
-	# Fields conversion
-	setProperty(rpr, "operation", 20)
-	copyProperty(rpr, ai, "inputA", "input")
-	
-	# Logging to file
-	end_log(ai)
+		# Fields conversion
+		setProperty(rpr, "operation", 20)
+		copyProperty(rpr, ai, "inputA", "input")
+		
+		# Logging to file
+		end_log(ai)
 
 	conversion_map = {
 		"outColor": "out",
@@ -382,19 +397,22 @@ def convertaiAbs(ai, source):
 
 def convertaiAtan(ai, source):
 
-	rpr = cmds.shadingNode("RPRArithmetic", asUtility=True)
-	rpr = cmds.rename(rpr, ai + "_rpr")
+	if cmds.objExists(ai + "_rpr"):
+		rpr = ai + "_rpr"
+	else:
+		rpr = cmds.shadingNode("RPRArithmetic", asUtility=True)
+		rpr = cmds.rename(rpr, ai + "_rpr")
 
-	# Logging to file
-	start_log(ai, rpr)
+		# Logging to file
+		start_log(ai, rpr)
 
-	# Fields conversion
-	setProperty(rpr, "operation", 18)
-	copyProperty(rpr, ai, "inputA", "x")
-	copyProperty(rpr, ai, "inputB", "y")
-	
-	# Logging to file
-	end_log(ai)
+		# Fields conversion
+		setProperty(rpr, "operation", 18)
+		copyProperty(rpr, ai, "inputA", "x")
+		copyProperty(rpr, ai, "inputB", "y")
+		
+		# Logging to file
+		end_log(ai)
 
 	conversion_map = {
 		"outColor": "out",
@@ -409,19 +427,22 @@ def convertaiAtan(ai, source):
 
 def convertaiCross(ai, source):
 
-	rpr = cmds.shadingNode("RPRArithmetic", asUtility=True)
-	rpr = cmds.rename(rpr, ai + "_rpr")
+	if cmds.objExists(ai + "_rpr"):
+		rpr = ai + "_rpr"
+	else:
+		rpr = cmds.shadingNode("RPRArithmetic", asUtility=True)
+		rpr = cmds.rename(rpr, ai + "_rpr")
 
-	# Logging to file
-	start_log(ai, rpr)
+		# Logging to file
+		start_log(ai, rpr)
 
-	# Fields conversion
-	setProperty(rpr, "operation", 12)
-	copyProperty(rpr, ai, "inputA", "input1")
-	copyProperty(rpr, ai, "inputB", "input2")
-	
-	# Logging to file
-	end_log(ai)
+		# Fields conversion
+		setProperty(rpr, "operation", 12)
+		copyProperty(rpr, ai, "inputA", "input1")
+		copyProperty(rpr, ai, "inputB", "input2")
+		
+		# Logging to file
+		end_log(ai)
 
 	conversion_map = {
 		"outValue": "out",
@@ -436,19 +457,22 @@ def convertaiCross(ai, source):
 
 def convertaiDot(ai, source):
 
-	rpr = cmds.shadingNode("RPRArithmetic", asUtility=True)
-	rpr = cmds.rename(rpr, ai + "_rpr")
+	if cmds.objExists(ai + "_rpr"):
+		rpr = ai + "_rpr"
+	else:
+		rpr = cmds.shadingNode("RPRArithmetic", asUtility=True)
+		rpr = cmds.rename(rpr, ai + "_rpr")
 
-	# Logging to file
-	start_log(ai, rpr)
+		# Logging to file
+		start_log(ai, rpr)
 
-	# Fields conversion
-	setProperty(rpr, "operation", 11)
-	copyProperty(rpr, ai, "inputA", "input1")
-	copyProperty(rpr, ai, "inputB", "input2")
-	
-	# Logging to file
-	end_log(ai)
+		# Fields conversion
+		setProperty(rpr, "operation", 11)
+		copyProperty(rpr, ai, "inputA", "input1")
+		copyProperty(rpr, ai, "inputB", "input2")
+		
+		# Logging to file
+		end_log(ai)
 
 	conversion_map = {
 		"outValue": "outX"
@@ -460,19 +484,22 @@ def convertaiDot(ai, source):
 
 def convertaiPow(ai, source):
 
-	rpr = cmds.shadingNode("RPRArithmetic", asUtility=True)
-	rpr = cmds.rename(rpr, ai + "_rpr")
+	if cmds.objExists(ai + "_rpr"):
+		rpr = ai + "_rpr"
+	else:
+		rpr = cmds.shadingNode("RPRArithmetic", asUtility=True)
+		rpr = cmds.rename(rpr, ai + "_rpr")
 
-	# Logging to file
-	start_log(ai, rpr)
+		# Logging to file
+		start_log(ai, rpr)
 
-	# Fields conversion
-	setProperty(rpr, "operation", 15)
-	copyProperty(rpr, ai, "inputA", "base")
-	copyProperty(rpr, ai, "inputB", "exponent")
-	
-	# Logging to file
-	end_log(ai)
+		# Fields conversion
+		setProperty(rpr, "operation", 15)
+		copyProperty(rpr, ai, "inputA", "base")
+		copyProperty(rpr, ai, "inputB", "exponent")
+		
+		# Logging to file
+		end_log(ai)
 
 	conversion_map = {
 		"outColor": "out",
@@ -487,24 +514,27 @@ def convertaiPow(ai, source):
 
 def convertaiTrigo(ai, source):
 
-	rpr = cmds.shadingNode("RPRArithmetic", asUtility=True)
-	rpr = cmds.rename(rpr, ai + "_rpr")
+	if cmds.objExists(ai + "_rpr"):
+		rpr = ai + "_rpr"
+	else:
+		rpr = cmds.shadingNode("RPRArithmetic", asUtility=True)
+		rpr = cmds.rename(rpr, ai + "_rpr")
 
-	# Logging to file
-	start_log(ai, rpr)
+		# Logging to file
+		start_log(ai, rpr)
 
-	# Fields conversion
-	function = getProperty(ai, "function")
-	operation_map = {
-		0: 5,
-		1: 4,
-		2: 6
- 	}
-	setProperty(rpr, "operation", operation_map[function])
-	copyProperty(rpr, ai, "inputA", "input")
-	
-	# Logging to file
-	end_log(ai)
+		# Fields conversion
+		function = getProperty(ai, "function")
+		operation_map = {
+			0: 5,
+			1: 4,
+			2: 6
+	 	}
+		setProperty(rpr, "operation", operation_map[function])
+		copyProperty(rpr, ai, "inputA", "input")
+		
+		# Logging to file
+		end_log(ai)
 
 	conversion_map = {
 		"outColor": "out",
@@ -519,25 +549,28 @@ def convertaiTrigo(ai, source):
 
 def convertmultiplyDivide(ai, source):
 
-	rpr = cmds.shadingNode("RPRArithmetic", asUtility=True)
-	rpr = cmds.rename(rpr, ai + "_rpr")
+	if cmds.objExists(ai + "_rpr"):
+		rpr = ai + "_rpr"
+	else:
+		rpr = cmds.shadingNode("RPRArithmetic", asUtility=True)
+		rpr = cmds.rename(rpr, ai + "_rpr")
 
-	# Logging to file
-	start_log(ai, rpr)
+		# Logging to file
+		start_log(ai, rpr)
 
-	# Fields conversion
-	operation = getProperty(ai, "operation")
-	operation_map = {
-		1: 2,
-		2: 3,
-		3: 15
- 	}
-	setProperty(rpr, "operation", operation_map[operation])
-	copyProperty(rpr, ai, "inputA", "input1")
-	copyProperty(rpr, ai, "inputB", "input2")
-	
-	# Logging to file
-	end_log(ai)
+		# Fields conversion
+		operation = getProperty(ai, "operation")
+		operation_map = {
+			1: 2,
+			2: 3,
+			3: 15
+	 	}
+		setProperty(rpr, "operation", operation_map[operation])
+		copyProperty(rpr, ai, "inputA", "input1")
+		copyProperty(rpr, ai, "inputB", "input2")
+		
+		# Logging to file
+		end_log(ai)
 
 	conversion_map = {
 		"output": "out",
@@ -552,27 +585,30 @@ def convertmultiplyDivide(ai, source):
 
 def convertaiComposite(ai, source):
 
-	rpr = cmds.shadingNode("RPRArithmetic", asUtility=True)
-	rpr = cmds.rename(rpr, ai + "_rpr")
+	if cmds.objExists(ai + "_rpr"):
+		rpr = ai + "_rpr"
+	else:
+		rpr = cmds.shadingNode("RPRArithmetic", asUtility=True)
+		rpr = cmds.rename(rpr, ai + "_rpr")
 
-	# Logging to file
-	start_log(ai, rpr)
+		# Logging to file
+		start_log(ai, rpr)
 
-	# Fields conversion
-	operation = getProperty(ai, "operation")
-	operation_map = {
-		7: 3, # divide
-		19: 2, # mulitply
-		23: 0, # plus 
-		18: 1, # minus
+		# Fields conversion
+		operation = getProperty(ai, "operation")
+		operation_map = {
+			7: 3, # divide
+			19: 2, # mulitply
+			23: 0, # plus 
+			18: 1, # minus
 
- 	}
-	setProperty(rpr, "operation", operation_map[operation])
-	copyProperty(rpr, ai, "inputA", "A")
-	copyProperty(rpr, ai, "inputB", "B")
-	
-	# Logging to file
-	end_log(ai)
+	 	}
+		setProperty(rpr, "operation", operation_map[operation])
+		copyProperty(rpr, ai, "inputA", "A")
+		copyProperty(rpr, ai, "inputB", "B")
+		
+		# Logging to file
+		end_log(ai)
 
 	conversion_map = {
 		"outColor": "out",
@@ -588,21 +624,24 @@ def convertaiComposite(ai, source):
 
 def convertaiSqrt(ai, source):
 
-	rpr = cmds.shadingNode("RPRArithmetic", asUtility=True)
-	rpr = cmds.rename(rpr, ai + "_rpr")
+	if cmds.objExists(ai + "_rpr"):
+		rpr = ai + "_rpr"
+	else:
+		rpr = cmds.shadingNode("RPRArithmetic", asUtility=True)
+		rpr = cmds.rename(rpr, ai + "_rpr")
 
-	# Logging to file
-	start_log(ai, rpr)
+		# Logging to file
+		start_log(ai, rpr)
 
-	# Fields conversion
-	setProperty(rpr, "operation", 0)
-	sqrt_value = []
-	for value in getProperty(ai, "input"):
-		sqrt_value.append(math.sqrt(float(value)))
-	setProperty(rpr, "inputA", tuple(sqrt_value))
-	
-	# Logging to file
-	end_log(ai)
+		# Fields conversion
+		setProperty(rpr, "operation", 0)
+		sqrt_value = []
+		for value in getProperty(ai, "input"):
+			sqrt_value.append(math.sqrt(float(value)))
+		setProperty(rpr, "inputA", tuple(sqrt_value))
+		
+		# Logging to file
+		end_log(ai)
 
 	conversion_map = {
 		"outColor": "out",
@@ -617,18 +656,21 @@ def convertaiSqrt(ai, source):
 
 def convertaiNegate(ai, source):
 
-	rpr = cmds.shadingNode("RPRArithmetic", asUtility=True)
-	rpr = cmds.rename(rpr, ai + "_rpr")
+	if cmds.objExists(ai + "_rpr"):
+		rpr = ai + "_rpr"
+	else:
+		rpr = cmds.shadingNode("RPRArithmetic", asUtility=True)
+		rpr = cmds.rename(rpr, ai + "_rpr")
 
-	# Logging to file
-	start_log(ai, rpr)
+		# Logging to file
+		start_log(ai, rpr)
 
-	# Fields conversion
-	setProperty(rpr, "operation", 1)
-	copyProperty(rpr, ai, "inputB", "input")
-	
-	# Logging to file
-	end_log(ai)
+		# Fields conversion
+		setProperty(rpr, "operation", 1)
+		copyProperty(rpr, ai, "inputB", "input")
+		
+		# Logging to file
+		end_log(ai)
 
 	conversion_map = {
 		"outColor": "out",
@@ -643,28 +685,31 @@ def convertaiNegate(ai, source):
 
 def convertbump2d(ai, source):
 
-	bump_type = getProperty(ai, "bumpInterp")
-	if not bump_type:
-		rpr = cmds.shadingNode("RPRBump", asUtility=True)
-		rpr = cmds.rename(rpr, ai + "_rpr")
+	if cmds.objExists(ai + "_rpr"):
+		rpr = ai + "_rpr"
 	else:
-		rpr = cmds.shadingNode("RPRNormal", asUtility=True)
-		rpr = cmds.rename(rpr, ai + "_rpr")
+		bump_type = getProperty(ai, "bumpInterp")
+		if not bump_type:
+			rpr = cmds.shadingNode("RPRBump", asUtility=True)
+			rpr = cmds.rename(rpr, ai + "_rpr")
+		else:
+			rpr = cmds.shadingNode("RPRNormal", asUtility=True)
+			rpr = cmds.rename(rpr, ai + "_rpr")
 
-	# Logging to file
-	start_log(ai, rpr)
+		# Logging to file
+		start_log(ai, rpr)
 
-	# Fields conversion
+		# Fields conversion
 
-	# only file support (alpha and color connections)
-	bumpConnections = cmds.listConnections(ai + ".bumpValue", type="file")
-	if bumpConnections:
-		connectProperty(bumpConnections[0], "outColor", rpr, "color")
+		# only file support (alpha and color connections)
+		bumpConnections = cmds.listConnections(ai + ".bumpValue", type="file")
+		if bumpConnections:
+			connectProperty(bumpConnections[0], "outColor", rpr, "color")
 
-	setProperty(rpr, "strength", getProperty(ai, "bumpDepth") * 100)
+		setProperty(rpr, "strength", getProperty(ai, "bumpDepth") * 100)
 
-	# Logging to file
-	end_log(ai)
+		# Logging to file
+		end_log(ai)
 
 	conversion_map = {
 		"outNormal": "out",
@@ -679,23 +724,26 @@ def convertbump2d(ai, source):
 
 def convertaiBump2d(ai, source):
 
-	rpr = cmds.shadingNode("RPRBump", asUtility=True)
-	rpr = cmds.rename(rpr, ai + "_rpr")
-		
-	# Logging to file
-	start_log(ai, rpr)
+	if cmds.objExists(ai + "_rpr"):
+		rpr = ai + "_rpr"
+	else:
+		rpr = cmds.shadingNode("RPRBump", asUtility=True)
+		rpr = cmds.rename(rpr, ai + "_rpr")
+			
+		# Logging to file
+		start_log(ai, rpr)
 
-	# Fields conversion
+		# Fields conversion
 
-	# only file support (alpha and color connections)
-	bumpConnections = cmds.listConnections(ai + ".bumpMap", type="file")
-	if bumpConnections:
-		connectProperty(bumpConnections[0], "outColor", rpr, "color")
+		# only file support (alpha and color connections)
+		bumpConnections = cmds.listConnections(ai + ".bumpMap", type="file")
+		if bumpConnections:
+			connectProperty(bumpConnections[0], "outColor", rpr, "color")
 
-	setProperty(rpr, "strength", getProperty(ai, "bumpHeight") * 100)
+		setProperty(rpr, "strength", getProperty(ai, "bumpHeight") * 100)
 
-	# Logging to file
-	end_log(ai)
+		# Logging to file
+		end_log(ai)
 
 	conversion_map = {
 		"outValue": "out",
@@ -710,23 +758,26 @@ def convertaiBump2d(ai, source):
 
 def convertaiBump3d(ai, source):
 
-	rpr = cmds.shadingNode("RPRBump", asUtility=True)
-	rpr = cmds.rename(rpr, ai + "_rpr")
-		
-	# Logging to file
-	start_log(ai, rpr)
+	if cmds.objExists(ai + "_rpr"):
+		rpr = ai + "_rpr"
+	else:
+		rpr = cmds.shadingNode("RPRBump", asUtility=True)
+		rpr = cmds.rename(rpr, ai + "_rpr")
+			
+		# Logging to file
+		start_log(ai, rpr)
 
-	# Fields conversion
+		# Fields conversion
 
-	# only file support (alpha and color connections)
-	bumpConnections = cmds.listConnections(ai + ".bumpMap", type="file")
-	if bumpConnections:
-		connectProperty(bumpConnections[0], "outColor", rpr, "color")
+		# only file support (alpha and color connections)
+		bumpConnections = cmds.listConnections(ai + ".bumpMap", type="file")
+		if bumpConnections:
+			connectProperty(bumpConnections[0], "outColor", rpr, "color")
 
-	setProperty(rpr, "strength", getProperty(ai, "bumpHeight") * 100)
+		setProperty(rpr, "strength", getProperty(ai, "bumpHeight") * 100)
 
-	# Logging to file
-	end_log(ai)
+		# Logging to file
+		end_log(ai)
 
 	conversion_map = {
 		"outValue": "out",
@@ -741,22 +792,25 @@ def convertaiBump3d(ai, source):
 
 def convertaiNormalMap(ai, source):
 
-	rpr = cmds.shadingNode("RPRNormal", asUtility=True)
-	rpr = cmds.rename(rpr, ai + "_rpr")
-	
-	# Logging to file
-	start_log(ai, rpr)
-
-	# Fields conversion
-	if mapDoesNotExist(ai, "input"):
-		copyProperty(rpr, ai, "color", "normal")
+	if cmds.objExists(ai + "_rpr"):
+		rpr = ai + "_rpr"
 	else:
-		copyProperty(rpr, ai, "color", "input")
+		rpr = cmds.shadingNode("RPRNormal", asUtility=True)
+		rpr = cmds.rename(rpr, ai + "_rpr")
+		
+		# Logging to file
+		start_log(ai, rpr)
 
-	copyProperty(rpr, ai, "strength", "strength")
+		# Fields conversion
+		if mapDoesNotExist(ai, "input"):
+			copyProperty(rpr, ai, "color", "normal")
+		else:
+			copyProperty(rpr, ai, "color", "input")
 
-	# Logging to file
-	end_log(ai)
+		copyProperty(rpr, ai, "strength", "strength")
+
+		# Logging to file
+		end_log(ai)
 
 	conversion_map = {
 		"outValue": "out",
@@ -771,22 +825,25 @@ def convertaiNormalMap(ai, source):
 
 def convertaiVectorMap(ai, source):
 
-	rpr = cmds.shadingNode("RPRNormal", asUtility=True)
-	rpr = cmds.rename(rpr, ai + "_rpr")
-	
-	# Logging to file
-	start_log(ai, rpr)
-
-	# Fields conversion
-	if mapDoesNotExist(ai, "input"):
-		copyProperty(rpr, ai, "color", "normal")
+	if cmds.objExists(ai + "_rpr"):
+		rpr = ai + "_rpr"
 	else:
-		copyProperty(rpr, ai, "color", "input")
+		rpr = cmds.shadingNode("RPRNormal", asUtility=True)
+		rpr = cmds.rename(rpr, ai + "_rpr")
+		
+		# Logging to file
+		start_log(ai, rpr)
 
-	copyProperty(rpr, ai, "strength", "scale")
+		# Fields conversion
+		if mapDoesNotExist(ai, "input"):
+			copyProperty(rpr, ai, "color", "normal")
+		else:
+			copyProperty(rpr, ai, "color", "input")
 
-	# Logging to file
-	end_log(ai)
+		copyProperty(rpr, ai, "strength", "scale")
+
+		# Logging to file
+		end_log(ai)
 
 	conversion_map = {
 		"outValue": "out",
@@ -801,17 +858,20 @@ def convertaiVectorMap(ai, source):
 
 def convertaiFacingRatio(ai, source):
 
-	rpr = cmds.shadingNode("RPRLookup", asUtility=True)
-	rpr = cmds.rename(rpr, ai + "_rpr")
-		
-	# Logging to file
-	start_log(ai, rpr)
+	if cmds.objExists(ai + "_rpr"):
+		rpr = ai + "_rpr"
+	else:
+		rpr = cmds.shadingNode("RPRLookup", asUtility=True)
+		rpr = cmds.rename(rpr, ai + "_rpr")
+			
+		# Logging to file
+		start_log(ai, rpr)
 
-	# Fields conversion
-	setProperty(rpr, "type", 3)
+		# Fields conversion
+		setProperty(rpr, "type", 3)
 
-	# Logging to file
-	end_log(ai)
+		# Logging to file
+		end_log(ai)
 
 	conversion_map = {
 		"message": "out",
@@ -826,20 +886,24 @@ def convertaiFacingRatio(ai, source):
 	return rpr
 
 
+# TODO
 def convertaiThinFilm(ai, source):
 
-	rpr = cmds.shadingNode("RPRFresnel", asUtility=True)
-	rpr = cmds.rename(rpr, ai + "_rpr")
-		
-	# Logging to file
-	start_log(ai, rpr)
+	if cmds.objExists(ai + "_rpr"):
+		rpr = ai + "_rpr"
+	else:
+		rpr = cmds.shadingNode("RPRFresnel", asUtility=True)
+		rpr = cmds.rename(rpr, ai + "_rpr")
+			
+		# Logging to file
+		start_log(ai, rpr)
 
-	# Fields conversion
-	ior = (getProperty(ai, "iorMedium") + getProperty(ai, "iorFilm") + getProperty(ai, "iorInternal")) / 3.0
-	setProperty(rpr, "ior", ior)
+		# Fields conversion
+		ior = (getProperty(ai, "iorMedium") + getProperty(ai, "iorFilm") + getProperty(ai, "iorInternal")) / 3.0
+		setProperty(rpr, "ior", ior)
 
-	# Logging to file
-	end_log(ai)
+		# Logging to file
+		end_log(ai)
 
 	conversion_map = {
 		"outColor": "out",
@@ -854,21 +918,24 @@ def convertaiThinFilm(ai, source):
 
 def convertaiCurvature(ai, source):
 
-	rpr = cmds.shadingNode("RPRAmbientOcclusion", asUtility=True)
-	rpr = cmds.rename(rpr, ai + "_rpr")
-		
-	# Logging to file
-	start_log(ai, rpr)
+	if cmds.objExists(ai + "_rpr"):
+		rpr = ai + "_rpr"
+	else:
+		rpr = cmds.shadingNode("RPRAmbientOcclusion", asUtility=True)
+		rpr = cmds.rename(rpr, ai + "_rpr")
+			
+		# Logging to file
+		start_log(ai, rpr)
 
-	# Fields conversion
-	setProperty(rpr, "side", 1)
-	setProperty(rpr, "occludedColor", (1, 1, 1))
-	setProperty(rpr, "unoccludedColor", (0, 0, 0))
-	if mapDoesNotExist(ai, "radius"):
-		setProperty(rpr, "radius", getProperty(ai, "radius") / 100)
+		# Fields conversion
+		setProperty(rpr, "side", 1)
+		setProperty(rpr, "occludedColor", (1, 1, 1))
+		setProperty(rpr, "unoccludedColor", (0, 0, 0))
+		if mapDoesNotExist(ai, "radius"):
+			setProperty(rpr, "radius", getProperty(ai, "radius") / 100)
 
-	# Logging to file
-	end_log(ai)
+		# Logging to file
+		end_log(ai)
 
 	conversion_map = {
 		"outColor": "output",
@@ -883,86 +950,89 @@ def convertaiCurvature(ai, source):
 
 def convertaiBlackbody(ai, source):
 
-	rpr = cmds.shadingNode("RPRArithmetic", asUtility=True)
-	rpr = cmds.rename(rpr, ai + "_rpr")
-
-	# Logging to file
-	start_log(ai, rpr)
-
-	# Fields conversion
-	arithmetic1 = cmds.shadingNode("RPRArithmetic", asUtility=True)
-	setProperty(arithmetic1, "operation", 19)
-	intensity = getProperty(ai, "intensity")
-	setProperty(arithmetic1, "inputA", (intensity, intensity, intensity))
-
-	arithmetic2 = cmds.shadingNode("RPRArithmetic", asUtility=True)
-	setProperty(arithmetic1, "operation", 2)
-	connectProperty(arithmetic1, "out", arithmetic2, "inputA")
-	setProperty(arithmetic2, "inputB", (0.01, 0.01, 0.01))
-
-	arithmetic3 = cmds.shadingNode("RPRArithmetic", asUtility=True)
-	setProperty(arithmetic1, "operation", 0)
-
-	temperature = getProperty(ai, "temperature") / 100
-
-	if temperature <= 66:
-		colorR = 255
+	if cmds.objExists(ai + "_rpr"):
+		rpr = ai + "_rpr"
 	else:
-		colorR = temperature - 60
-		colorR = 329.698727446 * colorR ** -0.1332047592
-		if colorR < 0:
-			colorR = 0
-		if colorR > 255:
+		rpr = cmds.shadingNode("RPRArithmetic", asUtility=True)
+		rpr = cmds.rename(rpr, ai + "_rpr")
+
+		# Logging to file
+		start_log(ai, rpr)
+
+		# Fields conversion
+		arithmetic1 = cmds.shadingNode("RPRArithmetic", asUtility=True)
+		setProperty(arithmetic1, "operation", 19)
+		intensity = getProperty(ai, "intensity")
+		setProperty(arithmetic1, "inputA", (intensity, intensity, intensity))
+
+		arithmetic2 = cmds.shadingNode("RPRArithmetic", asUtility=True)
+		setProperty(arithmetic1, "operation", 2)
+		connectProperty(arithmetic1, "out", arithmetic2, "inputA")
+		setProperty(arithmetic2, "inputB", (0.01, 0.01, 0.01))
+
+		arithmetic3 = cmds.shadingNode("RPRArithmetic", asUtility=True)
+		setProperty(arithmetic1, "operation", 0)
+
+		temperature = getProperty(ai, "temperature") / 100
+
+		if temperature <= 66:
 			colorR = 255
+		else:
+			colorR = temperature - 60
+			colorR = 329.698727446 * colorR ** -0.1332047592
+			if colorR < 0:
+				colorR = 0
+			if colorR > 255:
+				colorR = 255
 
 
-	if temperature <= 66:
-		colorG = temperature
-		colorG = 99.4708025861 * math.log(colorG) - 161.1195681661
-		if colorG < 0:
-			colorG = 0
-		if colorG > 255:
-			colorG = 255
-	else:
-		colorG = temperature - 60
-		colorG = 288.1221695283 * colorG ** -0.0755148492
-		if colorG < 0:
-			colorG = 0
-		if colorG > 255:
-			colorG = 255
+		if temperature <= 66:
+			colorG = temperature
+			colorG = 99.4708025861 * math.log(colorG) - 161.1195681661
+			if colorG < 0:
+				colorG = 0
+			if colorG > 255:
+				colorG = 255
+		else:
+			colorG = temperature - 60
+			colorG = 288.1221695283 * colorG ** -0.0755148492
+			if colorG < 0:
+				colorG = 0
+			if colorG > 255:
+				colorG = 255
 
 
-	if temperature >= 66:
-		colorB = 255
-	elif temperature <= 19:
-		colorB = 0
-	else:
-		colorB = temperature - 10
-		colorB = 138.5177312231 * math.log(colorB) - 305.0447927307
-		if colorB < 0:
-			colorB = 0
-		if colorB > 255:
+		if temperature >= 66:
 			colorB = 255
+		elif temperature <= 19:
+			colorB = 0
+		else:
+			colorB = temperature - 10
+			colorB = 138.5177312231 * math.log(colorB) - 305.0447927307
+			if colorB < 0:
+				colorB = 0
+			if colorB > 255:
+				colorB = 255
 
-	colorR = colorR / 255
-	colorG = colorG / 255
-	colorB = colorB / 255
+		colorR = colorR / 255
+		colorG = colorG / 255
+		colorB = colorB / 255
 
-	setProperty(arithmetic3, "inputA", (colorR, colorG, colorB))
-	setProperty(arithmetic3, "inputB", (colorR, colorG, colorB))
+		setProperty(arithmetic3, "inputA", (colorR, colorG, colorB))
+		setProperty(arithmetic3, "inputB", (colorR, colorG, colorB))
 
-	setProperty(rpr, "operation", 0)
-	connectProperty(arithmetic2, "out", rpr, "inputA")
-	connectProperty(arithmetic3, "out", rpr, "inputB")
+		setProperty(rpr, "operation", 0)
+		connectProperty(arithmetic2, "out", rpr, "inputA")
+		connectProperty(arithmetic3, "out", rpr, "inputB")
 
-	# Logging to file
-	end_log(ai)
+		# Logging to file
+		end_log(ai)
 
 	conversion_map = {
 		"outColor": "out",
-		"outColorR": "outR",
-		"outColorG": "outG",
-		"outColorB": "outB",
+		"outColorR": "outX",
+		"outColorG": "outY",
+		"outColorB": "outZ",
 	}
 
 	rpr += "." + conversion_map[source]
@@ -976,27 +1046,33 @@ def convertaiColorConvert(ai, source):
 
 	if from_value == 0 and to_value == 1:
 		objectType = "rgbToHsv"
-		rpr = cmds.shadingNode("rgbToHsv", asUtility=True)
-		rpr = cmds.rename(rpr, ai + "_rpr")
-
 	elif from_value == 1 and to_value == 0:
 		objectType = "hsvToRgb"
-		rpr = cmds.shadingNode("hsvToRgb", asUtility=True)
-		rpr = cmds.rename(rpr, ai + "_rpr")
 
+	if cmds.objExists(ai + "_rpr"):
+		rpr = ai + "_rpr"
 	else:
-		print("Wrong parameters for aiColorConvert conversion")
-		return
-		
-	# Logging to file
-	start_log(ai, rpr)
+		if objectType == "rgbToHsv":
+			rpr = cmds.shadingNode("rgbToHsv", asUtility=True)
+			rpr = cmds.rename(rpr, ai + "_rpr")
 
-	if objectType == "rgbToHsv":
-		copyProperty(rpr, ai, "inRgb", "input")
-	elif objectType == "hsvToRgb":
-		copyProperty(rpr, ai, "inHsv", "input")
+		elif objectType == "hsvToRgb":
+			rpr = cmds.shadingNode("hsvToRgb", asUtility=True)
+			rpr = cmds.rename(rpr, ai + "_rpr")
+		else:
+			print("Wrong parameters for aiColorConvert conversion")
+			return
+			
+		# Logging to file
+		start_log(ai, rpr)
 
-	end_log(ai)
+		if objectType == "rgbToHsv":
+			copyProperty(rpr, ai, "inRgb", "input")
+		elif objectType == "hsvToRgb":
+			copyProperty(rpr, ai, "inHsv", "input")
+
+		end_log(ai)
+
 
 	conversion_map_rgb = {
 		"outColor": "outRgb",
@@ -1023,42 +1099,45 @@ def convertaiColorConvert(ai, source):
 
 def convertaiImage(ai, source):
 
-	rpr = cmds.shadingNode("file", asTexture=True, isColorManaged=True)
-	rpr = cmds.rename(rpr, ai + "_rpr")
-	texture = cmds.shadingNode("place2dTexture", asUtility=True)
+	if cmds.objExists(ai + "_rpr"):
+		rpr = ai + "_rpr"
+	else:
+		rpr = cmds.shadingNode("file", asTexture=True, isColorManaged=True)
+		rpr = cmds.rename(rpr, ai + "_rpr")
+		texture = cmds.shadingNode("place2dTexture", asUtility=True)
 
-	connectProperty(texture, "coverage", rpr, "coverage")
-	connectProperty(texture, "translateFrame", rpr, "translateFrame")
-	connectProperty(texture, "rotateFrame", rpr, "rotateFrame")
-	connectProperty(texture, "mirrorU", rpr, "mirrorU")
-	connectProperty(texture, "mirrorV", rpr, "mirrorV")
-	connectProperty(texture, "stagger", rpr, "stagger")
-	connectProperty(texture, "wrapU", rpr, "wrapU")
-	connectProperty(texture, "wrapV", rpr, "wrapV")
-	connectProperty(texture, "repeatUV", rpr, "repeatUV")
-	connectProperty(texture, "offset", rpr, "offset")
-	connectProperty(texture, "rotateUV", rpr, "rotateUV")
-	connectProperty(texture, "noiseUV", rpr, "noiseUV")
-	connectProperty(texture, "vertexUvOne", rpr, "vertexUvOne")
-	connectProperty(texture, "vertexUvTwo", rpr, "vertexUvTwo")
-	connectProperty(texture, "vertexUvThree", rpr, "vertexUvThree")
-	connectProperty(texture, "vertexCameraOne", rpr, "vertexCameraOne")
-	connectProperty(texture, "outUV", rpr, "uv")
-	connectProperty(texture, "outUvFilterSize", rpr, "uvFilterSize")
+		connectProperty(texture, "coverage", rpr, "coverage")
+		connectProperty(texture, "translateFrame", rpr, "translateFrame")
+		connectProperty(texture, "rotateFrame", rpr, "rotateFrame")
+		connectProperty(texture, "mirrorU", rpr, "mirrorU")
+		connectProperty(texture, "mirrorV", rpr, "mirrorV")
+		connectProperty(texture, "stagger", rpr, "stagger")
+		connectProperty(texture, "wrapU", rpr, "wrapU")
+		connectProperty(texture, "wrapV", rpr, "wrapV")
+		connectProperty(texture, "repeatUV", rpr, "repeatUV")
+		connectProperty(texture, "offset", rpr, "offset")
+		connectProperty(texture, "rotateUV", rpr, "rotateUV")
+		connectProperty(texture, "noiseUV", rpr, "noiseUV")
+		connectProperty(texture, "vertexUvOne", rpr, "vertexUvOne")
+		connectProperty(texture, "vertexUvTwo", rpr, "vertexUvTwo")
+		connectProperty(texture, "vertexUvThree", rpr, "vertexUvThree")
+		connectProperty(texture, "vertexCameraOne", rpr, "vertexCameraOne")
+		connectProperty(texture, "outUV", rpr, "uv")
+		connectProperty(texture, "outUvFilterSize", rpr, "uvFilterSize")
+			
+		# Logging to file
+		start_log(ai, rpr)
+
+		# Fields conversion
+		setProperty(rpr, "fileTextureName", getProperty(ai, "filename"))
+		setProperty(rpr, "colorSpace", getProperty(ai, "colorSpace"))
 		
-	# Logging to file
-	start_log(ai, rpr)
+		copyProperty(rpr, ai, "useFrameExtension", "useFrameExtension")
+		copyProperty(rpr, ai, "frameExtension", "frame")
+		copyProperty(rpr, ai, "ignoreColorSpaceFileRules", "ignoreColorSpaceFileRules")
 
-	# Fields conversion
-	setProperty(rpr, "fileTextureName", getProperty(ai, "filename"))
-	setProperty(rpr, "colorSpace", getProperty(ai, "colorSpace"))
-	
-	copyProperty(rpr, ai, "useFrameExtension", "useFrameExtension")
-	copyProperty(rpr, ai, "frameExtension", "frame")
-	copyProperty(rpr, ai, "ignoreColorSpaceFileRules", "ignoreColorSpaceFileRules")
-
-	# Logging to file
-	end_log(ai)
+		# Logging to file
+		end_log(ai)
 
 	conversion_map = {
 		"outColor": "outColor",
@@ -1073,29 +1152,32 @@ def convertaiImage(ai, source):
 
 def convertaiNoise(ai, source):
 
-	rpr = cmds.shadingNode("noise", asUtility=True)
-	rpr = cmds.rename(rpr, ai + "_rpr")
+	if cmds.objExists(ai + "_rpr"):
+		rpr = ai + "_rpr"
+	else:
+		rpr = cmds.shadingNode("noise", asUtility=True)
+		rpr = cmds.rename(rpr, ai + "_rpr")
 
-	texture = cmds.shadingNode("place2dTexture", asUtility=True)
+		texture = cmds.shadingNode("place2dTexture", asUtility=True)
 
-	connectProperty(texture, "outUV", rpr, "uv")
-	connectProperty(texture, "outUvFilterSize", rpr, "uvFilterSize")
-		
-	# Logging to file
-	start_log(ai, rpr)
+		connectProperty(texture, "outUV", rpr, "uv")
+		connectProperty(texture, "outUvFilterSize", rpr, "uvFilterSize")
+			
+		# Logging to file
+		start_log(ai, rpr)
 
-	# Fields conversion
-	copyProperty(rpr, ai, "frequencyRatio", "octaves")
-	copyProperty(rpr, ai, "frequency", "octaves")
-	copyProperty(rpr, ai, "threshold", "distortion")
-	copyProperty(rpr, ai, "ratio", "lacunarity")
-	copyProperty(rpr, ai, "amplitude", "amplitude")
-	copyProperty(rpr, ai, "defaultColor", "color1")
-	copyProperty(rpr, ai, "colorGain", "color1")
-	copyProperty(rpr, ai, "colorOffset", "color2")
+		# Fields conversion
+		copyProperty(rpr, ai, "frequencyRatio", "octaves")
+		copyProperty(rpr, ai, "frequency", "octaves")
+		copyProperty(rpr, ai, "threshold", "distortion")
+		copyProperty(rpr, ai, "ratio", "lacunarity")
+		copyProperty(rpr, ai, "amplitude", "amplitude")
+		copyProperty(rpr, ai, "defaultColor", "color1")
+		copyProperty(rpr, ai, "colorGain", "color1")
+		copyProperty(rpr, ai, "colorOffset", "color2")
 
-	# Logging to file
-	end_log(ai)
+		# Logging to file
+		end_log(ai)
 
 	rpr += "." + source
 	return rpr
@@ -1103,30 +1185,33 @@ def convertaiNoise(ai, source):
 
 def convertaiCellNoise(ai, source):
 
-	rpr = cmds.shadingNode("noise", asUtility=True)
-	rpr = cmds.rename(rpr, ai + "_rpr")
+	if cmds.objExists(ai + "_rpr"):
+		rpr = ai + "_rpr"
+	else:
+		rpr = cmds.shadingNode("noise", asUtility=True)
+		rpr = cmds.rename(rpr, ai + "_rpr")
 
-	texture = cmds.shadingNode("place2dTexture", asUtility=True)
+		texture = cmds.shadingNode("place2dTexture", asUtility=True)
 
-	connectProperty(texture, "outUV", rpr, "uv")
-	connectProperty(texture, "outUvFilterSize", rpr, "uvFilterSize")
-		
-	# Logging to file
-	start_log(ai, rpr)
+		connectProperty(texture, "outUV", rpr, "uv")
+		connectProperty(texture, "outUvFilterSize", rpr, "uvFilterSize")
+			
+		# Logging to file
+		start_log(ai, rpr)
 
-	# Fields conversion
-	copyProperty(rpr, ai, "frequencyRatio", "octaves")
-	copyProperty(rpr, ai, "frequency", "octaves")
-	copyProperty(rpr, ai, "ratio", "lacunarity")
-	copyProperty(rpr, ai, "amplitude", "amplitude")
-	copyProperty(rpr, ai, "defaultColor", "color")
-	copyProperty(rpr, ai, "colorGain", "color")
-	copyProperty(rpr, ai, "colorOffset", "palette")
-	copyProperty(rpr, ai, "density", "density")
-	copyProperty(rpr, ai, "randomness", "randomness")
+		# Fields conversion
+		copyProperty(rpr, ai, "frequencyRatio", "octaves")
+		copyProperty(rpr, ai, "frequency", "octaves")
+		copyProperty(rpr, ai, "ratio", "lacunarity")
+		copyProperty(rpr, ai, "amplitude", "amplitude")
+		copyProperty(rpr, ai, "defaultColor", "color")
+		copyProperty(rpr, ai, "colorGain", "color")
+		copyProperty(rpr, ai, "colorOffset", "palette")
+		copyProperty(rpr, ai, "density", "density")
+		copyProperty(rpr, ai, "randomness", "randomness")
 
-	# Logging to file
-	end_log(ai)
+		# Logging to file
+		end_log(ai)
 
 	rpr += "." + source
 	return rpr
@@ -1201,22 +1286,26 @@ def convertUnsupportedMaterial(aiMaterial, source):
 
 	assigned = checkAssign(aiMaterial)
 
-	# Creating new Uber material
-	rprMaterial = cmds.shadingNode("RPRUberMaterial", asShader=True)
-	rprMaterial = cmds.rename(rprMaterial, (aiMaterial + "_UNSUPPORTED_MATERIAL"))
+	if cmds.objExists(aiMaterial + "_rpr"):
+		rprMaterial = aiMaterial + "_rpr"
+	else:
 
-	# Check assigned to any mesh
-	if assigned:
-		sg = rprMaterial + "SG"
-		cmds.sets(renderable=True, noSurfaceShader=True, empty=True, name=sg)
-		connectProperty(rprMaterial, "outColor", sg, "surfaceShader")
+		# Creating new Uber material
+		rprMaterial = cmds.shadingNode("RPRUberMaterial", asShader=True)
+		rprMaterial = cmds.rename(rprMaterial, (aiMaterial + "_UNSUPPORTED_MATERIAL"))
 
-	# Logging to file
-	start_log(aiMaterial, rprMaterial)
-	
-	setProperty(rprMaterial, "diffuseColor", (0, 1, 0))
+		# Check assigned to any mesh
+		if assigned:
+			sg = rprMaterial + "SG"
+			cmds.sets(renderable=True, noSurfaceShader=True, empty=True, name=sg)
+			connectProperty(rprMaterial, "outColor", sg, "surfaceShader")
 
-	end_log(aiMaterial)
+		# Logging to file
+		start_log(aiMaterial, rprMaterial)
+		
+		setProperty(rprMaterial, "diffuseColor", (0, 1, 0))
+
+		end_log(aiMaterial)
 
 	if not assigned:
 		rprMaterial += "." + source
@@ -1276,24 +1365,27 @@ def convertaiFlat(aiMaterial, source):
 
 	assigned = checkAssign(aiMaterial)
 	
-	# Creating new Uber material
-	rprMaterial = cmds.shadingNode("RPRFlatColorMaterial", asShader=True)
-	rprMaterial = cmds.rename(rprMaterial, (aiMaterial + "_rpr"))
+	if cmds.objExists(aiMaterial + "_rpr"):
+		rprMaterial = aiMaterial + "_rpr"
+	else:
+		# Creating new Uber material
+		rprMaterial = cmds.shadingNode("RPRFlatColorMaterial", asShader=True)
+		rprMaterial = cmds.rename(rprMaterial, (aiMaterial + "_rpr"))
 
-	# Check shading engine in aiMaterial
-	if assigned:
-		sg = rprMaterial + "SG"
-		cmds.sets(renderable=True, noSurfaceShader=True, empty=True, name=sg)
-		connectProperty(rprMaterial, "outColor", sg, "surfaceShader")
+		# Check shading engine in aiMaterial
+		if assigned:
+			sg = rprMaterial + "SG"
+			cmds.sets(renderable=True, noSurfaceShader=True, empty=True, name=sg)
+			connectProperty(rprMaterial, "outColor", sg, "surfaceShader")
 
-	# Logging to file
-	start_log(aiMaterial, rprMaterial)
+		# Logging to file
+		start_log(aiMaterial, rprMaterial)
 
-	# Fields conversion
-	copyProperty(rprMaterial, aiMaterial, "color", "color")
+		# Fields conversion
+		copyProperty(rprMaterial, aiMaterial, "color", "color")
 
-	# Logging in file
-	end_log(aiMaterial)
+		# Logging in file
+		end_log(aiMaterial)
 
 	if not assigned:
 		rprMaterial += "." + source
@@ -1307,49 +1399,53 @@ def convertaiFlat(aiMaterial, source):
 def convertaiToon(aiMaterial, source):
 
 	assigned = checkAssign(aiMaterial)
+
+	if cmds.objExists(aiMaterial + "_rpr"):
+		rprMaterial = aiMaterial + "_rpr"
+	else:
 	
-	# Creating new Uber material
-	rprMaterial = cmds.shadingNode("RPRUberMaterial", asShader=True)
-	rprMaterial = cmds.rename(rprMaterial, (aiMaterial + "_rpr"))
+		# Creating new Uber material
+		rprMaterial = cmds.shadingNode("RPRUberMaterial", asShader=True)
+		rprMaterial = cmds.rename(rprMaterial, (aiMaterial + "_rpr"))
 
-	# Check shading engine in aiMaterial
-	if assigned:
-		sg = rprMaterial + "SG"
-		cmds.sets(renderable=True, noSurfaceShader=True, empty=True, name=sg)
-		connectProperty(rprMaterial, "outColor", sg, "surfaceShader")
+		# Check shading engine in aiMaterial
+		if assigned:
+			sg = rprMaterial + "SG"
+			cmds.sets(renderable=True, noSurfaceShader=True, empty=True, name=sg)
+			connectProperty(rprMaterial, "outColor", sg, "surfaceShader")
 
-	# Enable properties, which are default in Arnold
-	defaultEnable(rprMaterial, aiMaterial, "diffuse", "base")
-	defaultEnable(rprMaterial, aiMaterial, "reflections", "specular")
-	defaultEnable(rprMaterial, aiMaterial, "refraction", "transmission")
-	defaultEnable(rprMaterial, aiMaterial, "emissive", "emission")
+		# Enable properties, which are default in Arnold
+		defaultEnable(rprMaterial, aiMaterial, "diffuse", "base")
+		defaultEnable(rprMaterial, aiMaterial, "reflections", "specular")
+		defaultEnable(rprMaterial, aiMaterial, "refraction", "transmission")
+		defaultEnable(rprMaterial, aiMaterial, "emissive", "emission")
 
-	# Logging to file
-	start_log(aiMaterial, rprMaterial)
+		# Logging to file
+		start_log(aiMaterial, rprMaterial)
 
-	# Fields conversion
-	copyProperty(rprMaterial, aiMaterial, "diffuseColor", "baseColor")
-	copyProperty(rprMaterial, aiMaterial, "diffuseWeight", "base")
+		# Fields conversion
+		copyProperty(rprMaterial, aiMaterial, "diffuseColor", "baseColor")
+		copyProperty(rprMaterial, aiMaterial, "diffuseWeight", "base")
 
-	copyProperty(rprMaterial, aiMaterial, "reflectWeight", "specular")
-	copyProperty(rprMaterial, aiMaterial, "reflectColor", "specularColor")
-	copyProperty(rprMaterial, aiMaterial, "reflectRoughness", "specularRoughness")
-	copyProperty(rprMaterial, aiMaterial, "reflectAnisotropy", "specularAnisotropy")
-	copyProperty(rprMaterial, aiMaterial, "reflectAnisotropyRotation", "specularRotation")
-	setProperty(rprMaterial, "reflectMetalMaterial", 1)
-	setProperty(rprMaterial, "reflectMetalness", 1)
+		copyProperty(rprMaterial, aiMaterial, "reflectWeight", "specular")
+		copyProperty(rprMaterial, aiMaterial, "reflectColor", "specularColor")
+		copyProperty(rprMaterial, aiMaterial, "reflectRoughness", "specularRoughness")
+		copyProperty(rprMaterial, aiMaterial, "reflectAnisotropy", "specularAnisotropy")
+		copyProperty(rprMaterial, aiMaterial, "reflectAnisotropyRotation", "specularRotation")
+		setProperty(rprMaterial, "reflectMetalMaterial", 1)
+		setProperty(rprMaterial, "reflectMetalness", 1)
 
-	copyProperty(rprMaterial, aiMaterial, "refractWeight", "transmission")
-	copyProperty(rprMaterial, aiMaterial, "refractColor", "transmissionColor")
-	copyProperty(rprMaterial, aiMaterial, "refractRoughness", "transmissionRoughness")
-	copyProperty(rprMaterial, aiMaterial, "refractIor", "IOR")
+		copyProperty(rprMaterial, aiMaterial, "refractWeight", "transmission")
+		copyProperty(rprMaterial, aiMaterial, "refractColor", "transmissionColor")
+		copyProperty(rprMaterial, aiMaterial, "refractRoughness", "transmissionRoughness")
+		copyProperty(rprMaterial, aiMaterial, "refractIor", "IOR")
 
-	copyProperty(rprMaterial, aiMaterial, "emissiveWeight", "emission")
-	copyProperty(rprMaterial, aiMaterial, "emissiveIntensity", "emission")
-	copyProperty(rprMaterial, aiMaterial, "emissiveColor", "emissionColor")
+		copyProperty(rprMaterial, aiMaterial, "emissiveWeight", "emission")
+		copyProperty(rprMaterial, aiMaterial, "emissiveIntensity", "emission")
+		copyProperty(rprMaterial, aiMaterial, "emissiveColor", "emissionColor")
 
-	# Logging in file
-	end_log(aiMaterial)
+		# Logging in file
+		end_log(aiMaterial)
 
 	if not assigned:
 		rprMaterial += "." + source
@@ -1364,26 +1460,29 @@ def convertaiMixShader(aiMaterial, source):
 
 	assigned = checkAssign(aiMaterial)
 	
-	# Creating new Uber material
-	rprMaterial = cmds.shadingNode("RPRBlendMaterial", asShader=True)
-	rprMaterial = cmds.rename(rprMaterial, (aiMaterial + "_rpr"))
+	if cmds.objExists(aiMaterial + "_rpr"):
+		rprMaterial = aiMaterial + "_rpr"
+	else:
+		# Creating new Uber material
+		rprMaterial = cmds.shadingNode("RPRBlendMaterial", asShader=True)
+		rprMaterial = cmds.rename(rprMaterial, (aiMaterial + "_rpr"))
 
-	# Check shading engine in aiMaterial
-	if assigned:
-		sg = rprMaterial + "SG"
-		cmds.sets(renderable=True, noSurfaceShader=True, empty=True, name=sg)
-		connectProperty(rprMaterial, "outColor", sg, "surfaceShader")
+		# Check shading engine in aiMaterial
+		if assigned:
+			sg = rprMaterial + "SG"
+			cmds.sets(renderable=True, noSurfaceShader=True, empty=True, name=sg)
+			connectProperty(rprMaterial, "outColor", sg, "surfaceShader")
 
-	# Logging to file
-	start_log(aiMaterial, rprMaterial)
+		# Logging to file
+		start_log(aiMaterial, rprMaterial)
 
-	# Fields conversion
-	copyProperty(rprMaterial, aiMaterial, "color0", "shader1")
-	copyProperty(rprMaterial, aiMaterial, "color1", "shader2")
-	copyProperty(rprMaterial, aiMaterial, "weight", "mix")
+		# Fields conversion
+		copyProperty(rprMaterial, aiMaterial, "color0", "shader1")
+		copyProperty(rprMaterial, aiMaterial, "color1", "shader2")
+		copyProperty(rprMaterial, aiMaterial, "weight", "mix")
 
-	# Logging in file
-	end_log(aiMaterial)
+		# Logging in file
+		end_log(aiMaterial)
 
 	if not assigned:
 		rprMaterial += "." + source
@@ -1398,109 +1497,112 @@ def convertaiStandardSurface(aiMaterial, source):
 
 	assigned = checkAssign(aiMaterial)
 	
-	# Creating new Uber material
-	rprMaterial = cmds.shadingNode("RPRUberMaterial", asShader=True)
-	rprMaterial = cmds.rename(rprMaterial, (aiMaterial + "_rpr"))
+	if cmds.objExists(aiMaterial + "_rpr"):
+		rprMaterial = aiMaterial + "_rpr"
+	else:
+		# Creating new Uber material
+		rprMaterial = cmds.shadingNode("RPRUberMaterial", asShader=True)
+		rprMaterial = cmds.rename(rprMaterial, (aiMaterial + "_rpr"))
 
-	# Check shading engine in aiMaterial
-	if assigned:
-		sg = rprMaterial + "SG"
-		cmds.sets(renderable=True, noSurfaceShader=True, empty=True, name=sg)
-		connectProperty(rprMaterial, "outColor", sg, "surfaceShader")
+		# Check shading engine in aiMaterial
+		if assigned:
+			sg = rprMaterial + "SG"
+			cmds.sets(renderable=True, noSurfaceShader=True, empty=True, name=sg)
+			connectProperty(rprMaterial, "outColor", sg, "surfaceShader")
 
-		ai_materialSG = cmds.listConnections(aiMaterial, type="shadingEngine")[0]
-		convertDisplacement(ai_materialSG, rprMaterial)
+			ai_materialSG = cmds.listConnections(aiMaterial, type="shadingEngine")[0]
+			convertDisplacement(ai_materialSG, rprMaterial)
 
-	# Enable properties, which are default in Arnold
-	defaultEnable(rprMaterial, aiMaterial, "diffuse", "base")
-	defaultEnable(rprMaterial, aiMaterial, "reflections", "specular")
-	defaultEnable(rprMaterial, aiMaterial, "refraction", "transmission")
-	defaultEnable(rprMaterial, aiMaterial, "sssEnable", "subsurface")
-	defaultEnable(rprMaterial, aiMaterial, "emissive", "emission")
-	defaultEnable(rprMaterial, aiMaterial, "clearCoat", "coat")
+		# Enable properties, which are default in Arnold
+		defaultEnable(rprMaterial, aiMaterial, "diffuse", "base")
+		defaultEnable(rprMaterial, aiMaterial, "reflections", "specular")
+		defaultEnable(rprMaterial, aiMaterial, "refraction", "transmission")
+		defaultEnable(rprMaterial, aiMaterial, "sssEnable", "subsurface")
+		defaultEnable(rprMaterial, aiMaterial, "emissive", "emission")
+		defaultEnable(rprMaterial, aiMaterial, "clearCoat", "coat")
 
-	# Logging to file
-	start_log(aiMaterial, rprMaterial)
+		# Logging to file
+		start_log(aiMaterial, rprMaterial)
 
-	# Fields conversion
-	copyProperty(rprMaterial, aiMaterial, "diffuseColor", "baseColor")
-	copyProperty(rprMaterial, aiMaterial, "diffuseWeight", "base")
-	copyProperty(rprMaterial, aiMaterial, "diffuseRoughness", "diffuseRoughness")
-
-	copyProperty(rprMaterial, aiMaterial, "reflectColor", "specularColor")
-	copyProperty(rprMaterial, aiMaterial, "reflectWeight", "specular")
-	copyProperty(rprMaterial, aiMaterial, "reflectRoughness", "specularRoughness")
-	copyProperty(rprMaterial, aiMaterial, "reflectAnisotropy", "specularAnisotropy")
-	copyProperty(rprMaterial, aiMaterial, "reflectAnisotropyRotation", "specularRotation")
-	copyProperty(rprMaterial, aiMaterial, "reflectIOR", "specularIOR")
-
-	metalness = getProperty(aiMaterial, "metalness")
-	if metalness:
-		setProperty(rprMaterial, "reflections", 1)
-		setProperty(rprMaterial, "diffuse", 1)
-		setProperty(rprMaterial, "reflectMetalMaterial", 1)
-		setProperty(rprMaterial, "reflectWeight", 1)
-		copyProperty(rprMaterial, aiMaterial, "reflectMetalness", "metalness")
+		# Fields conversion
 		copyProperty(rprMaterial, aiMaterial, "diffuseColor", "baseColor")
-		copyProperty(rprMaterial, aiMaterial, "reflectColor", "baseColor")
+		copyProperty(rprMaterial, aiMaterial, "diffuseWeight", "base")
+		copyProperty(rprMaterial, aiMaterial, "diffuseRoughness", "diffuseRoughness")
 
-	copyProperty(rprMaterial, aiMaterial, "refractColor", "transmissionColor")
-	copyProperty(rprMaterial, aiMaterial, "refractWeight", "transmission")
-	copyProperty(rprMaterial, aiMaterial, "refractRoughness", "transmissionExtraRoughness")
-	setProperty(rprMaterial, "refractThinSurface", getProperty(aiMaterial, "thinWalled"))
+		copyProperty(rprMaterial, aiMaterial, "reflectColor", "specularColor")
+		copyProperty(rprMaterial, aiMaterial, "reflectWeight", "specular")
+		copyProperty(rprMaterial, aiMaterial, "reflectRoughness", "specularRoughness")
+		copyProperty(rprMaterial, aiMaterial, "reflectAnisotropy", "specularAnisotropy")
+		copyProperty(rprMaterial, aiMaterial, "reflectAnisotropyRotation", "specularRotation")
+		copyProperty(rprMaterial, aiMaterial, "reflectIOR", "specularIOR")
 
-	copyProperty(rprMaterial, aiMaterial, "volumeScatter", "subsurfaceColor")
-	copyProperty(rprMaterial, aiMaterial, "sssWeight", "subsurface")
-	copyProperty(rprMaterial, aiMaterial, "backscatteringWeight", "subsurface")
-	copyProperty(rprMaterial, aiMaterial, "subsurfaceRadius", "subsurfaceRadius")
+		metalness = getProperty(aiMaterial, "metalness")
+		if metalness:
+			setProperty(rprMaterial, "reflections", 1)
+			setProperty(rprMaterial, "diffuse", 1)
+			setProperty(rprMaterial, "reflectMetalMaterial", 1)
+			setProperty(rprMaterial, "reflectWeight", 1)
+			copyProperty(rprMaterial, aiMaterial, "reflectMetalness", "metalness")
+			copyProperty(rprMaterial, aiMaterial, "diffuseColor", "baseColor")
+			copyProperty(rprMaterial, aiMaterial, "reflectColor", "baseColor")
 
-	subsurface = getProperty(aiMaterial, "subsurface")
-	if subsurface:
-		setProperty(rprMaterial, "diffuse", 1)
-		setProperty(rprMaterial, "diffuseWeight", 1)
-		setProperty(rprMaterial, "separateBackscatterColor", 0)
-		setProperty(rprMaterial, "multipleScattering", 0)
-		setProperty(rprMaterial, "backscatteringWeight", 0.75)
+		copyProperty(rprMaterial, aiMaterial, "refractColor", "transmissionColor")
+		copyProperty(rprMaterial, aiMaterial, "refractWeight", "transmission")
+		copyProperty(rprMaterial, aiMaterial, "refractRoughness", "transmissionExtraRoughness")
+		setProperty(rprMaterial, "refractThinSurface", getProperty(aiMaterial, "thinWalled"))
 
-	copyProperty(rprMaterial, aiMaterial, "coatColor", "coatColor")
-	copyProperty(rprMaterial, aiMaterial, "coatTransmissionColor", "coatColor")
-	copyProperty(rprMaterial, aiMaterial, "coatWeight", "coat")
-	copyProperty(rprMaterial, aiMaterial, "coatRoughness", "coatRoughness")
-	copyProperty(rprMaterial, aiMaterial, "coatIor", "coatIOR")
-	copyProperty(rprMaterial, aiMaterial, "coatNormal", "coatNormal")
-	setProperty(rprMaterial, "coatThickness", 1.5)
+		copyProperty(rprMaterial, aiMaterial, "volumeScatter", "subsurfaceColor")
+		copyProperty(rprMaterial, aiMaterial, "sssWeight", "subsurface")
+		copyProperty(rprMaterial, aiMaterial, "backscatteringWeight", "subsurface")
+		copyProperty(rprMaterial, aiMaterial, "subsurfaceRadius", "subsurfaceRadius")
 
-	copyProperty(rprMaterial, aiMaterial, "emissiveColor", "emissionColor")
-	setProperty(rprMaterial, "emissiveWeight", 0.35)
-	copyProperty(rprMaterial, aiMaterial, "emissiveIntensity", "emission")
+		subsurface = getProperty(aiMaterial, "subsurface")
+		if subsurface:
+			setProperty(rprMaterial, "diffuse", 1)
+			setProperty(rprMaterial, "diffuseWeight", 1)
+			setProperty(rprMaterial, "separateBackscatterColor", 0)
+			setProperty(rprMaterial, "multipleScattering", 0)
+			setProperty(rprMaterial, "backscatteringWeight", 0.75)
 
-	if getProperty(aiMaterial, "opacity") != (1, 1, 1):
-		if mapDoesNotExist(aiMaterial, "opacity"):
-			transparency = 1 - max(getProperty(aiMaterial, "opacity"))
-			setProperty(rprMaterial, "transparencyLevel", transparency)
-		else:
-			arithmetic = cmds.shadingNode("RPRArithmetic", asUtility=True)
-			setProperty(arithmetic, "operation", 1)
-			setProperty(arithmetic, "inputA", (1, 1, 1))
-			copyProperty(arithmetic, aiMaterial, "inputB", "opacity")
-			connectProperty(arithmetic, "outX", rprMaterial, "transparencyLevel")
-		setProperty(rprMaterial, "transparencyEnable", 1)
+		copyProperty(rprMaterial, aiMaterial, "coatColor", "coatColor")
+		copyProperty(rprMaterial, aiMaterial, "coatTransmissionColor", "coatColor")
+		copyProperty(rprMaterial, aiMaterial, "coatWeight", "coat")
+		copyProperty(rprMaterial, aiMaterial, "coatRoughness", "coatRoughness")
+		copyProperty(rprMaterial, aiMaterial, "coatIor", "coatIOR")
+		copyProperty(rprMaterial, aiMaterial, "coatNormal", "coatNormal")
+		setProperty(rprMaterial, "coatThickness", 1.5)
 
-	bumpConnections = cmds.listConnections(aiMaterial + ".normalCamera")
-	if bumpConnections:
-		setProperty(rprMaterial, "normalMapEnable", 1)
-		copyProperty(rprMaterial, aiMaterial, "normalMap", "normalCamera")
-		if getProperty(aiMaterial, "base"):
-			copyProperty(rprMaterial, aiMaterial, "diffuseNormal", "normalCamera")
-		if getProperty(aiMaterial, "specular"):
-			copyProperty(rprMaterial, aiMaterial, "reflectNormal", "normalCamera")
-		if getProperty(aiMaterial, "transmission"):
-			copyProperty(rprMaterial, aiMaterial, "refractNormal", "normalCamera")
-		if getProperty(aiMaterial, "coat"):
-			copyProperty(rprMaterial, aiMaterial, "coatNormal", "normalCamera")
-	
-	# Logging in file
-	end_log(aiMaterial)
+		copyProperty(rprMaterial, aiMaterial, "emissiveColor", "emissionColor")
+		setProperty(rprMaterial, "emissiveWeight", 0.35)
+		copyProperty(rprMaterial, aiMaterial, "emissiveIntensity", "emission")
+
+		if getProperty(aiMaterial, "opacity") != (1, 1, 1):
+			if mapDoesNotExist(aiMaterial, "opacity"):
+				transparency = 1 - max(getProperty(aiMaterial, "opacity"))
+				setProperty(rprMaterial, "transparencyLevel", transparency)
+			else:
+				arithmetic = cmds.shadingNode("RPRArithmetic", asUtility=True)
+				setProperty(arithmetic, "operation", 1)
+				setProperty(arithmetic, "inputA", (1, 1, 1))
+				copyProperty(arithmetic, aiMaterial, "inputB", "opacity")
+				connectProperty(arithmetic, "outX", rprMaterial, "transparencyLevel")
+			setProperty(rprMaterial, "transparencyEnable", 1)
+
+		bumpConnections = cmds.listConnections(aiMaterial + ".normalCamera")
+		if bumpConnections:
+			setProperty(rprMaterial, "normalMapEnable", 1)
+			copyProperty(rprMaterial, aiMaterial, "normalMap", "normalCamera")
+			if getProperty(aiMaterial, "base"):
+				copyProperty(rprMaterial, aiMaterial, "diffuseNormal", "normalCamera")
+			if getProperty(aiMaterial, "specular"):
+				copyProperty(rprMaterial, aiMaterial, "reflectNormal", "normalCamera")
+			if getProperty(aiMaterial, "transmission"):
+				copyProperty(rprMaterial, aiMaterial, "refractNormal", "normalCamera")
+			if getProperty(aiMaterial, "coat"):
+				copyProperty(rprMaterial, aiMaterial, "coatNormal", "normalCamera")
+		
+		# Logging in file
+		end_log(aiMaterial)
 
 	if not assigned:
 		rprMaterial += "." + source
@@ -1515,50 +1617,53 @@ def convertaiCarPaint(aiMaterial, source):
 
 	assigned = checkAssign(aiMaterial)
 	
-	# Creating new Uber material
-	rprMaterial = cmds.shadingNode("RPRUberMaterial", asShader=True)
-	rprMaterial = cmds.rename(rprMaterial, (aiMaterial + "_rpr"))
+	if cmds.objExists(aiMaterial + "_rpr"):
+		rprMaterial = aiMaterial + "_rpr"
+	else:
+		# Creating new Uber material
+		rprMaterial = cmds.shadingNode("RPRUberMaterial", asShader=True)
+		rprMaterial = cmds.rename(rprMaterial, (aiMaterial + "_rpr"))
 
-	# Check shading engine in aiMaterial
-	if assigned:
-		sg = rprMaterial + "SG"
-		cmds.sets(renderable=True, noSurfaceShader=True, empty=True, name=sg)
-		connectProperty(rprMaterial, "outColor", sg, "surfaceShader")
+		# Check shading engine in aiMaterial
+		if assigned:
+			sg = rprMaterial + "SG"
+			cmds.sets(renderable=True, noSurfaceShader=True, empty=True, name=sg)
+			connectProperty(rprMaterial, "outColor", sg, "surfaceShader")
 
-	# Enable properties, which are default in Arnold
-	defaultEnable(rprMaterial, aiMaterial, "diffuse", "base")
-	defaultEnable(rprMaterial, aiMaterial, "reflections", "specular")
-	defaultEnable(rprMaterial, aiMaterial, "clearCoat", "coat")
+		# Enable properties, which are default in Arnold
+		defaultEnable(rprMaterial, aiMaterial, "diffuse", "base")
+		defaultEnable(rprMaterial, aiMaterial, "reflections", "specular")
+		defaultEnable(rprMaterial, aiMaterial, "clearCoat", "coat")
 
-	# Logging to file
-	start_log(aiMaterial, rprMaterial)
+		# Logging to file
+		start_log(aiMaterial, rprMaterial)
 
-	# Fields conversion
-	copyProperty(rprMaterial, aiMaterial, "diffuseColor", "baseColor")
-	copyProperty(rprMaterial, aiMaterial, "diffuseWeight", "base")
-	copyProperty(rprMaterial, aiMaterial, "diffuseRoughness", "baseRoughness")
+		# Fields conversion
+		copyProperty(rprMaterial, aiMaterial, "diffuseColor", "baseColor")
+		copyProperty(rprMaterial, aiMaterial, "diffuseWeight", "base")
+		copyProperty(rprMaterial, aiMaterial, "diffuseRoughness", "baseRoughness")
 
-	copyProperty(rprMaterial, aiMaterial, "reflectColor", "specularColor")
-	copyProperty(rprMaterial, aiMaterial, "reflectWeight", "specular")
-	copyProperty(rprMaterial, aiMaterial, "reflectRoughness", "specularRoughness")
-	copyProperty(rprMaterial, aiMaterial, "reflectIOR", "specularIOR")
+		copyProperty(rprMaterial, aiMaterial, "reflectColor", "specularColor")
+		copyProperty(rprMaterial, aiMaterial, "reflectWeight", "specular")
+		copyProperty(rprMaterial, aiMaterial, "reflectRoughness", "specularRoughness")
+		copyProperty(rprMaterial, aiMaterial, "reflectIOR", "specularIOR")
 
-	copyProperty(rprMaterial, aiMaterial, "coatColor", "coatColor")
-	copyProperty(rprMaterial, aiMaterial, "coatWeight", "coat")
-	copyProperty(rprMaterial, aiMaterial, "coatRoughness", "coatRoughness")
-	copyProperty(rprMaterial, aiMaterial, "coatIor", "coatIOR")
+		copyProperty(rprMaterial, aiMaterial, "coatColor", "coatColor")
+		copyProperty(rprMaterial, aiMaterial, "coatWeight", "coat")
+		copyProperty(rprMaterial, aiMaterial, "coatRoughness", "coatRoughness")
+		copyProperty(rprMaterial, aiMaterial, "coatIor", "coatIOR")
 
-	bumpConnections = cmds.listConnections(aiMaterial + ".coatNormal")
-	if bumpConnections:
-		setProperty(rprMaterial, "normalMapEnable", 1)
-		copyProperty(rprMaterial, aiMaterial, "normalMap", "coatNormal")
-		setProperty(rprMaterial, "useShaderNormal", 1)
-		setProperty(rprMaterial, "reflectUseShaderNormal", 1)
-		setProperty(rprMaterial, "refractUseShaderNormal", 1)
-		setProperty(rprMaterial, "coatUseShaderNormal", 1)
+		bumpConnections = cmds.listConnections(aiMaterial + ".coatNormal")
+		if bumpConnections:
+			setProperty(rprMaterial, "normalMapEnable", 1)
+			copyProperty(rprMaterial, aiMaterial, "normalMap", "coatNormal")
+			setProperty(rprMaterial, "useShaderNormal", 1)
+			setProperty(rprMaterial, "reflectUseShaderNormal", 1)
+			setProperty(rprMaterial, "refractUseShaderNormal", 1)
+			setProperty(rprMaterial, "coatUseShaderNormal", 1)
 
-	# Logging in file
-	end_log(aiMaterial)
+		# Logging in file
+		end_log(aiMaterial)
 
 	if not assigned:
 		rprMaterial += "." + source
@@ -1573,39 +1678,42 @@ def convertaiShadowMatte(aiMaterial, source):
 
 	assigned = checkAssign(aiMaterial)
 	
-	# Creating new Uber material
-	rprMaterial = cmds.shadingNode("RPRShadowCatcherMaterial", asShader=True)
-	rprMaterial = cmds.rename(rprMaterial, (aiMaterial + "_rpr"))
-
-	# Check shading engine in aiMaterial
-	if assigned:
-		sg = rprMaterial + "SG"
-		cmds.sets(renderable=True, noSurfaceShader=True, empty=True, name=sg)
-		connectProperty(rprMaterial, "outColor", sg, "surfaceShader")
-
-		ai_materialSG = cmds.listConnections(aiMaterial, type="shadingEngine")[0]
-		convertShadowDisplacement(ai_materialSG, rprMaterial)
-
-	# Logging to file
-	start_log(aiMaterial, rprMaterial)
-
-	# Fields conversion
-	copyProperty(rprMaterial, aiMaterial, "shadowColor", "shadowColor")
-
-	if mapDoesNotExist(aiMaterial, "shadowOpacity"):
-		transparency = 1 - getProperty(aiMaterial, "shadowOpacity")
-		setProperty(rprMaterial, "shadowTransp", transparency)
+	if cmds.objExists(aiMaterial + "_rpr"):
+		rprMaterial = aiMaterial + "_rpr"
 	else:
-		arithmetic = cmds.shadingNode("RPRArithmetic", asUtility=True)
-		setProperty(arithmetic, "operation", 1)
-		setProperty(arithmetic, "inputA", (1, 1, 1))
-		copyProperty(arithmetic, aiMaterial, "inputBX", "shadowOpacity")
-		connectProperty(arithmetic, "outX", rprMaterial, "shadowTransp")
+		# Creating new Uber material
+		rprMaterial = cmds.shadingNode("RPRShadowCatcherMaterial", asShader=True)
+		rprMaterial = cmds.rename(rprMaterial, (aiMaterial + "_rpr"))
 
-	copyProperty(rprMaterial, aiMaterial, "bgColor", "backgroundColor")
+		# Check shading engine in aiMaterial
+		if assigned:
+			sg = rprMaterial + "SG"
+			cmds.sets(renderable=True, noSurfaceShader=True, empty=True, name=sg)
+			connectProperty(rprMaterial, "outColor", sg, "surfaceShader")
 
-	# Logging in file
-	end_log(aiMaterial)
+			ai_materialSG = cmds.listConnections(aiMaterial, type="shadingEngine")[0]
+			convertShadowDisplacement(ai_materialSG, rprMaterial)
+
+		# Logging to file
+		start_log(aiMaterial, rprMaterial)
+
+		# Fields conversion
+		copyProperty(rprMaterial, aiMaterial, "shadowColor", "shadowColor")
+
+		if mapDoesNotExist(aiMaterial, "shadowOpacity"):
+			transparency = 1 - getProperty(aiMaterial, "shadowOpacity")
+			setProperty(rprMaterial, "shadowTransp", transparency)
+		else:
+			arithmetic = cmds.shadingNode("RPRArithmetic", asUtility=True)
+			setProperty(arithmetic, "operation", 1)
+			setProperty(arithmetic, "inputA", (1, 1, 1))
+			copyProperty(arithmetic, aiMaterial, "inputBX", "shadowOpacity")
+			connectProperty(arithmetic, "outX", rprMaterial, "shadowTransp")
+
+		copyProperty(rprMaterial, aiMaterial, "bgColor", "backgroundColor")
+
+		# Logging in file
+		end_log(aiMaterial)
 
 	if not assigned:
 		rprMaterial += "." + source
@@ -1620,27 +1728,30 @@ def convertaiStandardVolume(aiMaterial, source):
 
 	assigned = checkAssign(aiMaterial)
 	
-	# Creating new Uber material
-	rprMaterial = cmds.shadingNode("RPRVolumeMaterial", asShader=True)
-	rprMaterial = cmds.rename(rprMaterial, (aiMaterial + "_rpr"))
+	if cmds.objExists(aiMaterial + "_rpr"):
+		rprMaterial = aiMaterial + "_rpr"
+	else:
+		# Creating new Uber material
+		rprMaterial = cmds.shadingNode("RPRVolumeMaterial", asShader=True)
+		rprMaterial = cmds.rename(rprMaterial, (aiMaterial + "_rpr"))
 
-	# Check shading engine in aiMaterial
-	if assigned:
-		sg = rprMaterial + "SG"
-		cmds.sets(renderable=True, noSurfaceShader=True, empty=True, name=sg)
-		connectProperty(rprMaterial, "outColor", sg, "surfaceShader")
+		# Check shading engine in aiMaterial
+		if assigned:
+			sg = rprMaterial + "SG"
+			cmds.sets(renderable=True, noSurfaceShader=True, empty=True, name=sg)
+			connectProperty(rprMaterial, "outColor", sg, "surfaceShader")
 
-	# Logging to file
-	start_log(aiMaterial, rprMaterial)
+		# Logging to file
+		start_log(aiMaterial, rprMaterial)
 
-	# Fields conversion
-	copyProperty(rprMaterial, aiMaterial, "scatterColor", "scatterColor")
-	copyProperty(rprMaterial, aiMaterial, "emissionColor", "emissionColor")
-	copyProperty(rprMaterial, aiMaterial, "transmissionColor", "transparent")
-	copyProperty(rprMaterial, aiMaterial, "density", "density")
+		# Fields conversion
+		copyProperty(rprMaterial, aiMaterial, "scatterColor", "scatterColor")
+		copyProperty(rprMaterial, aiMaterial, "emissionColor", "emissionColor")
+		copyProperty(rprMaterial, aiMaterial, "transmissionColor", "transparent")
+		copyProperty(rprMaterial, aiMaterial, "density", "density")
 
-	# Logging in file
-	end_log(aiMaterial)
+		# Logging in file
+		end_log(aiMaterial)
 
 	if not assigned:
 		rprMaterial += "." + source
