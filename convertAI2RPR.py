@@ -615,6 +615,32 @@ def convertaiSqrt(ai, source):
 	return rpr
 
 
+def convertaiNegate(ai, source):
+
+	rpr = cmds.shadingNode("RPRArithmetic", asUtility=True)
+	rpr = cmds.rename(rpr, ai + "_rpr")
+
+	# Logging to file
+	start_log(ai, rpr)
+
+	# Fields conversion
+	setProperty(rpr, "operation", 1)
+	copyProperty(rpr, ai, "inputB", "input")
+	
+	# Logging to file
+	end_log(ai)
+
+	conversion_map = {
+		"outColor": "out",
+		"outColorR": "outX",
+		"outColorG": "outY",
+		"outColorB": "outZ",
+	}
+
+	rpr += "." + conversion_map[source]
+	return rpr
+
+
 def convertbump2d(ai, source):
 
 	bump_type = getProperty(ai, "bumpInterp")
@@ -1926,6 +1952,7 @@ def convertaiMaterial(aiMaterial, source):
 		"aiTrigo": convertaiTrigo,
 		"aiComposite": convertaiComposite,
 		"aiSqrt": convertaiSqrt,
+		"aiNegate": convertaiNegate,
 		"aiImage": convertaiImage,
 		"aiFacingRatio": convertaiFacingRatio,
 		"aiThinFilm": convertaiThinFilm,
