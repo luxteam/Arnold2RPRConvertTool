@@ -21,6 +21,23 @@ v.2.1 - aiMath nodes support
 	Fixed issue with group of lights
 	Fixed issue with unassign materials with shader catcher
 v.2.2 - Fixed bug with unsupported nodes conversion
+	aiColorConvert node conversion support
+	aiShadowMatte conversion support
+	aiCarPaint conversion support
+v.2.3 - aiVectorMap conversion support
+	aiCellNoise and aiNoise conversion support
+	aiStandartSurface cameraMap conversion
+	Volume materials updates
+	aiBlackbody conversion support
+	aiCurvature conversion support
+v.2.4 - aiVector conversion support in displacement
+	aiToon conversion support
+	aiBump conversion updates
+	aiComposite conversion support
+	aiSqrt conversion support
+	aiNegate conversion support
+	aiBlackbody conversion update
+	Standard lights conversion support
 
 
 '''
