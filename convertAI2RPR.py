@@ -1280,7 +1280,8 @@ def convertaiStandardSurface(aiMaterial, source):
 	setProperty(rprMaterial, "coatThickness", 1.5)
 
 	copyProperty(rprMaterial, aiMaterial, "emissiveColor", "emissionColor")
-	copyProperty(rprMaterial, aiMaterial, "emissiveWeight", "emission")
+	setProperty(rprMaterial, "emissiveWeight", 0.35)
+	copyProperty(rprMaterial, aiMaterial, "emissiveIntensity", "emission")
 
 	if getProperty(aiMaterial, "opacity") != (1, 1, 1):
 		if mapDoesNotExist(aiMaterial, "opacity"):
