@@ -1189,6 +1189,62 @@ def convertaiFlat(aiMaterial, source):
 
 
 #######################
+## aiToon
+#######################
+
+def convertaiToon(aiMaterial, source):
+
+	assigned = checkAssign(aiMaterial)
+	
+	# Creating new Uber material
+	rprMaterial = cmds.shadingNode("RPRUberMaterial", asShader=True)
+	rprMaterial = cmds.rename(rprMaterial, (aiMaterial + "_rpr"))
+
+	# Check shading engine in aiMaterial
+	if assigned:
+		sg = rprMaterial + "SG"
+		cmds.sets(renderable=True, noSurfaceShader=True, empty=True, name=sg)
+		connectProperty(rprMaterial, "outColor", sg, "surfaceShader")
+
+	# Enable properties, which are default in Arnold
+	defaultEnable(rprMaterial, aiMaterial, "diffuse", "base")
+	defaultEnable(rprMaterial, aiMaterial, "reflections", "specular")
+	defaultEnable(rprMaterial, aiMaterial, "refraction", "transmission")
+	defaultEnable(rprMaterial, aiMaterial, "emissive", "emission")
+
+	# Logging to file
+	start_log(aiMaterial, rprMaterial)
+
+	# Fields conversion
+	copyProperty(rprMaterial, aiMaterial, "diffuseColor", "baseColor")
+	copyProperty(rprMaterial, aiMaterial, "diffuseWeight", "base")
+
+	copyProperty(rprMaterial, aiMaterial, "reflectWeight", "specular")
+	copyProperty(rprMaterial, aiMaterial, "reflectColor", "specularColor")
+	copyProperty(rprMaterial, aiMaterial, "reflectRoughness", "specularRoughness")
+	copyProperty(rprMaterial, aiMaterial, "reflectAnisotropy", "specularAnisotropy")
+	copyProperty(rprMaterial, aiMaterial, "reflectAnisotropyRotation", "specularRotation")
+	setProperty(rprMaterial, "reflectMetalMaterial", 1)
+	setProperty(rprMaterial, "reflectMetalness", 1)
+
+	copyProperty(rprMaterial, aiMaterial, "refractWeight", "transmission")
+	copyProperty(rprMaterial, aiMaterial, "refractColor", "transmissionColor")
+	copyProperty(rprMaterial, aiMaterial, "refractRoughness", "transmissionRoughness")
+	copyProperty(rprMaterial, aiMaterial, "refractIor", "IOR")
+
+	copyProperty(rprMaterial, aiMaterial, "emissiveWeight", "emission")
+	copyProperty(rprMaterial, aiMaterial, "emissiveIntensity", "emission")
+	copyProperty(rprMaterial, aiMaterial, "emissiveColor", "emissionColor")
+
+	# Logging in file
+	end_log(aiMaterial)
+
+	if not assigned:
+		rprMaterial += "." + source
+	return rprMaterial
+
+
+#######################
 ## aiMixShader 
 #######################
 
@@ -1782,7 +1838,7 @@ def convertaiMaterial(aiMaterial, source):
 		"aiStandardHair": convertUnsupportedMaterial,
 		"aiStandardSurface": convertaiStandardSurface,
 		"aiSwitch": convertUnsupportedMaterial,
-		"aiToon": convertUnsupportedMaterial,
+		"aiToon": convertaiToon,
 		"aiTwoSided": convertUnsupportedMaterial,
 		"aiUtility": convertUnsupportedMaterial,
 		"aiWireframe": convertUnsupportedMaterial,
