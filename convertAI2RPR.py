@@ -570,7 +570,7 @@ def convertbump2d(ai, source):
 	if bumpConnections:
 		connectProperty(bumpConnections[0], "outColor", rpr, "color")
 
-	copyProperty(rpr, ai, "strength", "bumpDepth")
+	setProperty(rpr, "strength", getProperty(ai, "bumpDepth") * 100)
 
 	# Logging to file
 	end_log(ai)
@@ -601,7 +601,7 @@ def convertaiBump2d(ai, source):
 	if bumpConnections:
 		connectProperty(bumpConnections[0], "outColor", rpr, "color")
 
-	copyProperty(rpr, ai, "strength", "bumpHeight")
+	setProperty(rpr, "strength", getProperty(ai, "bumpHeight") * 100)
 
 	# Logging to file
 	end_log(ai)
@@ -632,7 +632,7 @@ def convertaiBump3d(ai, source):
 	if bumpConnections:
 		connectProperty(bumpConnections[0], "outColor", rpr, "color")
 
-	copyProperty(rpr, ai, "strength", "bumpHeight")
+	setProperty(rpr, "strength", getProperty(ai, "bumpHeight") * 100)
 
 	# Logging to file
 	end_log(ai)
