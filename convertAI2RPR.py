@@ -1917,6 +1917,7 @@ def convertaiAreaLight(ai_light):
 	start_log(ai_light, rprLightShape)
 
 	# Copy properties from aiLight
+	setProperty(rprLightShape, "lightType", 0)
 	copyProperty(rprLightShape, ai_light, "lightIntensity", "intensity")
 	copyProperty(rprLightShape, ai_light, "colorPicker", "color")
 	copyProperty(rprLightShape, ai_light, "luminousEfficacy", "exposure")
@@ -1999,6 +2000,252 @@ def convertaiMeshLight(ai_light):
 	end_log(ai_light)
 
 
+def convertareaLight(ai_light):
+
+	splited_name = ai_light.split("|")
+	aiTransform = "|".join(splited_name[0:-1])
+	group = "|".join(splited_name[0:-2])
+
+	# Arnold light transform
+	if cmds.objExists(aiTransform + "_rpr"):
+		rprTransform = aiTransform + "_rpr"
+		rprLightShape = cmds.listRelatives(rprTransform)[0]
+	else: 
+		rprLightShape = cmds.createNode("RPRPhysicalLight", n="RPRPhysicalLightShape")
+		rprLightShape = cmds.rename(rprLightShape, splited_name[-1] + "_rpr")
+		rprTransform = cmds.listRelatives(rprLightShape, p=True)[0]
+		rprTransform = cmds.rename(rprTransform, splited_name[-2] + "_rpr")
+		rprLightShape = cmds.listRelatives(rprTransform)[0]
+
+		if group:
+			cmds.parent(rprTransform, group)
+
+		rprTransform = group + "|" + rprTransform
+		rprLightShape = rprTransform + "|" + rprLightShape
+
+	# Logging to file 
+	start_log(ai_light, rprLightShape)
+
+	# Copy properties from aiLight
+	setProperty(rprLightShape, "lightType", 0)
+	setProperty(rprLightShape, "intensityUnits", 2)
+
+	scaleX = getProperty(aiTransform, "scaleX")
+	scaleY = getProperty(aiTransform, "scaleY")
+	intensity = getProperty(ai_light, "intensity")
+	exposure = getProperty(ai_light, "aiExposure")
+	setProperty(rprLightShape, "lightIntensity", (intensity / 160) * (2 ** exposure) * scaleX * scaleY )
+
+	copyProperty(rprLightShape, ai_light, "colorPicker", "color")
+	copyProperty(rprLightShape, ai_light, "temperature", "aiColorTemperature")
+
+	if getProperty(ai_light, "aiUseColorTemperature"):
+		setProperty(rprLightShape, "colorMode", 1)
+		mel.eval("onTemperatureChanged(\"{}\")".format(rprLightShape))
+
+	copyProperty(rprLightShape, ai_light, "shadowsSoftness", "aiShadowDensity")
+
+	copyProperty(rprTransform, aiTransform, "translateX", "translateX")
+	copyProperty(rprTransform, aiTransform, "translateY", "translateY")
+	copyProperty(rprTransform, aiTransform, "translateZ", "translateZ")
+	copyProperty(rprTransform, aiTransform, "rotateX", "rotateX")
+	copyProperty(rprTransform, aiTransform, "rotateY", "rotateY")
+	copyProperty(rprTransform, aiTransform, "rotateZ", "rotateZ")
+	copyProperty(rprTransform, aiTransform, "scaleX", "scaleX")
+	copyProperty(rprTransform, aiTransform, "scaleY", "scaleY")
+	copyProperty(rprTransform, aiTransform, "scaleZ", "scaleZ")
+
+	# Logging to file
+	end_log(ai_light)  
+
+	# hide 
+	cmds.hide(aiTransform)
+
+
+def convertspotLight(ai_light):
+
+	splited_name = ai_light.split("|")
+	aiTransform = "|".join(splited_name[0:-1])
+	group = "|".join(splited_name[0:-2])
+
+	# Arnold light transform
+	if cmds.objExists(aiTransform + "_rpr"):
+		rprTransform = aiTransform + "_rpr"
+		rprLightShape = cmds.listRelatives(rprTransform)[0]
+	else: 
+		rprLightShape = cmds.createNode("RPRPhysicalLight", n="RPRPhysicalLightShape")
+		rprLightShape = cmds.rename(rprLightShape, splited_name[-1] + "_rpr")
+		rprTransform = cmds.listRelatives(rprLightShape, p=True)[0]
+		rprTransform = cmds.rename(rprTransform, splited_name[-2] + "_rpr")
+		rprLightShape = cmds.listRelatives(rprTransform)[0]
+
+		if group:
+			cmds.parent(rprTransform, group)
+
+		rprTransform = group + "|" + rprTransform
+		rprLightShape = rprTransform + "|" + rprLightShape
+
+	# Logging to file 
+	start_log(ai_light, rprLightShape)
+
+	# Copy properties from aiLight
+	setProperty(rprLightShape, "lightType", 1)
+	setProperty(rprLightShape, "intensityUnits", 2)
+
+	scaleX = getProperty(aiTransform, "scaleX")
+	scaleY = getProperty(aiTransform, "scaleY")
+	intensity = getProperty(ai_light, "intensity")
+	exposure = getProperty(ai_light, "aiExposure")
+	setProperty(rprLightShape, "lightIntensity", (intensity / 160) * (2 ** exposure) * scaleX * scaleY )
+
+	copyProperty(rprLightShape, ai_light, "colorPicker", "color")
+	copyProperty(rprLightShape, ai_light, "temperature", "aiColorTemperature")
+
+	if getProperty(ai_light, "aiUseColorTemperature"):
+		setProperty(rprLightShape, "colorMode", 1)
+		mel.eval("onTemperatureChanged(\"{}\")".format(rprLightShape))
+
+	#copyProperty(rprLightShape, ai_light, "spotLightOuterConeFalloff", "penumbraAngle")
+	copyProperty(rprLightShape, ai_light, "spotLightOuterConeFalloff", "coneAngle")
+	copyProperty(rprLightShape, ai_light, "spotLightInnerConeAngle", "coneAngle")
+
+	copyProperty(rprTransform, aiTransform, "translateX", "translateX")
+	copyProperty(rprTransform, aiTransform, "translateY", "translateY")
+	copyProperty(rprTransform, aiTransform, "translateZ", "translateZ")
+	copyProperty(rprTransform, aiTransform, "rotateX", "rotateX")
+	copyProperty(rprTransform, aiTransform, "rotateY", "rotateY")
+	copyProperty(rprTransform, aiTransform, "rotateZ", "rotateZ")
+	copyProperty(rprTransform, aiTransform, "scaleX", "scaleX")
+	copyProperty(rprTransform, aiTransform, "scaleY", "scaleY")
+	copyProperty(rprTransform, aiTransform, "scaleZ", "scaleZ")
+
+	# Logging to file
+	end_log(ai_light)
+
+	# hide 
+	cmds.hide(aiTransform)
+
+
+def convertpointLight(ai_light):
+
+	splited_name = ai_light.split("|")
+	aiTransform = "|".join(splited_name[0:-1])
+	group = "|".join(splited_name[0:-2])
+
+	# Arnold light transform
+	if cmds.objExists(aiTransform + "_rpr"):
+		rprTransform = aiTransform + "_rpr"
+		rprLightShape = cmds.listRelatives(rprTransform)[0]
+	else: 
+		rprLightShape = cmds.createNode("RPRPhysicalLight", n="RPRPhysicalLightShape")
+		rprLightShape = cmds.rename(rprLightShape, splited_name[-1] + "_rpr")
+		rprTransform = cmds.listRelatives(rprLightShape, p=True)[0]
+		rprTransform = cmds.rename(rprTransform, splited_name[-2] + "_rpr")
+		rprLightShape = cmds.listRelatives(rprTransform)[0]
+
+		if group:
+			cmds.parent(rprTransform, group)
+
+		rprTransform = group + "|" + rprTransform
+		rprLightShape = rprTransform + "|" + rprLightShape
+
+	# Logging to file 
+	start_log(ai_light, rprLightShape)
+
+	# Copy properties from aiLight
+	setProperty(rprLightShape, "lightType", 2)
+	setProperty(rprLightShape, "intensityUnits", 2)
+
+	scaleX = getProperty(aiTransform, "scaleX")
+	scaleY = getProperty(aiTransform, "scaleY")
+	intensity = getProperty(ai_light, "intensity")
+	exposure = getProperty(ai_light, "aiExposure")
+	setProperty(rprLightShape, "lightIntensity", (intensity / 160) * (2 ** exposure) * scaleX * scaleY )
+
+	copyProperty(rprLightShape, ai_light, "colorPicker", "color")
+	copyProperty(rprLightShape, ai_light, "temperature", "aiColorTemperature")
+
+	if getProperty(ai_light, "aiUseColorTemperature"):
+		setProperty(rprLightShape, "colorMode", 1)
+		mel.eval("onTemperatureChanged(\"{}\")".format(rprLightShape))
+
+	copyProperty(rprTransform, aiTransform, "translateX", "translateX")
+	copyProperty(rprTransform, aiTransform, "translateY", "translateY")
+	copyProperty(rprTransform, aiTransform, "translateZ", "translateZ")
+	copyProperty(rprTransform, aiTransform, "rotateX", "rotateX")
+	copyProperty(rprTransform, aiTransform, "rotateY", "rotateY")
+	copyProperty(rprTransform, aiTransform, "rotateZ", "rotateZ")
+	copyProperty(rprTransform, aiTransform, "scaleX", "scaleX")
+	copyProperty(rprTransform, aiTransform, "scaleY", "scaleY")
+	copyProperty(rprTransform, aiTransform, "scaleZ", "scaleZ")
+
+	# Logging to file
+	end_log(ai_light)
+
+	# hide 
+	cmds.hide(aiTransform)
+
+
+def convertdirectionalLight(ai_light):
+
+	splited_name = ai_light.split("|")
+	aiTransform = "|".join(splited_name[0:-1])
+	group = "|".join(splited_name[0:-2])
+
+	# Arnold light transform
+	if cmds.objExists(aiTransform + "_rpr"):
+		rprTransform = aiTransform + "_rpr"
+		rprLightShape = cmds.listRelatives(rprTransform)[0]
+	else: 
+		rprLightShape = cmds.createNode("RPRPhysicalLight", n="RPRPhysicalLightShape")
+		rprLightShape = cmds.rename(rprLightShape, splited_name[-1] + "_rpr")
+		rprTransform = cmds.listRelatives(rprLightShape, p=True)[0]
+		rprTransform = cmds.rename(rprTransform, splited_name[-2] + "_rpr")
+		rprLightShape = cmds.listRelatives(rprTransform)[0]
+
+		if group:
+			cmds.parent(rprTransform, group)
+
+		rprTransform = group + "|" + rprTransform
+		rprLightShape = rprTransform + "|" + rprLightShape
+
+	# Logging to file 
+	start_log(ai_light, rprLightShape)
+
+	# Copy properties from aiLight
+	setProperty(rprLightShape, "lightType", 3)
+	setProperty(rprLightShape, "intensityUnits", 1)
+
+	scaleX = getProperty(aiTransform, "scaleX")
+	scaleY = getProperty(aiTransform, "scaleY")
+	intensity = getProperty(ai_light, "intensity")
+	exposure = getProperty(ai_light, "aiExposure")
+	setProperty(rprLightShape, "lightIntensity", intensity  * 2 ** exposure * scaleX * scaleY )
+
+	copyProperty(rprLightShape, ai_light, "colorPicker", "color")
+	copyProperty(rprLightShape, ai_light, "temperature", "aiColorTemperature")
+
+	if getProperty(ai_light, "aiUseColorTemperature"):
+		setProperty(rprLightShape, "colorMode", 1)
+		mel.eval("onTemperatureChanged(\"{}\")".format(rprLightShape))
+
+	copyProperty(rprTransform, aiTransform, "translateX", "translateX")
+	copyProperty(rprTransform, aiTransform, "translateY", "translateY")
+	copyProperty(rprTransform, aiTransform, "translateZ", "translateZ")
+	copyProperty(rprTransform, aiTransform, "rotateX", "rotateX")
+	copyProperty(rprTransform, aiTransform, "rotateY", "rotateY")
+	copyProperty(rprTransform, aiTransform, "rotateZ", "rotateZ")
+	copyProperty(rprTransform, aiTransform, "scaleX", "scaleX")
+	copyProperty(rprTransform, aiTransform, "scaleY", "scaleY")
+	copyProperty(rprTransform, aiTransform, "scaleZ", "scaleZ")
+
+	# Logging to file
+	end_log(ai_light)
+
+	# hide 
+	cmds.hide(aiTransform)
+
+
 def convertaiAtmosphere(aiAtmosphere):
 
 	# Creating new Volume material
@@ -2066,7 +2313,7 @@ def convertaiMaterial(aiMaterial, source):
 		"aiUtility": convertUnsupportedMaterial,
 		"aiWireframe": convertUnsupportedMaterial,
 		"aiStandardVolume": convertaiStandardVolume,
-		##utilities
+		# utilities
 		"bump2d": convertbump2d,
 		"aiBump2d": convertaiBump2d,
 		"aiBump3d": convertaiBump3d,
@@ -2117,6 +2364,10 @@ def convertLight(light):
 		"aiMeshLight": convertaiMeshLight,
 		"aiPhotometricLight": convertaiPhotometricLight,
 		"aiSkyDomeLight": convertaiSkyDomeLight,
+		"areaLight": convertareaLight,
+		"spotLight": convertspotLight,
+		"pointLight": convertpointLight,
+		"directionalLight": convertdirectionalLight
 	}
 
 	conversion_func[ai_type](light)
@@ -2143,7 +2394,7 @@ def cleanScene():
 			except Exception as ex:
 				traceback.print_exc()
 
-	listLights = cmds.ls(l=True, type=["aiAreaLight", "aiMeshLight", "aiPhotometricLight", "aiSkyDomeLight"])
+	listLights = cmds.ls(l=True, type=["aiAreaLight", "aiMeshLight", "aiPhotometricLight", "aiSkyDomeLight", "areaLight", "spotLight", "pointLight", "directionalLight"])
 	for light in listLights:
 		transform = cmds.listRelatives(light, p=True)[0]
 		try:
@@ -2216,7 +2467,7 @@ def convertScene():
 
 	
 	# Get all lights from scene
-	listLights = cmds.ls(l=True, type=["aiAreaLight", "aiMeshLight", "aiPhotometricLight", "aiSkyDomeLight"])
+	listLights = cmds.ls(l=True, type=["aiAreaLight", "aiMeshLight", "aiPhotometricLight", "aiSkyDomeLight", "areaLight", "spotLight", "pointLight", "directionalLight"])
 
 	# Convert lights
 	for light in listLights:
