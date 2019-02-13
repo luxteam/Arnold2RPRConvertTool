@@ -2237,7 +2237,7 @@ def convertdirectionalLight(ai_light):
 	scaleY = getProperty(aiTransform, "scaleY")
 	intensity = getProperty(ai_light, "intensity")
 	exposure = getProperty(ai_light, "aiExposure")
-	setProperty(rprLightShape, "lightIntensity", intensity  * 2 ** exposure * scaleX * scaleY )
+	setProperty(rprLightShape, "lightIntensity", intensity  * 2 ** exposure )
 
 	copyProperty(rprLightShape, ai_light, "colorPicker", "color")
 	copyProperty(rprLightShape, ai_light, "temperature", "aiColorTemperature")
