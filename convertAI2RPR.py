@@ -1000,53 +1000,10 @@ def convertaiBlackbody(ai, source):
 		arithmetic3 = cmds.shadingNode("RPRArithmetic", asUtility=True)
 		setProperty(arithmetic1, "operation", 0)
 
-		temperature = getProperty(ai, "temperature") / 100
+		temperature_color = convertTemperature(getProperty(ai, "temperature"))
 
-		if temperature <= 66:
-			colorR = 255
-		else:
-			colorR = temperature - 60
-			colorR = 329.698727446 * colorR ** -0.1332047592
-			if colorR < 0:
-				colorR = 0
-			if colorR > 255:
-				colorR = 255
-
-
-		if temperature <= 66:
-			colorG = temperature
-			colorG = 99.4708025861 * math.log(colorG) - 161.1195681661
-			if colorG < 0:
-				colorG = 0
-			if colorG > 255:
-				colorG = 255
-		else:
-			colorG = temperature - 60
-			colorG = 288.1221695283 * colorG ** -0.0755148492
-			if colorG < 0:
-				colorG = 0
-			if colorG > 255:
-				colorG = 255
-
-
-		if temperature >= 66:
-			colorB = 255
-		elif temperature <= 19:
-			colorB = 0
-		else:
-			colorB = temperature - 10
-			colorB = 138.5177312231 * math.log(colorB) - 305.0447927307
-			if colorB < 0:
-				colorB = 0
-			if colorB > 255:
-				colorB = 255
-
-		colorR = colorR / 255
-		colorG = colorG / 255
-		colorB = colorB / 255
-
-		setProperty(arithmetic3, "inputA", (colorR, colorG, colorB))
-		setProperty(arithmetic3, "inputB", (colorR, colorG, colorB))
+		setProperty(arithmetic3, "inputA", temperature_color)
+		setProperty(arithmetic3, "inputB", temperature_color)
 
 		setProperty(rpr, "operation", 0)
 		connectProperty(arithmetic2, "out", rpr, "inputA")
@@ -1905,11 +1862,17 @@ def convertaiPhotometricLight(ai_light):
 	copyProperty(rprTransform, aiTransform, "scaleY", "scaleY")
 	copyProperty(rprTransform, aiTransform, "scaleZ", "scaleZ")
 
-	copyProperty(rprLightShape, ai_light, "color", "color")
+	
 
 	intensity = getProperty(ai_light, "intensity")
 	exposure = getProperty(ai_light, "exposure")
 	setProperty(rprLightShape, "intensity", intensity * (exposure + 5) / 500)
+
+	copyProperty(rprLightShape, ai_light, "color", "color")
+
+	if getProperty(ai_light, "aiUseColorTemperature"):
+		temperature_color = convertTemperature(getProperty(ai_light, "aiColorTemperature"))
+		setProperty(rprLightShape, "color", temperature_color)
 
 	setProperty(rprLightShape, "iesFile", getProperty(ai_light, "aiFilename"))
 	
@@ -2329,6 +2292,55 @@ def convertaiAtmosphere(aiAtmosphere):
 	
 	# Logging to file
 	end_log(aiAtmosphere)  
+
+
+def convertTemperature(temperature):
+	temperature = temperature / 100
+
+	if temperature <= 66:
+		colorR = 255
+	else:
+		colorR = temperature - 60
+		colorR = 329.698727446 * colorR ** -0.1332047592
+		if colorR < 0:
+			colorR = 0
+		if colorR > 255:
+			colorR = 255
+
+
+	if temperature <= 66:
+		colorG = temperature
+		colorG = 99.4708025861 * math.log(colorG) - 161.1195681661
+		if colorG < 0:
+			colorG = 0
+		if colorG > 255:
+			colorG = 255
+	else:
+		colorG = temperature - 60
+		colorG = 288.1221695283 * colorG ** -0.0755148492
+		if colorG < 0:
+			colorG = 0
+		if colorG > 255:
+			colorG = 255
+
+
+	if temperature >= 66:
+		colorB = 255
+	elif temperature <= 19:
+		colorB = 0
+	else:
+		colorB = temperature - 10
+		colorB = 138.5177312231 * math.log(colorB) - 305.0447927307
+		if colorB < 0:
+			colorB = 0
+		if colorB > 255:
+			colorB = 255
+
+	colorR = colorR / 255
+	colorG = colorG / 255
+	colorB = colorB / 255
+
+	return (colorR, colorG, colorB)
 
 
 # Convert material. Returns new material name.
