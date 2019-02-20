@@ -2565,6 +2565,18 @@ def convertScene():
 	setProperty("defaultRenderGlobals", "imageFormat", 8)
 	# setProperty("RadeonProRenderGlobals", "applyGammaToMayaViews", 1)
 	setProperty("RadeonProRenderGlobals", "completionCriteriaIterations", 1000)
+
+	filter_type = getProperty("defaultArnoldFilter", "aiTranslator")
+	if filter_type == "box":
+		setProperty("RadeonProRenderGlobals", "filter", 1)
+	elif filter_type == "triangle":
+		setProperty("RadeonProRenderGlobals", "filter", 2)
+	elif filter_type == "gaussian":
+		setProperty("RadeonProRenderGlobals", "filter", 3)
+	elif filter_type == "blackman_harris":
+		setProperty("RadeonProRenderGlobals", "filter", 6)
+	copyProperty("RadeonProRenderGlobals", "defaultArnoldFilter", "filterSize", "width")
+	copyProperty("RadeonProRenderGlobals", "defaultArnoldRenderOptions", "maxRayDepth", "GITotalDepth")
 	
 	matteShadowCatcher = cmds.ls(materials=True, type="aiShadowMatte")
 	if matteShadowCatcher:
