@@ -211,6 +211,13 @@ def convertDisplacement(ai_sg, rpr_name):
 					connectProperty(displacement_file[0], "outColor", rpr_name, "displacementMap")
 					copyProperty(rpr_name, displacement[0], "scale", "displacementMax")
 
+					meshs = cmds.listConnections(ai_sg, type="mesh")
+					if meshs:
+						shapes = cmds.listRelatives(meshs[0], type="mesh")
+						copyProperty(rpr_name, shapes[0], "displacementSubdiv", "aiSubdivIterations")
+						copyProperty(rpr_name, shapes[0], "displacementMax", "aiDispHeight")
+						copyProperty(rpr_name, shapes[0], "displacementMin", "aiDispZeroValue")
+
 			elif displacementType == "file":
 				setProperty(rpr_name, "displacementEnable", 1)
 				connectProperty(displacement[0], "outColor", rpr_name, "displacementMap")
