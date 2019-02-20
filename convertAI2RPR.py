@@ -1719,6 +1719,43 @@ def convertaiShadowMatte(aiMaterial, source):
 
 
 #######################
+## aiPassthrough 
+#######################
+
+def convertaiPassthrough(aiMaterial, source):
+
+	assigned = checkAssign(aiMaterial)
+	
+	if cmds.objExists(aiMaterial + "_rpr"):
+		rprMaterial = aiMaterial + "_rpr"
+	else:
+		# Creating new Uber material
+		rprMaterial = cmds.shadingNode("RPRMaterial", asShader=True)
+		rprMaterial = cmds.rename(rprMaterial, (aiMaterial + "_rpr"))
+		setProperty(rprMaterial, "type", 10)
+
+		# Check shading engine in aiMaterial
+		if assigned:
+			sg = rprMaterial + "SG"
+			cmds.sets(renderable=True, noSurfaceShader=True, empty=True, name=sg)
+			connectProperty(rprMaterial, "outColor", sg, "surfaceShader")
+
+		# Logging to file
+		start_log(aiMaterial, rprMaterial)
+
+		# Fields conversion
+		copyProperty(rprMaterial, aiMaterial, "color", "passthrough")
+		copyProperty(rprMaterial, aiMaterial, "normalMap", "normalCamera")
+
+		# Logging in file
+		end_log(aiMaterial)
+
+	if not assigned:
+		rprMaterial += "." + source
+	return rprMaterial
+
+
+#######################
 ## aiStandardVolume 
 #######################
 
@@ -2367,7 +2404,7 @@ def convertaiMaterial(aiMaterial, source):
 		"aiLayerShader": convertUnsupportedMaterial,
 		"aiMatte": convertUnsupportedMaterial,
 		"aiMixShader": convertaiMixShader,
-		"aiPassthrough": convertUnsupportedMaterial,
+		"aiPassthrough": convertaiPassthrough,
 		"aiRaySwitch": convertUnsupportedMaterial,
 		"aiShadowMatte": convertaiShadowMatte,
 		"aiStandardHair": convertUnsupportedMaterial,
@@ -2579,6 +2616,9 @@ def convertScene():
 	copyProperty("RadeonProRenderGlobals", "defaultArnoldFilter", "filterSize", "width")
 	copyProperty("RadeonProRenderGlobals", "defaultArnoldRenderOptions", "maxRayDepth", "GITotalDepth")
 	
+	# camera settings
+
+
 	matteShadowCatcher = cmds.ls(materials=True, type="aiShadowMatte")
 	if matteShadowCatcher:
 		try:
