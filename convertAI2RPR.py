@@ -731,18 +731,28 @@ def convertbump2d(ai, source):
 			connectProperty(bumpConnections[0], "outColor", rpr, "color")
 
 		if not bump_type:
-			setProperty(rpr, "strength", getProperty(ai, "bumpDepth") * 100)
+			if getProperty(ai, "bumpDepth") * 100 > 1:
+				setProperty(rpr, "strength", 1)
+			else:
+				setProperty(rpr, "strength", getProperty(ai, "bumpDepth") * 100)
 		else:
-			copyProperty(rpr, ai, "strength", "bumpDepth")
+			if getProperty(ai, "bumpDepth") > 1:
+				setProperty(rpr, "strength", 1)
+			else:
+				setProperty(rpr, "strength", getProperty(ai, "bumpDepth") * 100)
+
+		# max value = 1
+		if getProperty(rpr, "strength") > 1:
+			setProperty(rpr, "strength", 1)
 
 		# Logging to file
 		end_log(ai)
 
 	conversion_map = {
 		"outNormal": "out",
-		"outNormalX": "outX",
-		"outNormalY": "outY",
-		"outNormalZ": "outZ"
+		"outNormalX": "outR",
+		"outNormalY": "outG",
+		"outNormalZ": "outB"
 	}
 
 	rpr += "." + conversion_map[source]
@@ -767,16 +777,19 @@ def convertaiBump2d(ai, source):
 		if bumpConnections:
 			connectProperty(bumpConnections[0], "outColor", rpr, "color")
 
-		setProperty(rpr, "strength", getProperty(ai, "bumpHeight") * 100)
+		if getProperty(ai, "bumpHeight") * 100 > 1:
+			setProperty(rpr, "strength", 1)
+		else:
+			setProperty(rpr, "strength", getProperty(ai, "bumpHeight") * 100)
 
 		# Logging to file
 		end_log(ai)
 
 	conversion_map = {
 		"outValue": "out",
-		"outValueX": "outX",
-		"outValueY": "outY",
-		"outValueZ": "outZ"
+		"outValueX": "outR",
+		"outValueY": "outG",
+		"outValueZ": "outB"
 	}
 
 	rpr += "." + conversion_map[source]
@@ -801,16 +814,19 @@ def convertaiBump3d(ai, source):
 		if bumpConnections:
 			connectProperty(bumpConnections[0], "outColor", rpr, "color")
 
-		setProperty(rpr, "strength", getProperty(ai, "bumpHeight") * 100)
+		if getProperty(ai, "bumpHeight") * 100 > 1:
+			setProperty(rpr, "strength", 1)
+		else:
+			setProperty(rpr, "strength", getProperty(ai, "bumpHeight") * 100)
 
 		# Logging to file
 		end_log(ai)
 
 	conversion_map = {
 		"outValue": "out",
-		"outValueX": "outX",
-		"outValueY": "outY",
-		"outValueZ": "outZ"
+		"outValueX": "outR",
+		"outValueY": "outG",
+		"outValueZ": "outB"
 	}
 
 	rpr += "." + conversion_map[source]
@@ -834,16 +850,19 @@ def convertaiNormalMap(ai, source):
 		else:
 			copyProperty(rpr, ai, "color", "input")
 
-		copyProperty(rpr, ai, "strength", "strength")
+		if getProperty(ai, "strength") > 1:
+			setProperty(rpr, "strength", 1)
+		else:
+			copyProperty(rpr, ai, "strength", "strength")
 
 		# Logging to file
 		end_log(ai)
 
 	conversion_map = {
 		"outValue": "out",
-		"outValueX": "outX",
-		"outValueY": "outY",
-		"outValueZ": "outZ"
+		"outValueX": "outR",
+		"outValueY": "outG",
+		"outValueZ": "outB"
 	}
 
 	rpr += "." + conversion_map[source]
@@ -867,16 +886,19 @@ def convertaiVectorMap(ai, source):
 		else:
 			copyProperty(rpr, ai, "color", "input")
 
-		copyProperty(rpr, ai, "strength", "scale")
+		if getProperty(ai, "scale") > 1:
+			setProperty(rpr, "strength", 1)
+		else:
+			copyProperty(rpr, ai, "strength", "scale")
 
 		# Logging to file
 		end_log(ai)
 
 	conversion_map = {
 		"outValue": "out",
-		"outValueX": "outX",
-		"outValueY": "outY",
-		"outValueZ": "outZ"
+		"outValueX": "outR",
+		"outValueY": "outG",
+		"outValueZ": "outB"
 	}
 
 	rpr += "." + conversion_map[source]
