@@ -1934,10 +1934,24 @@ def convertaiAreaLight(ai_light):
 	start_log(ai_light, rprLightShape)
 
 	# Copy properties from aiLight
+	# Copy properties from aiLight
 	setProperty(rprLightShape, "lightType", 0)
-	copyProperty(rprLightShape, ai_light, "lightIntensity", "intensity")
+	setProperty(rprLightShape, "intensityUnits", 2)
+
+	scaleX = getProperty(aiTransform, "scaleX")
+	scaleY = getProperty(aiTransform, "scaleY")
+	intensity = getProperty(ai_light, "intensity")
+	exposure = getProperty(ai_light, "exposure")
+	setProperty(rprLightShape, "lightIntensity", (intensity / 160) * (2 ** exposure) * scaleX * scaleY )
+
 	copyProperty(rprLightShape, ai_light, "colorPicker", "color")
-	copyProperty(rprLightShape, ai_light, "luminousEfficacy", "exposure")
+	copyProperty(rprLightShape, ai_light, "temperature", "aiColorTemperature")
+
+	if getProperty(ai_light, "aiUseColorTemperature"):
+		setProperty(rprLightShape, "colorMode", 1)
+		mel.eval("onTemperatureChanged(\"{}\")".format(rprLightShape))
+
+	copyProperty(rprLightShape, ai_light, "shadowsSoftness", "aiShadowDensity")
 	
 	copyProperty(rprTransform, aiTransform, "translateX", "translateX")
 	copyProperty(rprTransform, aiTransform, "translateY", "translateY")
