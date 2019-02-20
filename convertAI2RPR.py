@@ -2617,7 +2617,16 @@ def convertScene():
 	copyProperty("RadeonProRenderGlobals", "defaultArnoldRenderOptions", "maxRayDepth", "GITotalDepth")
 	
 	# camera settings
-
+	cameras = cmds.ls(type="camera")
+	for cam in cameras:
+	    if cmds.getAttr(cam + ".renderable"):
+	        setProperty(cam, "depthOfField", 1)
+	        copyProperty(cam, cam, "focusDistance", "aiFocusDistance")
+	        fStop = getProperty(cam, "aiApertureSize") * 1000
+	        if fStop > 64:
+	        	setProperty(cam, "fStop", 64)
+	        else:
+	        	setProperty(cam, "fStop", fStop)
 
 	matteShadowCatcher = cmds.ls(materials=True, type="aiShadowMatte")
 	if matteShadowCatcher:
