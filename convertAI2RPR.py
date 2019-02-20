@@ -1334,8 +1334,8 @@ def convertaiAmbientOcclusion(aiMaterial, source):
 	start_log(aiMaterial, ao)
 
 	# Fields conversion
-	copyProperty(ao, aiMaterial, "occludedColor", "white")
-	copyProperty(ao, aiMaterial, "unoccludedColor", "black")
+	copyProperty(ao, aiMaterial, "unoccludedColor", "white")
+	copyProperty(ao, aiMaterial, "occludedColor", "black")
 	copyProperty(ao, aiMaterial, "radius", "falloff")
 	copyProperty(ao, aiMaterial, "samples", "samples")
 
