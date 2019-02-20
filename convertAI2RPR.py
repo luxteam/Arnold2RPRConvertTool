@@ -1429,8 +1429,9 @@ def convertaiToon(aiMaterial, source):
 		copyProperty(rprMaterial, aiMaterial, "reflectRoughness", "specularRoughness")
 		copyProperty(rprMaterial, aiMaterial, "reflectAnisotropy", "specularAnisotropy")
 		copyProperty(rprMaterial, aiMaterial, "reflectAnisotropyRotation", "specularRotation")
-		setProperty(rprMaterial, "reflectMetalMaterial", 1)
-		setProperty(rprMaterial, "reflectMetalness", 1)
+		if getProperty(aiMaterial, "specular"):
+			setProperty(rprMaterial, "reflectMetalMaterial", 1)
+			copyProperty(rprMaterial, aiMaterial, "reflectMetalness", "specular")
 
 		copyProperty(rprMaterial, aiMaterial, "refractWeight", "transmission")
 		copyProperty(rprMaterial, aiMaterial, "refractColor", "transmissionColor")
