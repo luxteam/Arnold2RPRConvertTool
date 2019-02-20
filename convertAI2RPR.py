@@ -5,7 +5,7 @@ Arnold to RadeonProRender Converter
 
 History:
 v.1.0 - first version
-v.1.1 - aiStandartSurface support
+v.1.1 - aiStandardSurface support
 v.1.2 - displacement, bump2d conversion
 v.1.3 - aiSkyDomeLight and aiAreaLight support
 v.1.4 - Opacity reverse node, rotate IBL and aiPhysicalSky support
@@ -16,7 +16,7 @@ v.2.0 - Rewritten to python, update material conversion.
 v.2.1 - aiMath nodes support
 	aiImage and aiFacingRatio conversion support
 	aiAmbientOcclusion material conversion support
-	Improve metalness, coat, subsurface and normal map conversion in aiStandartSurface
+	Improve metalness, coat, subsurface and normal map conversion in aiStandardSurface
 	Improve displacement conversion
 	Fixed issue with group of lights
 	Fixed issue with unassign materials with shader catcher
@@ -26,7 +26,7 @@ v.2.2 - Fixed bug with unsupported nodes conversion
 	aiCarPaint conversion support
 v.2.3 - aiVectorMap conversion support
 	aiCellNoise and aiNoise conversion support
-	aiStandartSurface cameraMap conversion
+	aiStandardSurface cameraMap conversion
 	Volume materials updates
 	aiBlackbody conversion support
 	aiCurvature conversion support
@@ -1572,7 +1572,7 @@ def convertaiStandardSurface(aiMaterial, source):
 
 		copyProperty(rprMaterial, aiMaterial, "emissiveColor", "emissionColor")
 		setProperty(rprMaterial, "emissiveWeight", 0.35)
-		copyProperty(rprMaterial, aiMaterial, "emissiveIntensity", "emission")
+		setProperty(rprMaterial, "emissiveIntensity", getProperty(aiMaterial, "emission") * 2.5)
 
 		if getProperty(aiMaterial, "opacity") != (1, 1, 1):
 			if mapDoesNotExist(aiMaterial, "opacity"):
