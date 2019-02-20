@@ -210,13 +210,7 @@ def convertDisplacement(ai_sg, rpr_name):
 					setProperty(rpr_name, "displacementEnable", 1)
 					connectProperty(displacement_file[0], "outColor", rpr_name, "displacementMap")
 					copyProperty(rpr_name, displacement[0], "scale", "displacementMax")
-
-					meshs = cmds.listConnections(ai_sg, type="mesh")
-					if meshs:
-						shapes = cmds.listRelatives(meshs[0], type="mesh")
-						copyProperty(rpr_name, shapes[0], "displacementSubdiv", "aiSubdivIterations")
-						copyProperty(rpr_name, shapes[0], "displacementMax", "aiDispHeight")
-						copyProperty(rpr_name, shapes[0], "displacementMin", "aiDispZeroValue")
+					copyProperty(rpr_name, displacement[0], "displacementMin", "aiDisplacementZeroValue")
 
 			elif displacementType == "file":
 				setProperty(rpr_name, "displacementEnable", 1)
@@ -228,18 +222,6 @@ def convertDisplacement(ai_sg, rpr_name):
 					copyProperty(rpr_name, shapes[0], "displacementSubdiv", "aiSubdivIterations")
 					copyProperty(rpr_name, shapes[0], "displacementMax", "aiDispHeight")
 					copyProperty(rpr_name, shapes[0], "displacementMin", "aiDispZeroValue")
-
-			elif displacementType == "aiVectorMap":
-				displacement_file = cmds.listConnections(displacement[0], type="file")
-				if displacement_file:
-					setProperty(rpr_name, "displacementEnable", 1)
-					connectProperty(displacement_file[0], "outColor", rpr_name, "displacementMap")
-
-					meshs = cmds.listConnections(ai_sg, type="mesh")
-					if meshs:
-						shapes = cmds.listRelatives(meshs[0], type="mesh")
-						copyProperty(rpr_name, shapes[0], "displacementMin", "aiDispHeight")
-						copyProperty(rpr_name, shapes[0], "displacementCreaseWeight", "aiDispPadding")
 
 	except Exception as ex:
 		traceback.print_exc()
