@@ -1925,11 +1925,9 @@ def convertaiAreaLight(ai_light):
 	setProperty(rprLightShape, "lightType", 0)
 	setProperty(rprLightShape, "intensityUnits", 2)
 
-	scaleX = getProperty(aiTransform, "scaleX")
-	scaleY = getProperty(aiTransform, "scaleY")
 	intensity = getProperty(ai_light, "intensity")
 	exposure = getProperty(ai_light, "exposure")
-	setProperty(rprLightShape, "lightIntensity", (intensity / 160) * (2 ** exposure) * scaleX * scaleY )
+	setProperty(rprLightShape, "lightIntensity", intensity / 160 * 2 ** exposure)
 
 	copyProperty(rprLightShape, ai_light, "colorPicker", "color")
 	copyProperty(rprLightShape, ai_light, "temperature", "aiColorTemperature")
