@@ -38,6 +38,16 @@ v.2.4 - aiVector conversion support in displacement
 	aiNegate conversion support
 	aiBlackbody conversion update
 	Standard lights conversion support
+v.2.5 - aiAreaLight intensity conversion update
+	Displacement conversion updates
+	aiPhotometric temperature conversion
+	Bump/normap map conversion updates
+	Added filter and ray depth conversion
+	aiAmbientOcclusion conversion update
+	aiToon conversion update
+	aiPassthrough conversion support
+	Camera settings conversion
+	Emission conversion update in aiStandardSurface
 
 
 '''
