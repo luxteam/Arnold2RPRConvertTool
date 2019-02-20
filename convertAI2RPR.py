@@ -723,7 +723,10 @@ def convertbump2d(ai, source):
 		if bumpConnections:
 			connectProperty(bumpConnections[0], "outColor", rpr, "color")
 
-		setProperty(rpr, "strength", getProperty(ai, "bumpDepth") * 100)
+		if not bump_type:
+			setProperty(rpr, "strength", getProperty(ai, "bumpDepth") * 100)
+		else:
+			copyProperty(rpr, ai, "strength", "bumpDepth")
 
 		# Logging to file
 		end_log(ai)
