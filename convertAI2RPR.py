@@ -2553,6 +2553,7 @@ def convertScene():
 	setProperty("defaultRenderGlobals", "currentRenderer", "FireRender")
 	setProperty("defaultRenderGlobals", "imageFormat", 8)
 	# setProperty("RadeonProRenderGlobals", "applyGammaToMayaViews", 1)
+	setProperty("RadeonProRenderGlobals", "completionCriteriaIterations", 1000)
 	
 	matteShadowCatcher = cmds.ls(materials=True, type="aiShadowMatte")
 	if matteShadowCatcher:
