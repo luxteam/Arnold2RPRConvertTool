@@ -1317,15 +1317,16 @@ def convertaiAmbientOcclusion(aiMaterial, source):
 	
 	if assigned:
 		# Creating new Uber material
-		rprMaterial = cmds.shadingNode("RPRUberMaterial", asShader=True)
+		rprMaterial = cmds.shadingNode("RPRMaterial", asShader=True)
 		rprMaterial = cmds.rename(rprMaterial, (aiMaterial + "_rpr"))
+		setProperty(rprMaterial, "type", 10)
 
 		sg = rprMaterial + "SG"
 		cmds.sets(renderable=True, noSurfaceShader=True, empty=True, name=sg)
 		connectProperty(rprMaterial, "outColor", sg, "surfaceShader")
 
 		ao = cmds.shadingNode("RPRAmbientOcclusion", asUtility=True)
-		connectProperty(ao, "output", rprMaterial, "diffuseColor")
+		connectProperty(ao, "output", rprMaterial, "color")
 	else:
 		ao = cmds.shadingNode("RPRAmbientOcclusion", asUtility=True)
 		ao = cmds.rename(ao, (aiMaterial + "_rpr"))
