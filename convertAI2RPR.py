@@ -49,6 +49,7 @@ v.2.5 - aiAreaLight intensity conversion update
 	Camera settings conversion
 	Emission conversion update in aiStandardSurface
 	aiThinfilm conversion support
+	aiMatte conversion support
 
 
 '''
@@ -1743,6 +1744,63 @@ def convertaiShadowMatte(aiMaterial, source):
 	return rprMaterial
 
 
+
+#######################
+## aiMatte 
+#######################
+
+def convertaiMatte(aiMaterial, source):
+
+	assigned = checkAssign(aiMaterial)
+	
+	if cmds.objExists(aiMaterial + "_rpr"):
+		rprMaterial = aiMaterial + "_rpr"
+	else:
+		# Creating new Uber material
+		rprMaterial = cmds.shadingNode("RPRBlendMaterial", asShader=True)
+		rprMaterial = cmds.rename(rprMaterial, (aiMaterial + "_rpr"))
+
+		# Check shading engine in aiMaterial
+		if assigned:
+			sg = rprMaterial + "SG"
+			cmds.sets(renderable=True, noSurfaceShader=True, empty=True, name=sg)
+			connectProperty(rprMaterial, "outColor", sg, "surfaceShader")
+
+		# Logging to file
+		start_log(aiMaterial, rprMaterial)
+
+		# Fields conversion
+		uber = cmds.shadingNode("RPRUberMaterial", asShader=True)
+		flat = cmds.shadingNode("RPRFlatColorMaterial", asShader=True)
+
+		connectProperty(uber, "outColor", rprMaterial, "color0")
+		connectProperty(flat, "outColor", rprMaterial, "color1")
+		setProperty(rprMaterial, "weight", 0.25)
+
+		copyProperty(flat, aiMaterial, "color", "color")
+		copyProperty(uber, aiMaterial, "diffuseColor", "color")
+		setProperty(uber, "normalMapEnable", 0)
+
+		if getProperty(aiMaterial, "opacity") != (1, 1, 1):
+			if mapDoesNotExist(aiMaterial, "opacity"):
+				transparency = 1 - max(getProperty(aiMaterial, "opacity"))
+				setProperty(uber, "transparencyLevel", transparency)
+			else:
+				arithmetic = cmds.shadingNode("RPRArithmetic", asUtility=True)
+				setProperty(arithmetic, "operation", 1)
+				setProperty(arithmetic, "inputA", (1, 1, 1))
+				copyProperty(arithmetic, aiMaterial, "inputB", "opacity")
+				connectProperty(arithmetic, "outX", uber, "transparencyLevel")
+			setProperty(uber, "transparencyEnable", 1)
+
+		# Logging in file
+		end_log(aiMaterial)
+
+	if not assigned:
+		rprMaterial += "." + source
+	return rprMaterial
+
+
 #######################
 ## aiPassthrough 
 #######################
@@ -2427,7 +2485,7 @@ def convertaiMaterial(aiMaterial, source):
 		"aiCarPaint": convertaiCarPaint,
 		"aiFlat": convertaiFlat,
 		"aiLayerShader": convertUnsupportedMaterial,
-		"aiMatte": convertUnsupportedMaterial,
+		"aiMatte": convertaiMatte,
 		"aiMixShader": convertaiMixShader,
 		"aiPassthrough": convertaiPassthrough,
 		"aiRaySwitch": convertUnsupportedMaterial,
