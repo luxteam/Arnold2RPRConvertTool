@@ -48,6 +48,7 @@ v.2.5 - aiAreaLight intensity conversion update
 	aiPassthrough conversion support
 	Camera settings conversion
 	Emission conversion update in aiStandardSurface
+	aiThinfilm conversion support
 
 
 '''
