@@ -196,10 +196,30 @@ def connectProperty(source_name, source_attr, rpr_name, rpr_attr):
 	source = source_name + "." + source_attr
 	rpr_field = rpr_name + "." + rpr_attr
 
+	print(source, rpr_field)
 	try:
 		if cmds.objectType(source_name) == "file":
 			setProperty(source_name, "ignoreColorSpaceFileRules", 1)
-		cmds.connectAttr(source, rpr_field, force=True)
+
+		if rpr_attr != "surfaceShader":
+			source_type = type(getProperty(source_name, source_attr))
+			dest_type = type(getProperty(rpr_name, rpr_attr))
+			print(source_type, dest_type)
+			if source_type == dest_type:
+				cmds.connectAttr(source, rpr_field, force=True)
+			elif source_type == tuple and dest_type == float:
+				source += "R"
+				cmds.connectAttr(source, rpr_field, force=True)
+			elif source_type == float and dest_type == tuple:
+				rpr_field1 = rpr_field + "R"
+				rpr_field2 = rpr_field + "G"
+				rpr_field3 = rpr_field + "B"
+				cmds.connectAttr(source, rpr_field1, force=True)
+				cmds.connectAttr(source, rpr_field2, force=True)
+				cmds.connectAttr(source, rpr_field3, force=True)
+		else:
+			cmds.connectAttr(source, rpr_field, force=True)
+
 		write_own_property_log(u"Created connection from {} to {}.".format(source, rpr_field).encode('utf-8'))
 	except Exception as ex:
 		traceback.print_exc()
@@ -2607,6 +2627,7 @@ def convertScene():
 			rpr_sg = cmds.listConnections(rpr, type="shadingEngine")[0]
 			cmds.sets(e=True, forceElement=rpr_sg)
 		except Exception as ex:
+			traceback.print_exc()
 			print("Error while converting {} material. \n".format(ai))
 	
 	setProperty("defaultRenderGlobals", "currentRenderer", "FireRender")
@@ -2629,14 +2650,15 @@ def convertScene():
 	# camera settings
 	cameras = cmds.ls(type="camera")
 	for cam in cameras:
-	    if cmds.getAttr(cam + ".renderable"):
-	        setProperty(cam, "depthOfField", 1)
-	        copyProperty(cam, cam, "focusDistance", "aiFocusDistance")
-	        fStop = getProperty(cam, "aiApertureSize") * 1000
-	        if fStop > 64:
-	        	setProperty(cam, "fStop", 64)
-	        else:
-	        	setProperty(cam, "fStop", fStop)
+	    if getProperty(cam, "renderable"):
+	    	if getProperty(cam, "aiEnableDOF"):
+		        setProperty(cam, "depthOfField", 1)
+		        copyProperty(cam, cam, "focusDistance", "aiFocusDistance")
+		        fStop = getProperty(cam, "aiApertureSize") * 1000
+		        if fStop > 64:
+		        	setProperty(cam, "fStop", 64)
+		        else:
+		        	setProperty(cam, "fStop", fStop)
 
 	matteShadowCatcher = cmds.ls(materials=True, type="aiShadowMatte")
 	if matteShadowCatcher:
