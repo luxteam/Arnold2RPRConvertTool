@@ -198,7 +198,6 @@ def connectProperty(source_name, source_attr, rpr_name, rpr_attr):
 		if cmds.objectType(source_name) == "file":
 			setProperty(source_name, "ignoreColorSpaceFileRules", 1)
 
-		print(source, rpr_field)
 		if rpr_attr not in  ("surfaceShader", "volumeShader"):
 			source_type = type(getProperty(source_name, source_attr))
 			dest_type = type(getProperty(rpr_name, rpr_attr))
@@ -1242,16 +1241,17 @@ def convertaiCellNoise(ai, source):
 # standart utilities
 def convertStandartNode(aiMaterial, source):
 
+	not_converted_list = ("materialInfo", "defaultShaderList", "shadingEngine", "place2dTexture")
 	try:
 		for attr in cmds.listAttr(aiMaterial):
 			connection = cmds.listConnections(aiMaterial + "." + attr)
 			if connection:
-				if cmds.objectType(connection[0]) not in ("materialInfo", "defaultShaderList", "shadingEngine") and attr not in (source, "message"):
+				if cmds.objectType(connection[0]) not in not_converted_list and attr not in (source, "message"):
 					obj, channel = cmds.connectionInfo(aiMaterial + "." + attr, sourceFromDestination=True).split('.')
 					source_name, source_attr = convertaiMaterial(obj, channel).split('.')
 					connectProperty(source_name, source_attr, aiMaterial, attr)
 	except Exception as ex:
-		traceback.print_exc()
+		pass
 
 	return aiMaterial + "." + source
 
