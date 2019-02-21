@@ -198,7 +198,8 @@ def connectProperty(source_name, source_attr, rpr_name, rpr_attr):
 		if cmds.objectType(source_name) == "file":
 			setProperty(source_name, "ignoreColorSpaceFileRules", 1)
 
-		if rpr_attr != "surfaceShader":
+		print(source, rpr_field)
+		if rpr_attr not in  ("surfaceShader", "volumeShader"):
 			source_type = type(getProperty(source_name, source_attr))
 			dest_type = type(getProperty(rpr_name, rpr_attr))
 			if source_type == dest_type:
@@ -2418,9 +2419,6 @@ def convertaiAtmosphere(aiAtmosphere):
 		copyProperty(rprMaterial, aiAtmosphere, "scatterColor", "rgbDensity")
 		copyProperty(rprMaterial, aiAtmosphere, "transmissionColor", "rgbDensity")
 		copyProperty(rprMaterial, aiAtmosphere, "scatteringDirection", "eccentricity")
-
-		density = getProperty(aiAtmosphere, "scatteringAmount") / 10
-		setProperty(rprMaterial, "density", density)
 	
 	# Logging to file
 	end_log(aiAtmosphere)  
