@@ -70,7 +70,6 @@ def write_converted_property_log(rpr_name, ai_name, rpr_attr, ai_attr):
 			f.write(u"    property {}.{} is converted to {}.{}   \r\n".format(ai_name, ai_attr, rpr_name, rpr_attr).encode('utf-8'))
 	except Exception as ex:
 		pass
-		#print("Error writing conversion logs. Scene is not saved")
 
 def write_own_property_log(text):
 
@@ -80,7 +79,6 @@ def write_own_property_log(text):
 			f.write("    {}   \r\n".format(text))
 	except Exception as ex:
 		pass
-		#print("Error writing logs. Scene is not saved")
 
 def start_log(ai, rpr):
 
@@ -96,7 +94,6 @@ def start_log(ai, rpr):
 			f.write(text)
 	except Exception as ex:
 		pass
-		#print("Error writing start log. Scene is not saved")
 
 
 def end_log(ai):
@@ -109,7 +106,6 @@ def end_log(ai):
 			f.write(text)
 	except Exception as ex:
 		pass
-		#print("Error writing end logs. Scene is not saved")
 
 # additional fucntions
 
@@ -197,7 +193,6 @@ def connectProperty(source_name, source_attr, rpr_name, rpr_attr):
 	source = source_name + "." + source_attr
 	rpr_field = rpr_name + "." + rpr_attr
 
-	print(source, rpr_field)
 	try:
 		if cmds.objectType(source_name) == "file":
 			setProperty(source_name, "ignoreColorSpaceFileRules", 1)
@@ -205,7 +200,6 @@ def connectProperty(source_name, source_attr, rpr_name, rpr_attr):
 		if rpr_attr != "surfaceShader":
 			source_type = type(getProperty(source_name, source_attr))
 			dest_type = type(getProperty(rpr_name, rpr_attr))
-			print(source_type, dest_type)
 			if source_type == dest_type:
 				cmds.connectAttr(source, rpr_field, force=True)
 			elif source_type == tuple and dest_type == float:
