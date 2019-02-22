@@ -722,6 +722,39 @@ def convertaiNegate(ai, source):
 	return rpr
 
 
+def convertaiColorCorrect(ai, source):
+
+	if cmds.objExists(ai + "_rpr"):
+		rpr = ai + "_rpr"
+	else:
+		rpr = cmds.shadingNode("colorCorrect", asUtility=True)
+		rpr = cmds.rename(rpr, ai + "_rpr")
+
+		# Logging to file
+		start_log(ai, rpr)
+
+		# Fields conversion
+		copyProperty(rpr, ai, "inColor", "input")
+		copyProperty(rpr, ai, "inAlpha", "mask")
+		copyProperty(rpr, ai, "colGammaX", "gamma")
+		copyProperty(rpr, ai, "colGammaY", "gamma")
+		copyProperty(rpr, ai, "colGammaZ", "gamma")
+		copyProperty(rpr, ai, "hueShift", "hueShift")
+		copyProperty(rpr, ai, "satGain", "saturation")
+		copyProperty(rpr, ai, "colGain", "multiply")
+		copyProperty(rpr, ai, "colOffset", "add")
+		copyProperty(rpr, ai, "alphaGain", "alphaMultiply")
+		copyProperty(rpr, ai, "alphaOffset", "alphaAdd")
+		copyProperty(rpr, ai, "valGain", "contrast")
+		
+		# Logging to file
+		end_log(ai)
+
+
+	rpr += "." + source
+	return rpr
+
+
 def convertbump2d(ai, source):
 
 	if cmds.objExists(ai + "_rpr"):
@@ -2523,6 +2556,7 @@ def convertaiMaterial(aiMaterial, source):
 		"aiNoise": convertaiNoise,
 		"aiBlackbody": convertaiBlackbody,
 		"aiCurvature": convertaiCurvature,
+		"aiColorCorrect": convertaiColorCorrect,
 		"multiplyDivide": convertmultiplyDivide
 	}
 
