@@ -1333,6 +1333,35 @@ def convertaiUvTransform(ai, source):
 	return rpr
 
 
+def convertaiLength(ai, source):
+
+	if cmds.objExists(ai + "_rpr"):
+		rpr = ai + "_rpr"
+	else:
+		rpr = cmds.shadingNode("RPRArithmetic", asUtility=True)
+		if not getProperty(ai, "mode"):
+			rpr = cmds.rename(rpr, ai + "_rpr")
+		else:
+			rpr = cmds.rename(rpr, ai + "_UNSUPPORTED_NODE")
+
+		# Logging to file
+		start_log(ai, rpr)
+
+		# Fields conversion
+		setProperty(rpr, "operation", 20)
+		copyProperty(rpr, ai, "inputA", "input")
+		setProperty(rpr, "inputB", (1, 1, 1))
+
+		# Logging to file
+		end_log(ai)
+
+	conversion_map = {
+		"outValue": "outX"
+	}
+
+	rpr += "." + conversion_map[source]
+	return rpr
+
 
 # standart utilities
 def convertStandartNode(aiMaterial, source):
@@ -2628,6 +2657,7 @@ def convertaiMaterial(aiMaterial, source):
 		"aiColorCorrect": convertaiColorCorrect,
 		"aiTriplanar": convertaiTriplanar,
 		"aiUvTransform": convertaiUvTransform,
+		"aiLength": convertaiLength,
 		"multiplyDivide": convertmultiplyDivide
 	}
 
