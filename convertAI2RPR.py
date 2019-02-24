@@ -1271,6 +1271,69 @@ def convertaiCellNoise(ai, source):
 	return rpr
 
 
+def convertaiTriplanar(ai, source):
+
+	if cmds.objExists(ai + "_rpr"):
+		rpr = ai + "_rpr"
+	else:
+		rpr = cmds.shadingNode("projection", asUtility=True)
+		rpr = cmds.rename(rpr, ai + "_rpr")
+
+		texture = cmds.shadingNode("place3dTexture", asUtility=True)
+
+		connectProperty(texture, "worldInverseMatrix[0]", rpr, "placementMatrix")
+			
+		# Logging to file
+		start_log(ai, rpr)
+
+		# Fields conversion
+		copyProperty(rpr, ai, "image", "input")
+		copyProperty(texture, ai, "scale", "scale")
+		copyProperty(texture, ai, "rotate", "rotate")
+
+		# Logging to file
+		end_log(ai)
+
+	rpr += "." + source
+	return rpr
+
+
+def convertaiUvTransform(ai, source):
+
+	if cmds.objExists(ai + "_rpr"):
+		rpr = ai + "_rpr"
+	else:
+		rpr = cmds.shadingNode("projection", asUtility=True)
+		rpr = cmds.rename(rpr, ai + "_rpr")
+
+		texture = cmds.shadingNode("place3dTexture", asUtility=True)
+
+		connectProperty(texture, "worldInverseMatrix[0]", rpr, "placementMatrix")
+			
+		# Logging to file
+		start_log(ai, rpr)
+
+		# Fields conversion
+		copyProperty(rpr, ai, "image", "passthrough")
+		copyProperty(texture, ai, "scaleX", "scaleFrameX")
+		copyProperty(texture, ai, "scaleY", "scaleFrameY")
+		copyProperty(texture, ai, "translateX", "translateFrameX")
+		copyProperty(texture, ai, "translateY", "translateFrameY")
+		copyProperty(texture, ai, "rotateX", "rotateFrame")
+		copyProperty(texture, ai, "rotateY", "rotateFrame")
+		copyProperty(texture, ai, "rotateZ", "rotateFrame")
+		copyProperty(texture, ai, "rotateAxisX", "rotate")
+		copyProperty(texture, ai, "rotateAxisY", "rotate")
+		copyProperty(texture, ai, "rotateAxisZ", "rotate")
+
+		# Logging to file
+		end_log(ai)
+
+	rpr += "." + source
+	return rpr
+
+
+
 # standart utilities
 def convertStandartNode(aiMaterial, source):
 
@@ -1292,40 +1355,43 @@ def convertStandartNode(aiMaterial, source):
 # unsupported utilities
 def convertUnsupportedNode(aiMaterial, source):
 
-	rpr = cmds.shadingNode("RPRArithmetic", asUtility=True)
-	rpr = cmds.rename(rpr, aiMaterial + "_UNSUPPORTED_NODE")
+	if cmds.objExists(aiMaterial + "_UNSUPPORTED_NODE"):
+		rpr = aiMaterial + "_UNSUPPORTED_NODE"
+	else:
+		rpr = cmds.shadingNode("RPRArithmetic", asUtility=True)
+		rpr = cmds.rename(rpr, aiMaterial + "_UNSUPPORTED_NODE")
 
-	# Logging to file
-	start_log(aiMaterial, rpr)
+		# Logging to file
+		start_log(aiMaterial, rpr)
 
-	# 2 connection save
-	try:
-		setProperty(rpr, "operation", 0)
-		unsupported_connections = 0
-		for attr in cmds.listAttr(aiMaterial):
-			connection = cmds.listConnections(aiMaterial + "." + attr)
-			if connection:
-				if cmds.objectType(connection[0]) not in ("materialInfo", "defaultShaderList", "shadingEngine") and attr not in (source, "message"):
-					if unsupported_connections < 2:
-						obj, channel = cmds.connectionInfo(aiMaterial + "." + attr, sourceFromDestination=True).split('.')
-						source_name, source_attr = convertaiMaterial(obj, channel).split('.')
-						valueType = type(getProperty(aiMaterial, attr))
-						if valueType == tuple:
-							if unsupported_connections < 1:
-								connectProperty(source_name, source_attr, rpr, "inputA")
+		# 2 connection save
+		try:
+			setProperty(rpr, "operation", 0)
+			unsupported_connections = 0
+			for attr in cmds.listAttr(aiMaterial):
+				connection = cmds.listConnections(aiMaterial + "." + attr)
+				if connection:
+					if cmds.objectType(connection[0]) not in ("materialInfo", "defaultShaderList", "shadingEngine") and attr not in (source, "message"):
+						if unsupported_connections < 2:
+							obj, channel = cmds.connectionInfo(aiMaterial + "." + attr, sourceFromDestination=True).split('.')
+							source_name, source_attr = convertaiMaterial(obj, channel).split('.')
+							valueType = type(getProperty(aiMaterial, attr))
+							if valueType == tuple:
+								if unsupported_connections < 1:
+									connectProperty(source_name, source_attr, rpr, "inputA")
+								else:
+									connectProperty(source_name, source_attr, rpr, "inputB")
 							else:
-								connectProperty(source_name, source_attr, rpr, "inputB")
-						else:
-							if unsupported_connections < 1:
-								connectProperty(source_name, source_attr, rpr, "inputAX")
-							else:
-								connectProperty(source_name, source_attr, rpr, "inputBX")
-						unsupported_connections += 1
-	except Exception as ex:
-		traceback.print_exc()
+								if unsupported_connections < 1:
+									connectProperty(source_name, source_attr, rpr, "inputAX")
+								else:
+									connectProperty(source_name, source_attr, rpr, "inputBX")
+							unsupported_connections += 1
+		except Exception as ex:
+			traceback.print_exc()
 
-	# Logging to file
-	end_log(aiMaterial)
+		# Logging to file
+		end_log(aiMaterial)
 
 	sourceType = type(getProperty(aiMaterial, source))
 	if sourceType == tuple:
@@ -2138,9 +2204,9 @@ def convertaiMeshLight(ai_light):
 
 	copyProperty(rprLightShape, ai_light, "lightIntensity", "intensity")
 	copyProperty(rprLightShape, ai_light, "colorPicker", "color")
-	copyProperty(rprLightShape, ai_light, "luminousEfficacy", "aiExposure")
 	if getProperty(ai_light, "aiUseColorTemperature"):
 		setProperty(rprLightShape, "colorMode", 1)
+		mel.eval("onTemperatureChanged(\"{}\")".format(rprLightShape))
 	copyProperty(rprLightShape, ai_light, "temperature", "aiColorTemperature")
 	copyProperty(rprLightShape, ai_light, "shadowsEnabled", "aiCastShadows")
 	copyProperty(rprLightShape, ai_light, "shadowsSoftness", "aiShadowDensity")
@@ -2157,9 +2223,12 @@ def convertaiMeshLight(ai_light):
 
 	try:
 		light_mesh = cmds.listConnections(ai_light, type="mesh")[1]
+		print(light_mesh)
 		cmds.delete(ai_light)
 		cmds.delete(aiTransform)
+		cmds.select(clear=True)
 		setProperty(rprLightShape, "areaLightSelectingMesh", 1)
+		print(getProperty(rprLightShape, "areaLightSelectingMesh"))
 		cmds.select(light_mesh)
 		#setProperty(rprLightShape, "areaLightMeshSelectedName", light_mesh)
 	except Exception as ex:
@@ -2557,6 +2626,8 @@ def convertaiMaterial(aiMaterial, source):
 		"aiBlackbody": convertaiBlackbody,
 		"aiCurvature": convertaiCurvature,
 		"aiColorCorrect": convertaiColorCorrect,
+		"aiTriplanar": convertaiTriplanar,
+		"aiUvTransform": convertaiUvTransform,
 		"multiplyDivide": convertmultiplyDivide
 	}
 
