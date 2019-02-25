@@ -110,32 +110,97 @@ def end_log(ai):
 
 # additional fucntions
 
-def copyProperty(rpr_name, ai_name, rpr_attr, ai_attr):
+# copy from 3rd party engine to rpr
+def copyProperty(rpr_name, conv_name, rpr_attr, conv_attr):
 
 	# full name of attribute
-	ai_field = ai_name + "." + ai_attr
+	conv_field = conv_name + "." + conv_attr
 	rpr_field = rpr_name + "." + rpr_attr
+	rs_type = type(getProperty(conv_name, conv_attr))
+	rpr_type = type(getProperty(rpr_name, rpr_attr))
 
 	try:
-		listConnections = cmds.listConnections(ai_field)
-	except Exception:
-		print(u"There is no {} field in this node. Check the field and try again. ".format(ai_field).encode('utf-8'))
-		write_own_property_log(u"There is no {} field in this node. Check the field and try again. ".format(ai_field).encode('utf-8'))
-		return
-
-	try:
+		listConnections = cmds.listConnections(conv_field)
+		# connection convert
 		if listConnections:
-			obj, channel = cmds.connectionInfo(ai_field, sourceFromDestination=True).split('.')
-			if cmds.objectType(obj) == "file":
-				setProperty(obj, "ignoreColorSpaceFileRules", 1)
-			source_name, source_attr = convertaiMaterial(obj, channel).split('.')
+			obj, channel = cmds.connectionInfo(conv_field, sourceFromDestination=True).split('.')
+			source_name, source_attr = convertMaterial(obj, channel).split('.')
 			connectProperty(source_name, source_attr, rpr_name, rpr_attr)
+		# complex color conversion for each channel (RGB/XYZ/HSV)
+		if not listConnections and rs_type == tuple and 1.0 in getProperty(conv_name, conv_attr):
+			# RGB (redshift)
+			if cmds.objExists(conv_field + "R") and cmds.objExists(rpr_field + "R"):
+				copyProperty(rpr_name, conv_name, rpr_attr + "R", conv_attr + "R")
+				copyProperty(rpr_name, conv_name, rpr_attr + "G", conv_attr + "G")
+				copyProperty(rpr_name, conv_name, rpr_attr + "B", conv_attr + "B")
+			if cmds.objExists(conv_field + "R") and cmds.objExists(rpr_field + "X"):
+				copyProperty(rpr_name, conv_name, rpr_attr + "X", conv_attr + "R")
+				copyProperty(rpr_name, conv_name, rpr_attr + "Y", conv_attr + "G")
+				copyProperty(rpr_name, conv_name, rpr_attr + "Z", conv_attr + "B")
+			if cmds.objExists(conv_field + "R") and cmds.objExists(rpr_field + "H"):
+				copyProperty(rpr_name, conv_name, rpr_attr + "H", conv_attr + "R")
+				copyProperty(rpr_name, conv_name, rpr_attr + "S", conv_attr + "G")
+				copyProperty(rpr_name, conv_name, rpr_attr + "V", conv_attr + "B")
+			# XYZ (redshift)
+			if cmds.objExists(conv_field + "X") and cmds.objExists(rpr_field + "R"):
+				copyProperty(rpr_name, conv_name, rpr_attr + "R", conv_attr + "X")
+				copyProperty(rpr_name, conv_name, rpr_attr + "G", conv_attr + "Y")
+				copyProperty(rpr_name, conv_name, rpr_attr + "B", conv_attr + "Z")
+			if cmds.objExists(conv_field + "X") and cmds.objExists(rpr_field + "X"):
+				copyProperty(rpr_name, conv_name, rpr_attr + "X", conv_attr + "X")
+				copyProperty(rpr_name, conv_name, rpr_attr + "Y", conv_attr + "Y")
+				copyProperty(rpr_name, conv_name, rpr_attr + "Z", conv_attr + "Z")
+			if cmds.objExists(conv_field + "X") and cmds.objExists(rpr_field + "H"):
+				copyProperty(rpr_name, conv_name, rpr_attr + "H", conv_attr + "X")
+				copyProperty(rpr_name, conv_name, rpr_attr + "S", conv_attr + "Y")
+				copyProperty(rpr_name, conv_name, rpr_attr + "V", conv_attr + "Z")
+			# HSV (redshift)
+			if cmds.objExists(conv_field + "H") and cmds.objExists(rpr_field + "R"):
+				copyProperty(rpr_name, conv_name, rpr_attr + "R", conv_attr + "H")
+				copyProperty(rpr_name, conv_name, rpr_attr + "G", conv_attr + "S")
+				copyProperty(rpr_name, conv_name, rpr_attr + "B", conv_attr + "V")
+			if cmds.objExists(conv_field + "H") and cmds.objExists(rpr_field + "X"):
+				copyProperty(rpr_name, conv_name, rpr_attr + "X", conv_attr + "H")
+				copyProperty(rpr_name, conv_name, rpr_attr + "Y", conv_attr + "S")
+				copyProperty(rpr_name, conv_name, rpr_attr + "Z", conv_attr + "V")
+			if cmds.objExists(conv_field + "H") and cmds.objExists(rpr_field + "H"):
+				copyProperty(rpr_name, conv_name, rpr_attr + "H", conv_attr + "H")
+				copyProperty(rpr_name, conv_name, rpr_attr + "S", conv_attr + "S")
+				copyProperty(rpr_name, conv_name, rpr_attr + "V", conv_attr + "V")
+
+		# field conversion
 		else:
-			setProperty(rpr_name, rpr_attr, getProperty(ai_name, ai_attr))
-			write_converted_property_log(rpr_name, ai_name, rpr_attr, ai_attr)
+			if rs_type == rpr_type:
+				setProperty(rpr_name, rpr_attr, getProperty(conv_name, conv_attr))
+			elif rs_type == tuple and rpr_type == float:
+				if cmds.objExists(conv_field + "R"):
+					conv_attr += "R"
+				elif cmds.objExists(conv_field + "X"):
+					conv_attr += "X"
+				elif cmds.objExists(conv_field + "H"):
+					conv_attr += "H"
+				setProperty(rpr_name, rpr_attr, getProperty(conv_name, conv_attr))
+			elif rs_type == float and rpr_type == tuple:
+				if cmds.objExists(rpr_field + "R"):
+					rpr_attr1 = rpr_attr + "R"
+					rpr_attr2 = rpr_attr + "G"
+					rpr_attr3 = rpr_attr + "B"
+				elif cmds.objExists(rpr_field + "X"):
+					rpr_attr1 = rpr_attr + "X"
+					rpr_attr2 = rpr_attr + "Y"
+					rpr_attr3 = rpr_attr + "Z"
+				elif cmds.objExists(conv_field + "H"):
+					rpr_attr1 = rpr_attr + "H"
+					rpr_attr2 = rpr_attr + "S"
+					rpr_attr3 = rpr_attr + "V"
+				setProperty(rpr_name, rpr_attr1, getProperty(conv_name, conv_attr))
+				setProperty(rpr_name, rpr_attr2, getProperty(conv_name, conv_attr))
+				setProperty(rpr_name, rpr_attr3, getProperty(conv_name, conv_attr))
+
+			write_converted_property_log(rpr_name, conv_name, rpr_attr, conv_attr)
 	except Exception as ex:
 		traceback.print_exc()
-		print(u"Error while copying from {} to {}".format(ai_field, rpr_field).encode('utf-8'))
+		print(u"Error while copying from {} to {}".format(conv_field, rpr_field).encode('utf-8'))
 
 
 def setProperty(rpr_name, rpr_attr, value):
@@ -195,26 +260,52 @@ def connectProperty(source_name, source_attr, rpr_name, rpr_attr):
 	rpr_field = rpr_name + "." + rpr_attr
 
 	try:
-		if cmds.objectType(source_name) == "file":
-			setProperty(source_name, "ignoreColorSpaceFileRules", 1)
+		source_type = type(getProperty(source_name, source_attr))
+		dest_type = type(getProperty(rpr_name, rpr_attr))
 
-		if rpr_attr not in  ("surfaceShader", "volumeShader"):
-			source_type = type(getProperty(source_name, source_attr))
-			dest_type = type(getProperty(rpr_name, rpr_attr))
+		if rpr_attr in ("surfaceShader", "volumeShader"):
+			cmds.connectAttr(source, rpr_field, force=True)
+
+		elif cmds.objExists(source_name + ".outAlpha") and cmds.objExists(source_name + ".outColor"):
+			if cmds.objectType(source_name) == "file":
+				setProperty(source_name, "ignoreColorSpaceFileRules", 1)
+
 			if source_type == dest_type:
 				cmds.connectAttr(source, rpr_field, force=True)
 			elif source_type == tuple and dest_type == float:
-				source += "R"
+				source = source_name + ".outAlpha"
 				cmds.connectAttr(source, rpr_field, force=True)
 			elif source_type == float and dest_type == tuple:
-				rpr_field1 = rpr_field + "R"
-				rpr_field2 = rpr_field + "G"
-				rpr_field3 = rpr_field + "B"
+				source = source_name + ".outColor"
+				cmds.connectAttr(source, rpr_field, force=True)
+
+		else:
+			if source_type == dest_type:
+				cmds.connectAttr(source, rpr_field, force=True)
+			elif source_type == tuple and dest_type == float:
+				if cmds.objExists(source + "R"):
+					source += "R"
+				elif cmds.objExists(source + "X"):
+					source += "X"
+				elif cmds.objExists(source + "X"):
+					source += "H"
+				cmds.connectAttr(source, rpr_field, force=True)
+			elif source_type == float and dest_type == tuple:
+				if cmds.objExists(rpr_field + "R"):
+					rpr_field1 = rpr_field + "R"
+					rpr_field2 = rpr_field + "G"
+					rpr_field3 = rpr_field + "B"
+				elif cmds.objExists(rpr_field + "X"):
+					rpr_field1 = rpr_field + "X"
+					rpr_field2 = rpr_field + "Y"
+					rpr_field3 = rpr_field + "Z"
+				elif cmds.objExists(rpr_field + "H"):
+					rpr_field1 = rpr_field + "H"
+					rpr_field2 = rpr_field + "S"
+					rpr_field3 = rpr_field + "V"
 				cmds.connectAttr(source, rpr_field1, force=True)
 				cmds.connectAttr(source, rpr_field2, force=True)
 				cmds.connectAttr(source, rpr_field3, force=True)
-		else:
-			cmds.connectAttr(source, rpr_field, force=True)
 
 		write_own_property_log(u"Created connection from {} to {}.".format(source, rpr_field).encode('utf-8'))
 	except Exception as ex:
@@ -1356,7 +1447,7 @@ def convertaiLength(ai, source):
 		end_log(ai)
 
 	conversion_map = {
-		"outValue": "outX"
+		"outValue": "out"
 	}
 
 	rpr += "." + conversion_map[source]
@@ -1373,7 +1464,7 @@ def convertStandartNode(aiMaterial, source):
 			if connection:
 				if cmds.objectType(connection[0]) not in not_converted_list and attr not in (source, "message"):
 					obj, channel = cmds.connectionInfo(aiMaterial + "." + attr, sourceFromDestination=True).split('.')
-					source_name, source_attr = convertaiMaterial(obj, channel).split('.')
+					source_name, source_attr = convertMaterial(obj, channel).split('.')
 					connectProperty(source_name, source_attr, aiMaterial, attr)
 	except Exception as ex:
 		pass
@@ -1403,7 +1494,7 @@ def convertUnsupportedNode(aiMaterial, source):
 					if cmds.objectType(connection[0]) not in ("materialInfo", "defaultShaderList", "shadingEngine") and attr not in (source, "message"):
 						if unsupported_connections < 2:
 							obj, channel = cmds.connectionInfo(aiMaterial + "." + attr, sourceFromDestination=True).split('.')
-							source_name, source_attr = convertaiMaterial(obj, channel).split('.')
+							source_name, source_attr = convertMaterial(obj, channel).split('.')
 							valueType = type(getProperty(aiMaterial, attr))
 							if valueType == tuple:
 								if unsupported_connections < 1:
@@ -2605,7 +2696,7 @@ def convertTemperature(temperature):
 
 
 # Convert material. Returns new material name.
-def convertaiMaterial(aiMaterial, source):
+def convertMaterial(aiMaterial, source):
 
 	ai_type = cmds.objectType(aiMaterial)
 
@@ -2760,6 +2851,9 @@ def convertScene():
 	if not cmds.pluginInfo("RadeonProRender", q=True, loaded=True):
 		cmds.loadPlugin("RadeonProRender")
 
+	# arnold engine set before conversion 
+	setProperty("defaultRenderGlobals", "currentRenderer", "arnold")
+
 	# Convert aiAtmosphere
 	env = cmds.ls(type=("aiAtmosphereVolume", "aiFog"))
 	if env:
@@ -2802,7 +2896,7 @@ def convertScene():
 	for each in listMaterials:
 		if checkAssign(each):
 			try:
-				materialsDict[each] = convertaiMaterial(each, "")
+				materialsDict[each] = convertMaterial(each, "")
 			except Exception as ex:
 				traceback.print_exc()
 				print("Error while converting {}".format(each))
