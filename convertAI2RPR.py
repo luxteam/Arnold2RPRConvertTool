@@ -122,7 +122,7 @@ def copyProperty(rpr_name, conv_name, rpr_attr, conv_attr):
 	try:
 		listConnections = cmds.listConnections(conv_field)
 		# connection convert
-		if listConnections:
+		if listConnections and cmds.objectType(listConnections[0]) != "transform":
 			obj, channel = cmds.connectionInfo(conv_field, sourceFromDestination=True).split('.')
 			source_name, source_attr = convertMaterial(obj, channel).split('.')
 			connectProperty(source_name, source_attr, rpr_name, rpr_attr)
