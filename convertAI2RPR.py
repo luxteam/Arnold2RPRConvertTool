@@ -752,6 +752,45 @@ def convertaiComposite(ai, source):
 	return rpr
 
 
+def convertaiExp(ai, source):
+
+	if cmds.objExists(ai + "_rpr"):
+		rpr = ai + "_rpr"
+	else:
+		rpr = cmds.shadingNode("RPRArithmetic", asUtility=True)
+		rpr = cmds.rename(rpr, ai + "_rpr")
+
+		# Logging to file
+		start_log(ai, rpr)
+
+		# Fields conversion
+		setProperty(rpr, "operation", 15)
+
+		arithmetic1 = cmds.shadingNode("RPRArithmetic", asUtility=True)
+		setProperty(arithmetic1, "operation", 18)
+		copyProperty(arithmetic1, ai, "inputA", "input")
+		
+		arithmetic2 = cmds.shadingNode("RPRArithmetic", asUtility=True)
+		setProperty(arithmetic2, "operation", 18)
+		copyProperty(arithmetic2, ai, "inputA", "input")
+
+		connectProperty(arithmetic1, "out", rpr, "inputA")
+		connectProperty(arithmetic2, "out", rpr, "inputB")
+		
+		# Logging to file
+		end_log(ai)
+
+	conversion_map = {
+		"outColor": "out",
+		"outColorR": "outX",
+		"outColorG": "outY",
+		"outColorB": "outZ",
+	}
+
+	rpr += "." + conversion_map[source]
+	return rpr
+
+
 def convertaiSqrt(ai, source):
 
 	if cmds.objExists(ai + "_rpr"):
@@ -2749,6 +2788,7 @@ def convertMaterial(aiMaterial, source):
 		"aiTriplanar": convertaiTriplanar,
 		"aiUvTransform": convertaiUvTransform,
 		"aiLength": convertaiLength,
+		"aiExp": convertaiExp,
 		"multiplyDivide": convertmultiplyDivide
 	}
 
