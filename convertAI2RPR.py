@@ -127,7 +127,7 @@ def copyProperty(rpr_name, conv_name, rpr_attr, conv_attr):
 			source_name, source_attr = convertMaterial(obj, channel).split('.')
 			connectProperty(source_name, source_attr, rpr_name, rpr_attr)
 		# complex color conversion for each channel (RGB/XYZ/HSV)
-		if not listConnections and rs_type == tuple and 1.0 in getProperty(conv_name, conv_attr):
+		elif not listConnections and rs_type == tuple and 1.0 in getProperty(conv_name, conv_attr):
 			# RGB (redshift)
 			if cmds.objExists(conv_field + "R") and cmds.objExists(rpr_field + "R"):
 				copyProperty(rpr_name, conv_name, rpr_attr + "R", conv_attr + "R")
@@ -209,6 +209,9 @@ def setProperty(rpr_name, rpr_attr, value):
 	rpr_field = rpr_name + "." + rpr_attr
 
 	try:
+		if not mapDoesNotExist(rpr_name, rpr_attr):
+			source = cmds.connectionInfo(rpr_field, sourceFromDestination=True)
+			cmds.disconnectAttr(source, rpr_field)
 		if type(value) == tuple:
 			cmds.setAttr(rpr_field, value[0], value[1], value[2])
 		elif type(value) == str or type(value) == unicode:
@@ -306,7 +309,7 @@ def connectProperty(source_name, source_attr, rpr_name, rpr_attr):
 				cmds.connectAttr(source, rpr_field1, force=True)
 				cmds.connectAttr(source, rpr_field2, force=True)
 				cmds.connectAttr(source, rpr_field3, force=True)
-
+		print(u"Created connection from {} to {}.".format(source, rpr_field).encode('utf-8'))
 		write_own_property_log(u"Created connection from {} to {}.".format(source, rpr_field).encode('utf-8'))
 	except Exception as ex:
 		traceback.print_exc()
@@ -1587,7 +1590,7 @@ def convertUnsupportedMaterial(aiMaterial, source):
 
 		end_log(aiMaterial)
 
-	if not assigned:
+	if source:
 		rprMaterial += "." + source
 	return rprMaterial
 
@@ -1628,7 +1631,7 @@ def convertaiAmbientOcclusion(aiMaterial, source):
 	# Logging in file
 	end_log(aiMaterial)
 
-	if not assigned:
+	if source:
 		conversion_map = {
 		"outColor": "output",
 		"outColorR": "outputR",
@@ -1669,7 +1672,7 @@ def convertaiFlat(aiMaterial, source):
 		# Logging in file
 		end_log(aiMaterial)
 
-	if not assigned:
+	if source:
 		rprMaterial += "." + source
 	return rprMaterial
 
@@ -1730,7 +1733,7 @@ def convertaiToon(aiMaterial, source):
 		# Logging in file
 		end_log(aiMaterial)
 
-	if not assigned:
+	if source:
 		rprMaterial += "." + source
 	return rprMaterial
 
@@ -1767,7 +1770,7 @@ def convertaiMixShader(aiMaterial, source):
 		# Logging in file
 		end_log(aiMaterial)
 
-	if not assigned:
+	if source:
 		rprMaterial += "." + source
 	return rprMaterial
 
@@ -1826,7 +1829,6 @@ def convertaiStandardSurface(aiMaterial, source):
 			setProperty(rprMaterial, "reflectMetalMaterial", 1)
 			setProperty(rprMaterial, "reflectWeight", 1)
 			copyProperty(rprMaterial, aiMaterial, "reflectMetalness", "metalness")
-			copyProperty(rprMaterial, aiMaterial, "diffuseColor", "baseColor")
 			copyProperty(rprMaterial, aiMaterial, "reflectColor", "baseColor")
 
 		copyProperty(rprMaterial, aiMaterial, "refractColor", "transmissionColor")
@@ -1887,7 +1889,7 @@ def convertaiStandardSurface(aiMaterial, source):
 		# Logging in file
 		end_log(aiMaterial)
 
-	if not assigned:
+	if source:
 		rprMaterial += "." + source
 	return rprMaterial
 
@@ -1948,7 +1950,7 @@ def convertaiCarPaint(aiMaterial, source):
 		# Logging in file
 		end_log(aiMaterial)
 
-	if not assigned:
+	if source:
 		rprMaterial += "." + source
 	return rprMaterial
 
@@ -1998,7 +2000,7 @@ def convertaiShadowMatte(aiMaterial, source):
 		# Logging in file
 		end_log(aiMaterial)
 
-	if not assigned:
+	if source:
 		rprMaterial += "." + source
 	return rprMaterial
 
@@ -2055,7 +2057,7 @@ def convertaiMatte(aiMaterial, source):
 		# Logging in file
 		end_log(aiMaterial)
 
-	if not assigned:
+	if source:
 		rprMaterial += "." + source
 	return rprMaterial
 
@@ -2092,7 +2094,7 @@ def convertaiPassthrough(aiMaterial, source):
 		# Logging in file
 		end_log(aiMaterial)
 
-	if not assigned:
+	if source:
 		rprMaterial += "." + source
 	return rprMaterial
 
@@ -2130,7 +2132,7 @@ def convertaiStandardVolume(aiMaterial, source):
 		# Logging in file
 		end_log(aiMaterial)
 
-	if not assigned:
+	if source:
 		rprMaterial += "." + source
 	return rprMaterial
 
@@ -2259,7 +2261,7 @@ def convertaiPhotometricLight(ai_light):
 
 	intensity = getProperty(ai_light, "intensity")
 	exposure = getProperty(ai_light, "exposure")
-	setProperty(rprLightShape, "intensity", intensity * (exposure + 5) / 500)
+	setProperty(rprLightShape, "intensity", intensity * (exposure + 5) / 1070)
 
 	copyProperty(rprLightShape, ai_light, "color", "color")
 
@@ -2936,6 +2938,7 @@ def convertScene():
 	for each in listMaterials:
 		if checkAssign(each):
 			try:
+				print("CONV:" + each)
 				materialsDict[each] = convertMaterial(each, "")
 			except Exception as ex:
 				traceback.print_exc()
