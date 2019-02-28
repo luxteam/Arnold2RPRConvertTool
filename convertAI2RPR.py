@@ -2261,7 +2261,7 @@ def convertaiPhotometricLight(ai_light):
 
 	intensity = getProperty(ai_light, "intensity")
 	exposure = getProperty(ai_light, "exposure")
-	setProperty(rprLightShape, "intensity", intensity * (exposure + 5) / 1070)
+	setProperty(rprLightShape, "intensity", intensity * 2 ** exposure / 1600)
 
 	copyProperty(rprLightShape, ai_light, "color", "color")
 
