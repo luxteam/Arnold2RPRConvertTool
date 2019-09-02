@@ -3329,7 +3329,11 @@ def convertScene():
 	setProperty("RadeonProRenderGlobals", "completionCriteriaSeconds", 0)
 	if getProperty("defaultArnoldRenderOptions", "enableAdaptiveSampling"):
 		copyProperty("RadeonProRenderGlobals", "defaultArnoldRenderOptions", "adaptiveThreshold", "AAAdaptiveThreshold")
-	setProperty("RadeonProRenderGlobals", "completionCriteriaIterations", 2500)
+	aa_sample = getProperty("defaultArnoldRenderOptions", "AASamples")
+	if aa_sample < 1:
+		setProperty("RadeonProRenderGlobals", "completionCriteriaIterations", 500)
+	else:
+		setProperty("RadeonProRenderGlobals", "completionCriteriaIterations", 1000 * aa_sample)
 
 	filter_type = getProperty("defaultArnoldFilter", "aiTranslator")
 	if filter_type == "box":
