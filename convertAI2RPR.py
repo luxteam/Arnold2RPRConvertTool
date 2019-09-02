@@ -2756,6 +2756,7 @@ def convertaiMeshLight(ai_light):
 	copyProperty(rprLightShape, ai_light, "shadowsEnabled", "aiCastShadows")
 	copyProperty(rprLightShape, ai_light, "shadowsSoftness", "aiShadowDensity")
 
+	copyProperty(rprLightShape, ai_light, "areaLightVisible", "lightVisible")
 	copyProperty(rprTransform, aiTransform, "translate", "translate")
 	copyProperty(rprTransform, aiTransform, "rotate", "rotate")
 	copyProperty(rprTransform, aiTransform, "scale", "scale")
