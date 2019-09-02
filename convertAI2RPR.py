@@ -944,11 +944,7 @@ def convertbump2d(ai, source):
 		start_log(ai, rpr)
 
 		# Fields conversion
-
-		# only file support (alpha and color connections)
-		bumpConnections = cmds.listConnections(ai + ".bumpValue", type="file")
-		if bumpConnections:
-			connectProperty(bumpConnections[0], "outColor", rpr, "color")
+		copyProperty(rpr, ai, "color", "bumpValue")
 
 		if not bump_type:
 			if getProperty(ai, "bumpDepth") * 100 > 1:
@@ -991,11 +987,7 @@ def convertaiBump2d(ai, source):
 		start_log(ai, rpr)
 
 		# Fields conversion
-
-		# only file support (alpha and color connections)
-		bumpConnections = cmds.listConnections(ai + ".bumpMap", type="file")
-		if bumpConnections:
-			connectProperty(bumpConnections[0], "outColor", rpr, "color")
+		copyProperty(rpr, ai, "color", "bumpMap")
 
 		if getProperty(ai, "bumpHeight") * 100 > 1:
 			setProperty(rpr, "strength", 1)
@@ -1028,11 +1020,8 @@ def convertaiBump3d(ai, source):
 		start_log(ai, rpr)
 
 		# Fields conversion
-
+		copyProperty(rpr, ai, "color", "bumpMap")
 		# only file support (alpha and color connections)
-		bumpConnections = cmds.listConnections(ai + ".bumpMap", type="file")
-		if bumpConnections:
-			connectProperty(bumpConnections[0], "outColor", rpr, "color")
 
 		if getProperty(ai, "bumpHeight") * 100 > 1:
 			setProperty(rpr, "strength", 1)
@@ -2544,9 +2533,7 @@ def convertaiSkyDomeLight(dome_light):
 		# create IBL node
 		iblShape = cmds.createNode("RPRIBL", n="RPRIBLShape")
 		iblTransform = cmds.listRelatives(iblShape, p=True)[0]
-		setProperty(iblTransform, "scaleX", 1001.25663706144)
-		setProperty(iblTransform, "scaleY", 1001.25663706144)
-		setProperty(iblTransform, "scaleZ", 1001.25663706144)
+		setProperty(iblTransform, "scale", (1001.25663706144, 1001.25663706144, 1001.25663706144))
 
 	# Logging to file 
 	start_log(dome_light, iblShape)
