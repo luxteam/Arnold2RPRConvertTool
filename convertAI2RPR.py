@@ -3325,8 +3325,11 @@ def convertScene():
 	
 	setProperty("defaultRenderGlobals", "currentRenderer", "FireRender")
 	setProperty("defaultRenderGlobals", "imageFormat", 8)
-	# setProperty("RadeonProRenderGlobals", "applyGammaToMayaViews", 1)
-	setProperty("RadeonProRenderGlobals", "completionCriteriaIterations", 1000)
+
+	setProperty("RadeonProRenderGlobals", "completionCriteriaSeconds", 0)
+	if getProperty("defaultArnoldRenderOptions", "enableAdaptiveSampling"):
+		copyProperty("RadeonProRenderGlobals", "defaultArnoldRenderOptions", "adaptiveThreshold", "AAAdaptiveThreshold")
+	setProperty("RadeonProRenderGlobals", "completionCriteriaIterations", 2500)
 
 	filter_type = getProperty("defaultArnoldFilter", "aiTranslator")
 	if filter_type == "box":
