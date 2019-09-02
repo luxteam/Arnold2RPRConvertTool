@@ -2235,6 +2235,11 @@ def convertaiStandardSurface(aiMaterial, source):
 			setProperty(rprMaterial, "separateBackscatterColor", 0)
 			setProperty(rprMaterial, "multipleScattering", 0)
 			setProperty(rprMaterial, "backscatteringWeight", 0.75)
+			
+			if getProperty(aiMaterial, "subsurfaceType") == 0: # diffusion type
+				copyProperty(rprMaterial, aiMaterial, "diffuseColor", "subsurfaceColor")
+				setProperty(rprMaterial, "backscatteringWeight", 0.125)
+			
 
 		copyProperty(rprMaterial, aiMaterial, "coatColor", "coatColor")
 		copyProperty(rprMaterial, aiMaterial, "coatTransmissionColor", "coatColor")
