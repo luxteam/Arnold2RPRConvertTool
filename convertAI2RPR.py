@@ -2235,12 +2235,11 @@ def convertaiStandardSurface(aiMaterial, source):
 			setProperty(rprMaterial, "separateBackscatterColor", 0)
 			setProperty(rprMaterial, "multipleScattering", 0)
 			setProperty(rprMaterial, "backscatteringWeight", 0.75)
-			
+
 			if getProperty(aiMaterial, "subsurfaceType") == 0: # diffusion type
 				copyProperty(rprMaterial, aiMaterial, "diffuseColor", "subsurfaceColor")
 				setProperty(rprMaterial, "backscatteringWeight", 0.125)
 			
-
 		copyProperty(rprMaterial, aiMaterial, "coatColor", "coatColor")
 		copyProperty(rprMaterial, aiMaterial, "coatTransmissionColor", "coatColor")
 		copyProperty(rprMaterial, aiMaterial, "coatWeight", "coat")
@@ -2324,6 +2323,23 @@ def convertaiCarPaint(aiMaterial, source):
 		copyProperty(rprMaterial, aiMaterial, "reflectWeight", "specular")
 		copyProperty(rprMaterial, aiMaterial, "reflectRoughness", "specularRoughness")
 		copyProperty(rprMaterial, aiMaterial, "reflectIOR", "specularIOR")
+
+		if getProperty(aiMaterial, "coatColor") != (1, 1, 1):
+
+			arith = cmds.shadingNode("RPRArithmetic", asUtility=True)
+			setProperty(arith, "operation", 2)
+			copyProperty(arith, aiMaterial, "inputA", "baseColor")
+			copyProperty(arith, aiMaterial, "inputB", "coatColor")
+
+			if mapDoesNotExist(aiMaterial, "coat"):
+				connectProperty(arith, "out", rprMaterial, "diffuseColor")
+			else:
+				blend_value = cmds.shadingNode("RPRBlendValue", asUtility=True)
+				copyProperty(blend_value, aiMaterial, "inputA", "baseColor")
+				connectProperty(arith, "out", blend_value, "inputB")
+				copyProperty(blend_value, aiMaterial, "weight", "coat")
+
+				connectProperty(blend_value, "out", rprMaterial, "diffuseColor")
 
 		copyProperty(rprMaterial, aiMaterial, "coatColor", "coatColor")
 		copyProperty(rprMaterial, aiMaterial, "coatWeight", "coat")
@@ -3256,10 +3272,28 @@ def convertScene():
 
 	# Check plugins
 	if not cmds.pluginInfo("mtoa", q=True, loaded=True):
-		cmds.loadPlugin("mtoa")
+		try:
+			cmds.loadPlugin("mtoa", quiet=True)
+		except Exception as ex:
+			response = cmds.confirmDialog(title="Error",
+							  message=("Arnold plugin is not installed.\nInstall Arnold plugin before conversion."),
+							  button=["OK"],
+							  defaultButton="OK",
+							  cancelButton="OK",
+							  dismissString="OK")
+			exit("Arnold plugin is not installed")
 
 	if not cmds.pluginInfo("RadeonProRender", q=True, loaded=True):
-		cmds.loadPlugin("RadeonProRender")
+		try:
+			cmds.loadPlugin("RadeonProRender", quiet=True)
+		except Exception as ex:
+			response = cmds.confirmDialog(title="Error",
+							  message=("RadeonProRender plugin is not installed.\nInstall RadeonProRender plugin before conversion."),
+							  button=["OK"],
+							  defaultButton="OK",
+							  cancelButton="OK",
+							  dismissString="OK")
+			exit("RadeonProRender plugin is not installed")
 
 	# arnold engine set before conversion 
 	setProperty("defaultRenderGlobals", "currentRenderer", "arnold")
