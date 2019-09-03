@@ -2574,6 +2574,11 @@ def convertaiStandardVolume(aiMaterial, source):
 
 def convertaiSkyDomeLight(dome_light):
 
+	skyNode = cmds.listConnections(dome_light + ".color")
+	if skyNode:
+		if cmds.objectType(skyNode[0]) == "aiPhysicalSky":
+			return
+
 	if cmds.objExists("RPRIBL"):
 		iblShape = "RPRIBLShape"
 		iblTransform = "RPRIBL"
