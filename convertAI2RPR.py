@@ -2092,6 +2092,61 @@ def convertaiFlat(aiMaterial, source):
 
 
 #######################
+## aiLayerShader
+#######################
+
+def convertaiLayerShader(aiMaterial, source):
+
+	assigned = checkAssign(aiMaterial)
+	
+	if cmds.objExists(aiMaterial + "_rpr"):
+		rprMaterial = aiMaterial + "_rpr"
+	else:
+		# Creating new Uber material
+		rprMaterial = cmds.shadingNode("RPRBlendMaterial", asShader=True)
+		
+		# Logging to file
+		start_log(aiMaterial, rprMaterial)
+
+		# Fields conversion
+		first_material = True
+		second_material = True
+		for i in range(1, 9):
+			if getProperty(aiMaterial, "enable" + str(i)):
+				input_value = cmds.listConnections(aiMaterial + ".input" + str(i))
+				if input_value:
+					if first_material:
+						copyProperty(rprMaterial, aiMaterial, "color0", "input" + str(i))
+						first_material = False
+					elif second_material:
+						copyProperty(rprMaterial, aiMaterial, "color1", "input" + str(i))
+						copyProperty(rprMaterial, aiMaterial, "weight", "mix" + str(i))
+						second_material = False
+					else:
+						old_rpr = rprMaterial
+						rprMaterial = cmds.shadingNode("RPRBlendMaterial", asShader=True)
+						connectProperty(old_rpr, "outColor", rprMaterial, "color0")
+						copyProperty(rprMaterial, aiMaterial, "color1", "input" + str(i))
+						copyProperty(rprMaterial, aiMaterial, "weight", "mix" + str(i))
+
+
+		rprMaterial = cmds.rename(rprMaterial, (aiMaterial + "_rpr"))
+
+		# Check shading engine in aiMaterial
+		if assigned:
+			sg = rprMaterial + "SG"
+			cmds.sets(renderable=True, noSurfaceShader=True, empty=True, name=sg)
+			connectProperty(rprMaterial, "outColor", sg, "surfaceShader")
+
+		# Logging in file
+		end_log(aiMaterial)
+
+	if source:
+		rprMaterial += "." + source
+	return rprMaterial
+
+
+#######################
 ## aiToon
 #######################
 
@@ -3134,7 +3189,7 @@ def convertMaterial(aiMaterial, source):
 		"aiAmbientOcclusion": convertaiAmbientOcclusion,
 		"aiCarPaint": convertaiCarPaint,
 		"aiFlat": convertaiFlat,
-		"aiLayerShader": convertUnsupportedMaterial,
+		"aiLayerShader": convertaiLayerShader,
 		"aiMatte": convertaiMatte,
 		"aiMixShader": convertaiMixShader,
 		"aiPassthrough": convertaiPassthrough,
