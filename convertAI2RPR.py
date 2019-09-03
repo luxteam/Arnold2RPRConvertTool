@@ -980,29 +980,56 @@ def convertaiBump2d(ai, source):
 	if cmds.objExists(ai + "_rpr"):
 		rpr = ai + "_rpr"
 	else:
-		rpr = cmds.shadingNode("RPRBump", asUtility=True)
-		rpr = cmds.rename(rpr, ai + "_rpr")
-			
-		# Logging to file
-		start_log(ai, rpr)
+		if not mapDoesNotExist(ai, "bumpMap") and not mapDoesNotExist(ai, "normal"):
+			rpr = cmds.shadingNode("RPRBlendMaterial", asShader=True)
+			rpr = cmds.rename(rpr, ai + "_rpr")
 
-		# Fields conversion
-		copyProperty(rpr, ai, "color", "bumpMap")
+			# Logging to file
+			start_log(ai, rpr)
 
-		if getProperty(ai, "bumpHeight") * 100 > 1:
-			setProperty(rpr, "strength", 1)
+			bump_uber = cmds.shadingNode("RPRUberMaterial", asShader=True)
+			copyProperty(bump_uber, ai, "normalMap", "bumpMap")
+
+			normal_uber = cmds.shadingNode("RPRUberMaterial", asShader=True)
+			copyProperty(normal_uber, ai, "normalMap", "normal")
+
+			connectProperty(bump_uber, "outColor", rpr, "color0")
+			connectProperty(normal_uber, "outColor", rpr, "color1")
+
+			# Logging to file
+			end_log(ai)
+
+			conversion_map = {
+				"outValue": "outColor",
+				"outValueX": "outColorR",
+				"outValueY": "outColorG",
+				"outValueZ": "outColorB"
+			}
+
 		else:
-			setProperty(rpr, "strength", getProperty(ai, "bumpHeight") * 100)
+			rpr = cmds.shadingNode("RPRBump", asUtility=True)
+			rpr = cmds.rename(rpr, ai + "_rpr")
+				
+			# Logging to file
+			start_log(ai, rpr)
 
-		# Logging to file
-		end_log(ai)
+			# Fields conversion
+			copyProperty(rpr, ai, "color", "bumpMap")
 
-	conversion_map = {
-		"outValue": "out",
-		"outValueX": "outR",
-		"outValueY": "outG",
-		"outValueZ": "outB"
-	}
+			if getProperty(ai, "bumpHeight") * 100 > 1:
+				setProperty(rpr, "strength", 1)
+			else:
+				setProperty(rpr, "strength", getProperty(ai, "bumpHeight") * 100)
+
+			# Logging to file
+			end_log(ai)
+
+			conversion_map = {
+				"outValue": "out",
+				"outValueX": "outR",
+				"outValueY": "outG",
+				"outValueZ": "outB"
+			}
 
 	rpr += "." + conversion_map[source]
 	return rpr
