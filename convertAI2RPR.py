@@ -1,58 +1,5 @@
 
-'''
-
-Arnold to RadeonProRender Converter
-
-History:
-v.1.0 - first version
-v.1.1 - aiStandardSurface support
-v.1.2 - displacement, bump2d conversion
-v.1.3 - aiSkyDomeLight and aiAreaLight support
-v.1.4 - Opacity reverse node, rotate IBL and aiPhysicalSky support
-v.1.5 - aiPhotometricLight support.
-v.1.6 - Fix ies light position; aiStandartVolume, aiMixShader, aiFlat, aiSky, aiAdd, aiSubstract, aiDivide, aiMultiply support
-v.1.7 - Fix bug with channel converting, fix bug with creating extra materials.
-v.2.0 - Rewritten to python, update material conversion.
-v.2.1 - aiMath nodes support
-	aiImage and aiFacingRatio conversion support
-	aiAmbientOcclusion material conversion support
-	Improve metalness, coat, subsurface and normal map conversion in aiStandardSurface
-	Improve displacement conversion
-	Fixed issue with group of lights
-	Fixed issue with unassign materials with shader catcher
-v.2.2 - Fixed bug with unsupported nodes conversion
-	aiColorConvert node conversion support
-	aiShadowMatte conversion support
-	aiCarPaint conversion support
-v.2.3 - aiVectorMap conversion support
-	aiCellNoise and aiNoise conversion support
-	aiStandardSurface cameraMap conversion
-	Volume materials updates
-	aiBlackbody conversion support
-	aiCurvature conversion support
-v.2.4 - aiVector conversion support in displacement
-	aiToon conversion support
-	aiBump conversion updates
-	aiComposite conversion support
-	aiSqrt conversion support
-	aiNegate conversion support
-	aiBlackbody conversion update
-	Standard lights conversion support
-v.2.5 - aiAreaLight intensity conversion update
-	Displacement conversion updates
-	aiPhotometric temperature conversion
-	Bump/normap map conversion updates
-	Added filter and ray depth conversion
-	aiAmbientOcclusion conversion update
-	aiToon conversion update
-	aiPassthrough conversion support
-	Camera settings conversion
-	Emission conversion update in aiStandardSurface
-	aiThinfilm conversion support
-	aiMatte conversion support
-
-
-'''
+# Arnold to RadeonProRender Converter
 
 import maya.mel as mel
 import maya.cmds as cmds
@@ -319,7 +266,6 @@ def connectProperty(source_name, source_attr, rpr_name, rpr_attr):
 				cmds.connectAttr(source, rpr_field1, force=True)
 				cmds.connectAttr(source, rpr_field2, force=True)
 				cmds.connectAttr(source, rpr_field3, force=True)
-		print(u"Created connection from {} to {}.".format(source, rpr_field).encode('utf-8'))
 		write_own_property_log(u"Created connection from {} to {}.".format(source, rpr_field).encode('utf-8'))
 	except Exception as ex:
 		traceback.print_exc()
@@ -2299,6 +2245,8 @@ def convertaiStandardSurface(aiMaterial, source):
 			setProperty(rprMaterial, "reflectWeight", 1)
 			copyProperty(rprMaterial, aiMaterial, "reflectMetalness", "metalness")
 			copyProperty(rprMaterial, aiMaterial, "reflectColor", "baseColor")
+		else:
+			setProperty(rprMaterial, 'reflectIsFresnelApproximationOn', 1)
 
 		copyProperty(rprMaterial, aiMaterial, "refractColor", "transmissionColor")
 		copyProperty(rprMaterial, aiMaterial, "refractWeight", "transmission")
@@ -2457,7 +2405,7 @@ def convertaiShadowMatte(aiMaterial, source):
 		rprMaterial = aiMaterial + "_rpr"
 	else:
 		# Creating new Uber material
-		rprMaterial = cmds.shadingNode("RPRShadowCatcherMaterial", asShader=True)
+		rprMaterial = cmds.shadingNode("RPRMatteMaterial", asShader=True)
 		rprMaterial = cmds.rename(rprMaterial, (aiMaterial + "_rpr"))
 
 		# Check shading engine in aiMaterial
@@ -2793,14 +2741,13 @@ def convertaiAreaLight(ai_light):
 
 	intensity = getProperty(ai_light, "intensity")
 	exposure = getProperty(ai_light, "exposure")
-	setProperty(rprLightShape, "lightIntensity", intensity / 160 * 2 ** exposure)
+	setProperty(rprLightShape, "intensity", intensity / 160 * 2 ** exposure)
 
-	copyProperty(rprLightShape, ai_light, "colorPicker", "color")
+	copyProperty(rprLightShape, ai_light, "color", "color")
 	copyProperty(rprLightShape, ai_light, "temperature", "aiColorTemperature")
 
 	if getProperty(ai_light, "aiUseColorTemperature"):
 		setProperty(rprLightShape, "colorMode", 1)
-		mel.eval("onTemperatureChanged(\"{}\")".format(rprLightShape))
 
 	copyProperty(rprLightShape, ai_light, "shadowsSoftness", "aiShadowDensity")
 	
@@ -2842,11 +2789,10 @@ def convertaiMeshLight(ai_light):
 	setProperty(rprLightShape, "lightType", 0)
 	setProperty(rprLightShape, "areaLightShape", 4)
 
-	copyProperty(rprLightShape, ai_light, "lightIntensity", "intensity")
-	copyProperty(rprLightShape, ai_light, "colorPicker", "color")
+	copyProperty(rprLightShape, ai_light, "intensity", "intensity")
+	copyProperty(rprLightShape, ai_light, "color", "color")
 	if getProperty(ai_light, "aiUseColorTemperature"):
 		setProperty(rprLightShape, "colorMode", 1)
-		mel.eval("onTemperatureChanged(\"{}\")".format(rprLightShape))
 	copyProperty(rprLightShape, ai_light, "temperature", "aiColorTemperature")
 	copyProperty(rprLightShape, ai_light, "shadowsEnabled", "aiCastShadows")
 	copyProperty(rprLightShape, ai_light, "shadowsSoftness", "aiShadowDensity")
@@ -2858,14 +2804,11 @@ def convertaiMeshLight(ai_light):
 
 	try:
 		light_mesh = cmds.listConnections(ai_light, type="mesh")[1]
-		print(light_mesh)
 		cmds.delete(ai_light)
 		cmds.delete(aiTransform)
 		cmds.select(clear=True)
 		setProperty(rprLightShape, "areaLightSelectingMesh", 1)
-		print(getProperty(rprLightShape, "areaLightSelectingMesh"))
 		cmds.select(light_mesh)
-		#setProperty(rprLightShape, "areaLightMeshSelectedName", light_mesh)
 	except Exception as ex:
 		traceback.print_exc()
 		print("Failed to convert mesh in Physical light")
@@ -2905,15 +2848,13 @@ def convertareaLight(ai_light):
 	setProperty(rprLightShape, "intensityUnits", 2)
 
 	intensity = getProperty(ai_light, "intensity")
-	exposure = getProperty(ai_light, "aiExposure")
-	setProperty(rprLightShape, "lightIntensity", (intensity / 160) * (2 ** exposure))
+	setProperty(rprLightShape, "intensity", -0.000014 * (intensity ** 3) + 0.000977 * (intensity ** 2) + 0.005465 * intensity + 0.047492)
 
-	copyProperty(rprLightShape, ai_light, "colorPicker", "color")
+	copyProperty(rprLightShape, ai_light, "color", "color")
 	copyProperty(rprLightShape, ai_light, "temperature", "aiColorTemperature")
 
 	if getProperty(ai_light, "aiUseColorTemperature"):
 		setProperty(rprLightShape, "colorMode", 1)
-		mel.eval("onTemperatureChanged(\"{}\")".format(rprLightShape))
 
 	copyProperty(rprLightShape, ai_light, "shadowsSoftness", "aiShadowDensity")
 
@@ -2962,14 +2903,13 @@ def convertspotLight(ai_light):
 	scaleY = getProperty(aiTransform, "scaleY")
 	intensity = getProperty(ai_light, "intensity")
 	exposure = getProperty(ai_light, "aiExposure")
-	setProperty(rprLightShape, "lightIntensity", (intensity / 160) * (2 ** exposure) * scaleX * scaleY )
+	setProperty(rprLightShape, "intensity", (intensity / 160) * (2 ** exposure) * scaleX * scaleY )
 
-	copyProperty(rprLightShape, ai_light, "colorPicker", "color")
+	copyProperty(rprLightShape, ai_light, "color", "color")
 	copyProperty(rprLightShape, ai_light, "temperature", "aiColorTemperature")
 
 	if getProperty(ai_light, "aiUseColorTemperature"):
 		setProperty(rprLightShape, "colorMode", 1)
-		mel.eval("onTemperatureChanged(\"{}\")".format(rprLightShape))
 
 	#copyProperty(rprLightShape, ai_light, "spotLightOuterConeFalloff", "penumbraAngle")
 	copyProperty(rprLightShape, ai_light, "spotLightOuterConeFalloff", "coneAngle")
@@ -3020,14 +2960,13 @@ def convertpointLight(ai_light):
 	scaleY = getProperty(aiTransform, "scaleY")
 	intensity = getProperty(ai_light, "intensity")
 	exposure = getProperty(ai_light, "aiExposure")
-	setProperty(rprLightShape, "lightIntensity", (intensity / 160) * (2 ** exposure) * scaleX * scaleY )
+	setProperty(rprLightShape, "intensity", (intensity / 160) * (2 ** exposure) * scaleX * scaleY )
 
-	copyProperty(rprLightShape, ai_light, "colorPicker", "color")
+	copyProperty(rprLightShape, ai_light, "color", "color")
 	copyProperty(rprLightShape, ai_light, "temperature", "aiColorTemperature")
 
 	if getProperty(ai_light, "aiUseColorTemperature"):
 		setProperty(rprLightShape, "colorMode", 1)
-		mel.eval("onTemperatureChanged(\"{}\")".format(rprLightShape))
 
 	copyProperty(rprTransform, aiTransform, "translate", "translate")
 	copyProperty(rprTransform, aiTransform, "rotate", "rotate")
@@ -3072,14 +3011,13 @@ def convertdirectionalLight(ai_light):
 
 	intensity = getProperty(ai_light, "intensity")
 	exposure = getProperty(ai_light, "aiExposure")
-	setProperty(rprLightShape, "lightIntensity", intensity  * 2 ** exposure )
+	setProperty(rprLightShape, "intensity", intensity  * 2 ** exposure )
 
-	copyProperty(rprLightShape, ai_light, "colorPicker", "color")
+	copyProperty(rprLightShape, ai_light, "color", "color")
 	copyProperty(rprLightShape, ai_light, "temperature", "aiColorTemperature")
 
 	if getProperty(ai_light, "aiUseColorTemperature"):
 		setProperty(rprLightShape, "colorMode", 1)
-		mel.eval("onTemperatureChanged(\"{}\")".format(rprLightShape))
 
 	copyProperty(rprTransform, aiTransform, "translate", "translate")
 	copyProperty(rprTransform, aiTransform, "rotate", "rotate")
@@ -3355,7 +3293,20 @@ def defaultEnable(RPRmaterial, aiMaterial, enable, value):
 		setProperty(RPRmaterial, enable, 0)
 
 
+def repathScene():
+	scene_workspace = cmds.workspace(q=True, dir=True)
+	print('Your workspace located in {}'.format(scene_workspace))
+	unresolved_files = cmds.filePathEditor(query=True, listFiles="", unresolved=True, attributeOnly=True)
+	if unresolved_files:
+		for item in unresolved_files:
+			print("Repathing node {}".format(item, os.path.join(item, scene_workspace)))
+			cmds.filePathEditor(item, repath=scene_workspace, recursive=True, ra=1)
+
+
 def convertScene():
+
+	# Repath paths in scene files (filePathEditor)
+	repathScene()
 
 	# Check plugins
 	if not cmds.pluginInfo("mtoa", q=True, loaded=True):
