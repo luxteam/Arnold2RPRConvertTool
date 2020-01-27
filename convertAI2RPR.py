@@ -4,6 +4,7 @@
 import maya.mel as mel
 import maya.cmds as cmds
 import time
+import os
 import math
 import traceback
 
