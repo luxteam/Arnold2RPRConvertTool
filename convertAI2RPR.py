@@ -3337,6 +3337,11 @@ def convertScene():
 	# arnold engine set before conversion 
 	setProperty("defaultRenderGlobals", "currentRenderer", "arnold")
 
+	# disable cache
+	maya_version = cmds.about(apiVersion=True)
+	if maya_version > 20190200:
+	    cmds.evaluator(n="cache", en=False)
+
 	# Convert aiAtmosphere
 	env = cmds.ls(type=("aiAtmosphereVolume", "aiFog"))
 	if env:
@@ -3434,6 +3439,11 @@ def convertScene():
 			setProperty("RadeonProRenderGlobals", "aovShadowCatcher", 1)
 		except Exception as ex:
 			traceback.print_exc()
+
+	# enable cache back
+	maya_version = cmds.about(apiVersion=True)
+	if maya_version > 20190200:
+	    cmds.evaluator(n="cache", en=True)
 
 
 
