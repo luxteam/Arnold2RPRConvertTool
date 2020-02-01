@@ -326,8 +326,14 @@ def convertDisplacement(ai_sg, rpr_name):
 				if meshs:
 					shapes = cmds.listRelatives(meshs[0], type="mesh")
 					copyProperty(rpr_name, shapes[0], "displacementSubdiv", "aiSubdivIterations")
-					copyProperty(rpr_name, shapes[0], "displacementMax", "aiDispHeight")
-					copyProperty(rpr_name, shapes[0], "displacementMin", "aiDispZeroValue")
+					displacementMax = getProperty(shapes[0], 'aiDispHeight')
+					displacementMin = getProperty(shapes[0], 'aiDispZeroValue')
+					if displacementMin > dispalcementMax:
+						copyProperty(rpr_name, shapes[0], "displacementMax", "aiDispHeight")
+						copyProperty(rpr_name, shapes[0], "displacementMin", "aiDispHeight")
+					else:
+						copyProperty(rpr_name, shapes[0], "displacementMax", "aiDispHeight")
+						copyProperty(rpr_name, shapes[0], "displacementMin", "aiDispZeroValue")
 
 	except Exception as ex:
 		traceback.print_exc()
@@ -1858,7 +1864,7 @@ def convertaiLength(ai, source):
 
 
 # standart utilities
-def convertStandartNode(aiMaterial, source):
+def convertStandardNode(aiMaterial, source):
 
 	not_converted_list = ("materialInfo", "defaultShaderList", "shadingEngine", "place2dTexture")
 	try:
@@ -3192,7 +3198,7 @@ def convertMaterial(aiMaterial, source):
 		if isArnoldType(aiMaterial):
 			rpr = convertUnsupportedNode(aiMaterial, source)
 		else:
-			rpr = convertStandartNode(aiMaterial, source)
+			rpr = convertStandardNode(aiMaterial, source)
 
 	return rpr
 
