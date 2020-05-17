@@ -8,6 +8,7 @@ import os
 import math
 import traceback
 
+ARNOLD2RPR_CONVERTER_VERSION = 2.91
 
 # log functions
 
@@ -3263,7 +3264,8 @@ def cleanScene():
 		if isArnoldType(material):
 			shEng = cmds.listConnections(material, type="shadingEngine")
 			try:
-				cmds.delete(shEng[0])
+				if shEng:
+					cmds.delete(shEng[0])
 				cmds.delete(material)
 			except:
 				pass
