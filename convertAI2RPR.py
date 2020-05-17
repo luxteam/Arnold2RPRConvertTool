@@ -8,7 +8,7 @@ import os
 import math
 import traceback
 
-ARNOLD2RPR_CONVERTER_VERSION = 2.91
+ARNOLD2RPR_CONVERTER_VERSION = "2.8.2"
 
 # log functions
 
@@ -3484,7 +3484,7 @@ def auto_launch():
 	cleanScene()
 
 def manual_launch():
-	print("Convertion start!")
+	print("Convertion start! Converter version: {}".format(ARNOLD2RPR_CONVERTER_VERSION))
 	startTime = 0
 	testTime = 0
 	startTime = time.time()
