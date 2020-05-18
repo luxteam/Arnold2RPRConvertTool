@@ -8,7 +8,7 @@ import os
 import math
 import traceback
 
-ARNOLD2RPR_CONVERTER_VERSION = "2.8.2"
+ARNOLD2RPR_CONVERTER_VERSION = "2.8.3"
 
 # log functions
 
@@ -330,7 +330,7 @@ def convertDisplacement(ai_sg, rpr_name):
 					setProperty(rpr_name, "displacementEnable", 1)
 					connectProperty(displacement_file[0], "outColor", rpr_name, "displacementMap")
 					copyProperty(rpr_name, displacement[0], "scale", "displacementMax")
-					copyProperty(rpr_name, displacement[0], "displacementMin", "aiDisplacementZeroValue")
+					setProperty(rpr_name, "displacementMin", 0)
 
 			elif displacementType == "file":
 				setProperty(rpr_name, "displacementEnable", 1)
@@ -340,14 +340,8 @@ def convertDisplacement(ai_sg, rpr_name):
 				if meshs:
 					shapes = cmds.listRelatives(meshs[0], type="mesh")
 					copyProperty(rpr_name, shapes[0], "displacementSubdiv", "aiSubdivIterations")
-					displacementMax = getProperty(shapes[0], 'aiDispHeight')
-					displacementMin = getProperty(shapes[0], 'aiDispZeroValue')
-					if displacementMin > displacementMax:
-						copyProperty(rpr_name, shapes[0], "displacementMax", "aiDispHeight")
-						copyProperty(rpr_name, shapes[0], "displacementMin", "aiDispHeight")
-					else:
-						copyProperty(rpr_name, shapes[0], "displacementMax", "aiDispHeight")
-						copyProperty(rpr_name, shapes[0], "displacementMin", "aiDispZeroValue")
+					copyProperty(rpr_name, shapes[0], "displacementMax", "aiDispHeight")
+					setProperty(rpr_name, "displacementMin", 0)
 
 	except Exception as ex:
 		traceback.print_exc()
@@ -3484,7 +3478,7 @@ def auto_launch():
 	cleanScene()
 
 def manual_launch():
-	print("Convertion start! Converter version: {}".format(ARNOLD2RPR_CONVERTER_VERSION))
+	print("Conversion start! Converter version: {}".format(ARNOLD2RPR_CONVERTER_VERSION))
 	startTime = 0
 	testTime = 0
 	startTime = time.time()
