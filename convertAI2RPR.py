@@ -8,7 +8,7 @@ import os
 import math
 import traceback
 
-ARNOLD2RPR_CONVERTER_VERSION = "2.8.3"
+ARNOLD2RPR_CONVERTER_VERSION = "2.8.4"
 
 # log functions
 
@@ -2287,9 +2287,12 @@ def convertaiStandardSurface(aiMaterial, source):
 			setProperty(rprMaterial, "multipleScattering", 0)
 			setProperty(rprMaterial, "backscatteringWeight", 0.75)
 
-			if getProperty(aiMaterial, "subsurfaceType") == 0: # diffusion type
+			subsurfaceType = getProperty(aiMaterial, "subsurfaceType")
+			if subsurfaceType == 0: # diffusion type
 				copyProperty(rprMaterial, aiMaterial, "diffuseColor", "subsurfaceColor")
 				setProperty(rprMaterial, "backscatteringWeight", 0.125)
+			elif subsurfaceType == 1: # randomwalk
+				setProperty(rprMaterial, "backscatteringWeight", 0.5)
 			
 		copyProperty(rprMaterial, aiMaterial, "coatColor", "coatColor")
 		copyProperty(rprMaterial, aiMaterial, "coatTransmissionColor", "coatColor")
