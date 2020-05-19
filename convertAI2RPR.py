@@ -8,7 +8,7 @@ import os
 import math
 import traceback
 
-ARNOLD2RPR_CONVERTER_VERSION = "2.8.4"
+ARNOLD2RPR_CONVERTER_VERSION = "2.8.5"
 
 # log functions
 
@@ -329,7 +329,7 @@ def convertDisplacement(ai_sg, rpr_name):
 				if displacement_file:
 					setProperty(rpr_name, "displacementEnable", 1)
 					connectProperty(displacement_file[0], "outColor", rpr_name, "displacementMap")
-					copyProperty(rpr_name, displacement[0], "scale", "displacementMax")
+					copyProperty(rpr_name, displacement[0], "displacementMax", "scale")
 					setProperty(rpr_name, "displacementMin", 0)
 
 			elif displacementType == "file":
@@ -2292,7 +2292,7 @@ def convertaiStandardSurface(aiMaterial, source):
 				copyProperty(rprMaterial, aiMaterial, "diffuseColor", "subsurfaceColor")
 				setProperty(rprMaterial, "backscatteringWeight", 0.125)
 			elif subsurfaceType == 1: # randomwalk
-				setProperty(rprMaterial, "backscatteringWeight", 0.5)
+				setProperty(rprMaterial, "backscatteringWeight", 0.05)
 			
 		copyProperty(rprMaterial, aiMaterial, "coatColor", "coatColor")
 		copyProperty(rprMaterial, aiMaterial, "coatTransmissionColor", "coatColor")
