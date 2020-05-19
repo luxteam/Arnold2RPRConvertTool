@@ -8,7 +8,7 @@ import os
 import math
 import traceback
 
-ARNOLD2RPR_CONVERTER_VERSION = "2.8.5"
+ARNOLD2RPR_CONVERTER_VERSION = "2.8.6"
 
 # log functions
 
@@ -329,7 +329,7 @@ def convertDisplacement(ai_sg, rpr_name):
 				if displacement_file:
 					setProperty(rpr_name, "displacementEnable", 1)
 					connectProperty(displacement_file[0], "outColor", rpr_name, "displacementMap")
-					copyProperty(rpr_name, displacement[0], "displacementMax", "scale")
+					setProperty(rpr_name, "displacementMax", getProperty(displacement[0], "scale") * 0.01)
 					setProperty(rpr_name, "displacementMin", 0)
 
 			elif displacementType == "file":
