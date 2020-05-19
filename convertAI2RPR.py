@@ -8,7 +8,7 @@ import os
 import math
 import traceback
 
-ARNOLD2RPR_CONVERTER_VERSION = "2.8.6"
+ARNOLD2RPR_CONVERTER_VERSION = "2.8.7"
 
 # log functions
 
@@ -2300,7 +2300,7 @@ def convertaiStandardSurface(aiMaterial, source):
 		copyProperty(rprMaterial, aiMaterial, "coatRoughness", "coatRoughness")
 		copyProperty(rprMaterial, aiMaterial, "coatIor", "coatIOR")
 		copyProperty(rprMaterial, aiMaterial, "coatNormal", "coatNormal")
-		setProperty(rprMaterial, "coatThickness", 1.5)
+		setProperty(rprMaterial, "coatThickness", 0)
 
 		copyProperty(rprMaterial, aiMaterial, "emissiveColor", "emissionColor")
 		setProperty(rprMaterial, "emissiveWeight", 0.35)
