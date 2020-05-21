@@ -20,7 +20,7 @@ import traceback
 
 from maya.plugin.evaluator.cache_preferences import CachePreferenceEnabled
 
-ARNOLD2RPR_CONVERTER_VERSION = "2.9.1"
+ARNOLD2RPR_CONVERTER_VERSION = "2.9.2"
 
 # log functions
 
@@ -3350,7 +3350,9 @@ def convertScene():
 	# Disable caching
 	maya_version = cmds.about(apiVersion=True)
 	if maya_version > 20190200:
-		CachePreferenceEnabled().set_value(False)
+		cache_preference_enabled = CachePreferenceEnabled().get_value()
+		if cache_preference_enabled:
+			CachePreferenceEnabled().set_value(False)
 
 	# Repath paths in scene files (filePathEditor)
 	repathScene()
@@ -3482,7 +3484,8 @@ def convertScene():
 			traceback.print_exc()
 
 	if maya_version > 20190200:
-		CachePreferenceEnabled().set_value(True)
+		if cache_preference_enabled:
+			CachePreferenceEnabled().set_value(True)
 
 
 def auto_launch():
