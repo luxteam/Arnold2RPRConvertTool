@@ -20,7 +20,7 @@ import traceback
 
 from maya.plugin.evaluator.cache_preferences import CachePreferenceEnabled
 
-ARNOLD2RPR_CONVERTER_VERSION = "2.9.0"
+ARNOLD2RPR_CONVERTER_VERSION = "2.9.1"
 
 # log functions
 
