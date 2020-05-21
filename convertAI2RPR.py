@@ -18,6 +18,8 @@ import os
 import math
 import traceback
 
+from maya.plugin.evaluator.cache_preferences import CachePreferenceEnabled
+
 ARNOLD2RPR_CONVERTER_VERSION = "2.9.0"
 
 # log functions
@@ -3345,6 +3347,11 @@ def repathScene():
 
 def convertScene():
 
+	# Disable caching
+	maya_version = cmds.about(apiVersion=True)
+	if maya_version > 20190200:
+		CachePreferenceEnabled().set_value(False)
+
 	# Repath paths in scene files (filePathEditor)
 	repathScene()
 
@@ -3375,11 +3382,6 @@ def convertScene():
 
 	# arnold engine set before conversion 
 	setProperty("defaultRenderGlobals", "currentRenderer", "arnold")
-
-	# disable cache
-	maya_version = cmds.about(apiVersion=True)
-	if maya_version > 20190200:
-	    cmds.evaluator(n="cache", en=False)
 
 	# Convert aiAtmosphere
 	env = cmds.ls(type=("aiAtmosphereVolume", "aiFog"))
@@ -3479,11 +3481,8 @@ def convertScene():
 		except Exception as ex:
 			traceback.print_exc()
 
-	# enable cache back
-	maya_version = cmds.about(apiVersion=True)
 	if maya_version > 20190200:
-	    cmds.evaluator(n="cache", en=True)
-
+		CachePreferenceEnabled().set_value(True)
 
 
 def auto_launch():
