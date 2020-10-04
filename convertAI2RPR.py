@@ -1380,6 +1380,32 @@ def convertPreMultiply(ai, source):
 	return rpr
 
 
+def convertaiRange(ai, source):
+
+	if cmds.objExists(ai + "_rpr"):
+		rpr = ai + "_rpr"
+	else:
+		rpr = cmds.shadingNode("remapColor", asUtility=True)
+		rpr = cmds.rename(rpr, ai + "_rpr")
+
+		# Logging to file
+		start_log(ai, rpr)
+
+		# Fields conversion
+		copyProperty(rpr, ai, "color", "input")
+
+		copyProperty(rpr, ai, "inputMin", "inputMin")
+		copyProperty(rpr, ai, "inputMax", "inputMax")
+		copyProperty(rpr, ai, "outputMin", "outputMin")
+		copyProperty(rpr, ai, "outputMax", "outputMax")
+
+		# Logging to file
+		end_log(ai)
+
+	rpr += "." + source
+	return rpr
+
+
 def convertVectorProduct(ai, source):
 
 	operation = getProperty(ai, "operation")
@@ -3229,7 +3255,8 @@ def convertMaterial(aiMaterial, source):
 		"aiTriplanar": convertaiTriplanar,
 		"aiUvTransform": convertaiUvTransform,
 		"aiLength": convertaiLength,
-		"aiExp": convertaiExp
+		"aiExp": convertaiExp,
+		"aiRange": convertaiRange
 	}
 
 	if ai_type in conversion_func:
@@ -3296,7 +3323,7 @@ def cleanScene():
 
 	listObjects = cmds.ls(l=True)
 	for obj in listObjects:
-		if isArnoldType(object):
+		if isArnoldType(obj):
 			try:
 				cmds.delete(obj)
 			except:
